@@ -1,0 +1,32 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Skapad",
+                "field": "createdDate",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Upphör att gälla",
+                "field": "expiresAt",
+                "inputType": "textfield"
+            }, {
+                "headerName": "Behörigheter",
+                "field": "permissions",
+                "inputType": "object",
+                "hide": true
+            }
+        ]
+    }
+}

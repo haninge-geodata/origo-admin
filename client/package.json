@@ -1,0 +1,61 @@
+{
+  "name": "origo-admin-client",
+  "version": "0.5.0",
+  "updated": "2024-05-14",
+  "private": true,
+  "scripts": {
+    "prebuild": "tsc --noEmit",
+    "dev": "next dev",
+    "dev_express": "ts-node ./src/server.ts",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "dev:custom": "ts-node src/server.ts",
+    "build:custom": "next build && tsc -p tsconfig.server.json",
+    "start:custom": "node dist/server.js",
+    "build:mac:iis": "npm run build && npm run prepare:mac:iis",
+    "prepare:mac:iis": "rm -rf dist_iis && mkdir dist_iis && cp -R .next/standalone/ dist_iis/ && cp -R .next/static dist_iis/.next/static && cp -R public/ dist_iis/public && cp package.json dist_iis/package.json && cp config.json dist_iis/config.json && cp next.config.mjs dist_iis/next.config.mjs && cp .env.template dist_iis/.env.template && cp -R ../installation/iis/tasks dist_iis/tasks && rm -rf dist_iis/.next/cache && rm -rf dist_iis/node_modules && rm -rf dist_iis/.env",
+    "build:iis": "next build && npm run prepare:iis",
+    "prepare:iis": "if exist dist_iis rmdir /s /q dist_iis && mkdir dist_iis && xcopy .next\\standalone dist_iis\\.next\\standalone /E /I && xcopy .next\\static dist_iis\\.next\\static /E /I && xcopy public dist_iis\\public /E /I && xcopy package.json dist_iis\\package.json /I && xcopy next.config.mjs dist_iis\\next.config.mjs /I && xcopy .env.template dist_iis\\.env.template /I && xcopy ../installation/iis/tasks dist_iis\\tasks /E /I && if exist dist_iis\\.next\\cache rmdir /s /q dist_iis\\.next\\cache && if exist dist_iis\\node_modules rmdir /s /q dist_iis\\node_modules && if exist dist_iis\\.env del dist_iis\\.env"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@hello-pangea/dnd": "^16.5.0",
+    "@hookform/resolvers": "^3.3.4",
+    "@mdi/js": "^7.4.47",
+    "@mdi/react": "^1.6.1",
+    "@mui/icons-material": "^5.15.6",
+    "@mui/material": "^5.15.7",
+    "@mui/x-date-pickers": "^7.10.0",
+    "@mui/x-tree-view": "^6.17.0",
+    "@tanstack/react-query": "^5.17.19",
+    "@types/lodash": "^4.14.202",
+    "dayjs": "^1.11.11",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "lossless-json": "^4.0.1",
+    "next": "14.2.3",
+    "next-auth": "^4.24.7",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.50.1",
+    "reagraph": "^4.15.26",
+    "uuid": "^9.0.1",
+    "vanilla-jsoneditor": "^0.23.7",
+    "xml2js": "^0.6.2",
+    "zod": "^3.22.4",
+    "zustand": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/node": "^22.5.1",
+    "@types/react": "^18",
+    "@types/uuid": "^9.0.8",
+    "@types/xml2js": "^0.4.14",
+    "typescript": "^5"
+  },
+  "optionalDependencies": {
+    "node-windows": "^0.1.14"
+  }
+}

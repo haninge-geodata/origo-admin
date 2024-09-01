@@ -1,0 +1,12 @@
+.o-map .o-scalepicker {
+    min-width: 86.5px;
+  }
+  
+  .o-splash .o-modal-content button.o-tooltip {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .o-splash {
+    text-align: center;
+  }

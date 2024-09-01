@@ -1,0 +1,118 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Titel är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield",
+                "readOnly": true
+            },
+            {
+                "headerName": "Lagernamn i datakällan",
+                "field": "origoId",
+                "hide": false,
+                "inputType": "textfield",
+                "readOnly": false
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Namn är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Frågbar",
+                "field": "queryable",
+                "inputType": "checkbox"
+            },
+            {
+                "headerName": "Synlig",
+                "field": "visible",
+                "inputType": "checkbox",
+                "defaultValue": false
+            },
+            {
+                "headerName": "Format",
+                "field": "format",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "type",
+                    "message": "Format är obligatorisk och måste innehålla '/'"
+                }
+            },
+            {
+                "headerName": "Geometri",
+                "field": "geometryName",
+                "hide": true,
+                "defaultValue": "geom",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Geometri är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Beskrivning",
+                "field": "abstract",
+                "hide": true,
+                "inputType": "textarea"
+            },
+            {
+                "headerName": "Attribution",
+                "field": "attribution",
+                "hide": true,
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Attributes",
+                "field": "attributes",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "json"
+            },
+            {
+                "headerName": "Style",
+                "field": "style",
+                "hide": true,
+                "defaultValue": "Välj stilschema för lagret",
+                "inputType": "stylepicker",
+                "validation": {
+                    "required": true,
+                    "type": "object",
+                    "message": "Stilschema är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Källa",
+                "field": "source",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "object"
+            },
+            {
+                "headerName": "Extra Attribut",
+                "field": "extendedAttributes",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "keyvaluepair"
+            }
+        ]
+    }
+}

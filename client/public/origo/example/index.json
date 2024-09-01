@@ -1,0 +1,129 @@
+{
+    "controls": [{
+            "name": "home",
+            "options": {
+                "zoomOnStart": true,
+                "hideWhenEmbedded": true
+            }
+        },
+        {
+            "name": "zoom",
+            "options": {
+                "hideWhenEmbedded": true
+            }
+        }
+    ],
+    "pageSettings": {
+        "footer": {
+            "img": "../lib/img/png/logo_haninge.png",
+            "url": "https://www.haninge.se",
+            "text": "Haninge kommun"
+        },
+        "mapGrid": {
+            "visible": false
+        }
+    },
+    "projectionCode": "EPSG:3011",
+    "projectionExtent": [
+        -359975.93,
+        6121896.23,
+        395723.43,
+        7677606.2
+    ],
+    "proj4Defs": [{
+            "code": "EPSG:3011",
+            "projection": "+proj=tmerc +lat_0=0 +lon_0=18 +k=1 +x_0=150000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+        },
+        {
+            "code": "EPSG:3006",
+            "projection": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+        },
+        {
+            "code": "EPSG:4326",
+            "projection": "+proj=longlat +datum=WGS84 +no_defs"
+        }
+    ],
+    "extent": [
+        -359975.93,
+        6121896,
+        395723.43,
+        7670184
+    ],
+    "center": [
+        164000,
+        6555000
+    ],
+    "zoom": 2,
+    "resolutions": [
+        168,
+        84,
+        42,
+        27.999999999999996,
+        21,
+        13.999999999999998,
+        6.999999999999999,
+        4.2,
+        2.8,
+        2.1,
+        1.4,
+        0.7,
+        0.42,
+        0.27999999999999997,
+        0.21,
+        0.13999999999999999,
+        0.11199999999999999,
+        0.06999999999999999,
+        0.041999999999999996,
+        0.027999999999999997,
+        0.020999999999999998,
+        0.013999999999999999,
+        0.006999999999999999
+    ],
+    "enableRotation": false,
+    "featureinfoOptions": {
+        "pinning": true
+    },
+    "groups": [{
+        "name": "background",
+        "title": "Bakgrundskartor",
+        "expanded": true
+    }],
+    "source": {
+        "geowebcache": {
+            "url": "https://geodata.haninge.se/geowebcache/service/wmts"
+        },
+        "qgis_karta": {
+            "url": "https://karta.haninge.se/services/karta/ows?WITH_GEOMETRY=true&FI_POINT_TOLERANCE=5&FI_LINE_TOLERANCE=5"
+        },
+        "qgis_karta_wfs": {
+            "url": "https://karta.haninge.se/services/karta/ows?"
+        },
+        "qgis_karta_open": {
+            "url": "https://karta.haninge.se/services/karta_open/ows?WITH_GEOMETRY=true&FI_POINT_TOLERANCE=5&FI_LINE_TOLERANCE=5"
+        },
+        "qgis_karta_open_wfs": {
+            "url": "https://karta.haninge.se/services/karta_open/ows?"
+        }
+    },
+    "layers": [{
+        "name": "topowebbkartan_nedtonad",
+        "source": "geowebcache",
+        "title": "Lantmäteriets topografiska webbkarta (nedtonad)",
+        "group": "background",
+        "queryable": false,
+        "style": "karta_gra",
+        "type": "WMTS",
+        "visible": true,
+        "attribution": "&copy Lantmäteriet Geodatasamverkan",
+        "format": "image/png"
+    }],
+    "styles": {
+        "karta_gra": [
+            [{
+                "image": {
+                    "src": "../lib/img/png/gra.png"
+                }
+            }]
+        ]
+    }
+}

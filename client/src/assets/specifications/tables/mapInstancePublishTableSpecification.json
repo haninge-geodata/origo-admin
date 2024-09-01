@@ -1,0 +1,37 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Id",
+                "field": "id",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Beskrivning",
+                "field": "abstract",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Publicerad",
+                "field": "publishedDate",
+                "inputType": "textfield",
+                "defaultValue": "false"
+            },
+            {
+                "headerName": "Länk",
+                "field": "url",
+                "inputType": "url",
+                "defaultValue": "false"
+            }
+        ]
+    }
+}

@@ -1,0 +1,28 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Roll",
+                "field": "role",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Roll är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield",
+                "readOnly": true
+            },
+            {
+                "headerName": "Grupper & Användare",
+                "field": "actors",
+                "inputType": "object"
+            }
+        ]
+    }
+}

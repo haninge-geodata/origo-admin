@@ -1,0 +1,201 @@
+{
+    "controls": [{
+            "name": "home",
+            "options": {
+                "zoomOnStart": true,
+                "hideWhenEmbedded": true
+            }
+        },
+        {
+            "name": "zoom",
+            "options": {
+                "hideWhenEmbedded": true
+            }
+        }
+    ],
+    "pageSettings": {
+        "footer": {
+            "img": "img/png/logo_haninge.png",
+            "url": "https://www.haninge.se",
+            "text": "Haninge kommun"
+        },
+        "mapGrid": {
+            "visible": false
+        }
+    },
+    "projectionCode": "EPSG:3011",
+    "projectionExtent": [
+        -359975.93,
+        6121896.23,
+        395723.43,
+        7677606.2
+    ],
+    "proj4Defs": [{
+            "code": "EPSG:3011",
+            "projection": "+proj=tmerc +lat_0=0 +lon_0=18 +k=1 +x_0=150000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+        },
+        {
+            "code": "EPSG:3006",
+            "projection": "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+        },
+        {
+            "code": "EPSG:4326",
+            "projection": "+proj=longlat +datum=WGS84 +no_defs"
+        }
+    ],
+    "extent": [
+        -359975.93,
+        6121896,
+        395723.43,
+        7670184
+    ],
+    "center": [
+        164000,
+        6555000
+    ],
+    "zoom": 2,
+    "resolutions": [
+        168,
+        84,
+        42,
+        27.999999999999996,
+        21,
+        13.999999999999998,
+        6.999999999999999,
+        4.2,
+        2.8,
+        2.1,
+        1.4,
+        0.7,
+        0.42,
+        0.27999999999999997,
+        0.21,
+        0.13999999999999999,
+        0.11199999999999999,
+        0.06999999999999999,
+        0.041999999999999996,
+        0.027999999999999997,
+        0.020999999999999998,
+        0.013999999999999999,
+        0.006999999999999999
+    ],
+    "enableRotation": false,
+    "featureinfoOptions": {
+        "pinning": true,
+        "viewer": {
+            "permalink": {},
+            "centerMarker": {}
+        }
+    },
+    "groups": [{
+            "name": "background",
+            "title": "Bakgrundskartor",
+            "expanded": true,
+            "groups": []
+        },
+        {
+            "name": "skola",
+            "title": "Förskola & skola",
+            "abstract": "<font style='font-size:0.76rem'>I Haninge finns ett brett utbud av kommunala och fristående förskolor och grundskolor. I kommunen finns också två kommunala gymnasieskolor, en landstingsdriven gymnasieskola samt kommunal vuxenutbildning (CentrumVux).</font>",
+            "expanded": false,
+            "groups": []
+        },
+        {
+            "name": "omsorg",
+            "title": "Omsorg & stöd",
+            "abstract": "<font style='font-size:0.76rem'>Socialtjänst, äldreomsorg, funktionsvariation, försörjning med mera.</font>",
+            "expanded": false,
+            "groups": []
+        },
+        {
+            "name": "uppleva",
+            "title": "Uppleva & göra",
+            "abstract": "<font style='font-size:0.76rem'>Turism, kultur, bibliotek, friluftsliv, idrott, fritidsgårdar med mera.</font>",
+            "expanded": false,
+            "groups": [{
+                "name": "naturreservat-och-friluftsomraden",
+                "title": "Naturreservat & friluftsområden",
+                "expanded": false,
+                "groups": []
+            }]
+        },
+        {
+            "name": "byggatrafikmiljo",
+            "title": "Bygga, trafik & miljö",
+            "abstract": "<font style='font-size:0.76rem'>Bygglov, kartor, vatten och avlopp, gator, återvinning, detaljplaner, naturvård.</font>",
+            "expanded": false,
+            "groups": [{
+                    "name": "geoinfo",
+                    "title": "Lantmäteri & geografisk <br>information",
+                    "groups": []
+                },
+                {
+                    "name": "projekt",
+                    "title": "Stadsutveckling, planer & <br>byggprojekt",
+                    "groups": []
+                },
+                {
+                    "name": "trafik",
+                    "title": "Trafik & gator",
+                    "groups": []
+                },
+                {
+                    "name": "va",
+                    "title": "Vatten & avlopp",
+                    "groups": []
+                },
+                {
+                    "name": "avfall_atervinning",
+                    "title": "Avfall & återvinning",
+                    "groups": []
+                },
+                {
+                    "name": "natur",
+                    "title": "Natur, parker & lekplatser",
+                    "groups": []
+                }
+            ]
+        },
+        {
+            "name": "kommun",
+            "title": "Kommun & politik",
+            "abstract": "<font style='font-size:0.76rem'>Styrning, e-tjänster, service och anslagstavla, mål och beslut med mera.</font>",
+            "expanded": false,
+            "groups": []
+        },
+        {
+            "name": "ortofoto",
+            "title": "Flygbilder",
+            "expanded": false,
+            "groups": []
+        }
+    ],
+    "source": {
+        "geowebcache": {
+            "url": "https://geodata.haninge.se/geowebcache/service/wmts"
+        }
+    },
+    "layers": [{
+        "name": "topowebbkartan_nedtonad",
+        "title": "Lantmäteriets Topografiska webbkarta (nedtonad)",
+        "queryable": false,
+        "type": "WMTS",
+        "attribution": "",
+        "format": "image/png",
+        "group": "background",
+        "visible": true,
+        "source": "geowebcache",
+        "style": "laddstationer"
+    }],
+    "styles": {
+        "laddstationer": [
+            [{
+                "icon": {
+                    "src": "http://localhost:3010/uploads/laddstationer.svg"
+                },
+                "label": "Laddstation",
+                "style": {}
+            }]
+        ]
+    }
+}

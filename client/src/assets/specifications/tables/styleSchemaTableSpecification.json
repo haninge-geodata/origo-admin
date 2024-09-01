@@ -1,0 +1,27 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Ikonregler",
+                "field": "nrOfIconStyles",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Ospecificerade regler",
+                "field": "nrOfUnspecifiedStyles",
+                "inputType": "textfield"
+            }
+        ]
+    }
+}

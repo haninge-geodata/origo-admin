@@ -1,0 +1,54 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Beskrivning",
+                "field": "abstract",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Lager",
+                "field": "layers",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Inställningar",
+                "field": "settings",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Kontroller",
+                "field": "controls",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Publicerad",
+                "field": "isPublished",
+                "inputType": "checkbox",
+                "defaultValue": "false"
+            },
+            {
+                "headerName": "Publicerad Länk",
+                "field": "publishedUrl",
+                "inputType": "url",
+                "defaultValue": "false"
+            }
+        ]
+    }
+}

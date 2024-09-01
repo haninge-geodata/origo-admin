@@ -1,0 +1,32 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Länk",
+                "field": "url",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Typ",
+                "field": "type",
+                "inputType": "textfield"
+            }
+        ]
+    }
+}

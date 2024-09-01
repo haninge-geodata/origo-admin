@@ -1,0 +1,45 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Titel är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield",
+                "readOnly": true
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Namn är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Typ",
+                "field": "type",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Källa",
+                "field": "source",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "object"
+            }
+        ]
+    }
+}

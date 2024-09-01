@@ -1,0 +1,62 @@
+import { GroupDto } from "./GroupsDto";
+import { LayerDto } from "./LayerDto";
+import { MapControlDto } from "./MapControlDto";
+import { MapSettingDto } from "./MapSettingDto";
+
+export interface MapInstanceDto {
+  id?: string;
+  title: string;
+  name: string;
+  abstract?: string;
+  instance: MapConfigDto;
+}
+
+export interface MapConfigDto {
+  controls: MapControlDto[];
+  settings?: MapSettingDto;
+  groups: GroupDto[];
+  layers: LayerDto[];
+}
+
+export interface MapInstanceListItemDto {
+  id: string;
+  title: string;
+  name: string;
+  abstract?: string;
+  layers: number;
+  settings: string;
+  controls: number;
+  isPublished?: boolean;
+  publishedUrl?: string;
+}
+
+export interface PublishedMapDto extends PublishedMapBaseDto {
+  map: PublishedMapConfigDto;
+}
+
+export interface PublishedMapBaseDto {
+  id: string;
+  title: string;
+  name: string;
+  abstract: string;
+  mapInstanceId: string;
+  publishedBy: string;
+  publishedDate: Date;
+}
+
+export interface PublishedMapListItemDto {
+  id: string;
+  title: string;
+  name: string;
+  abstract: string;
+  publishedDate: string;
+  url: string;
+}
+
+export interface PublishedMapConfigDto {
+  controls: any;
+  groups: any;
+  source: any;
+  layers: any;
+  styles: any;
+}

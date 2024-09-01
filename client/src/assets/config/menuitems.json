@@ -1,0 +1,137 @@
+[{
+    "id": 10,
+    "name": "Dashboard",
+    "type": "group",
+    "children": [{
+      "id": 11,
+      "name": "Dashboard",
+      "urlSegment": "/",
+      "type": "item",
+      "icon": "Speed",
+      "disabled": false
+    }]
+  },
+  {
+    "id": 20,
+    "name": "Datakällor",
+    "type": "group",
+    "children": [{
+      "id": 21,
+      "name": "Länkresurs",
+      "urlSegment": "/sources/links",
+      "type": "item",
+      "icon": "AddLink",
+      "disabled": false
+    }]
+  },
+  {
+    "id": 30,
+    "name": "Lager",
+    "type": "group",
+    "children": [{
+        "id": 301,
+        "name": "WMS",
+        "urlSegment": "/wms",
+        "type": "item",
+        "icon": "Layers",
+        "disabled": false
+      },
+      {
+        "id": 32,
+        "name": "WFS",
+        "urlSegment": "/wfs",
+        "type": "item",
+        "icon": "AddLocationAltOutlined",
+        "disabled": false
+      },
+      {
+        "id": 33,
+        "name": "WMTS",
+        "urlSegment": "/wmts",
+        "type": "item",
+        "icon": "AddLocationAltTwoTone",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Kartinställningar",
+    "type": "group",
+    "children": [{
+        "id": 61,
+        "name": "Verktyg",
+        "urlSegment": "/controls",
+        "type": "item",
+        "icon": "Handyman",
+        "disabled": false
+      },
+      {
+        "id": 62,
+        "name": "Inställningar",
+        "urlSegment": "/settings",
+        "type": "item",
+        "icon": "Settings",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": 70,
+    "name": "Stilsättning",
+    "type": "group",
+    "children": [{
+        "id": 71,
+        "name": "Media",
+        "urlSegment": "/media",
+        "type": "item",
+        "icon": "Image",
+        "disabled": false
+      },
+      {
+        "id": 72,
+        "name": "Stilar",
+        "urlSegment": "/styles",
+        "type": "item",
+        "icon": "FormatPaint",
+        "disabled": false
+      }
+    ]
+  },
+  {
+    "id": 50,
+    "name": "Kartinstanser",
+    "type": "group",
+    "children": [{
+      "id": 51,
+      "name": "Hantera Kartinstanser",
+      "urlSegment": "/maps",
+      "type": "item",
+      "icon": "Map",
+      "disabled": false
+    }]
+  },
+  {
+    "id": 40,
+    "name": "Behörigheter",
+    "requiresAuth": true,
+    "type": "group",
+    "children": [{
+        "id": 41,
+        "name": "Hantera roller",
+        "urlSegment": "/permissions",
+        "type": "item",
+        "icon": "Group",
+        "disabled": false
+      },
+      {
+        "id": 42,
+        "name": "Hantera API-nycklar",
+        "urlSegment": "/accessTokens",
+        "type": "item",
+        "icon": "Key",
+        "disabled": false
+      }
+    ]
+  }
+]

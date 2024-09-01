@@ -1,0 +1,23 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Verktyg",
+                "field": "control",
+                "hide": true,
+                "inputType": "json"
+            }
+        ]
+    }
+}

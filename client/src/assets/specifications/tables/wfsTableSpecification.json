@@ -1,0 +1,134 @@
+{
+    "specification": {
+        "columns": [{
+                "headerName": "Titel",
+                "field": "title",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Titel är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Id",
+                "field": "id",
+                "hide": true,
+                "fallbackField": "name",
+                "inputType": "textfield",
+                "readOnly": true
+            },
+            {
+                "headerName": "Lagernamn i datakällan",
+                "field": "origoId",
+                "hide": false,
+                "inputType": "textfield",
+                "readOnly": false
+            },
+            {
+                "headerName": "Namn",
+                "field": "name",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Namn är obligatorisk"
+                }
+            },
+
+            {
+                "headerName": "Frågbar",
+                "field": "queryable",
+                "defaultValue": true,
+                "inputType": "checkbox"
+            },
+            {
+                "headerName": "Synlig",
+                "field": "visible",
+                "defaultValue": false,
+                "inputType": "checkbox"
+            },
+            {
+                "headerName": "Geometri",
+                "field": "geometryName",
+                "hide": true,
+                "defaultValue": "geometry",
+                "inputType": "textfield",
+                "validation": {
+                    "required": true,
+                    "type": "string",
+                    "message": "Geometry är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Beskrivning",
+                "field": "abstract",
+                "hide": true,
+                "inputType": "textarea"
+            },
+            {
+                "headerName": "Attribution",
+                "field": "attribution",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "textfield"
+            },
+            {
+                "headerName": "Attributes",
+                "field": "attributes",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "json",
+                "placeholder": "{'clusterDistance': 0,'clusterMaxZoom': 0}"
+            },
+            {
+                "headerName": "Stil",
+                "field": "style",
+                "hide": true,
+                "defaultValue": "Välj stilschema för lagret",
+                "inputType": "stylepicker",
+                "validation": {
+                    "required": true,
+                    "type": "object",
+                    "message": "Stilschema är obligatorisk"
+                }
+            },
+            {
+                "headerName": "Opacitet",
+                "field": "opacity",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "textfield",
+                "placeholder": "0"
+            },
+            {
+                "headerName": "Klusterstil",
+                "field": "clusterstyle",
+                "defaultValue": "Välj ev. klusterstilschema för lagret",
+                "hide": true,
+                "inputType": "stylepicker"
+            },
+            {
+                "headerName": "clusterOptions",
+                "field": "clusteroptions",
+                "hide": true,
+                "inputType": "json",
+                "placeholder": "{'clusterDistance': 0,'clusterMaxZoom': 0}"
+            },
+            {
+                "headerName": "Källa",
+                "field": "source",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "object"
+            },
+            {
+                "headerName": "Extra Attribut",
+                "field": "extendedAttributes",
+                "hide": true,
+                "defaultValue": "",
+                "inputType": "keyvaluepair"
+            }
+        ]
+    }
+}

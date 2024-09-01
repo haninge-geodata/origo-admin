@@ -1,0 +1,14 @@
+export { default as LinkResourceRoutes } from "./LinkResourceRoutes";
+export { default as MapControlRoutes } from "./MapControlRoutes";
+export { default as MapSettingRoutes } from "./MapSettingRoutes";
+export { default as MediaRoutes } from "./MediaRoutes";
+export { default as StyleSchemaRoutes } from "./StyleSchemaRoutes";
+export { default as MapInstanceRoutes } from "./MapInstanceRoutes";
+export { default as ShareMapRoutes } from "./ShareMapRoutes";
+export { default as RelationRoutes } from "./RelationRoutes";
+export { default as LayerRoutes } from "./LayerRoutes";
+export { default as PermissionRoutes } from "./PermissionRoutes";
+export { default as ProxyRoutes } from "./ProxyRoutes";
+export { default as AccessTokenRoutes } from "./AccessTokenRoutes";
+export { default as RouteRoutes } from "./RouteRoutes";
+export { default as DashboardRoutes } from "./DashboardRoutes";
