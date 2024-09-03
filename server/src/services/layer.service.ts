@@ -7,7 +7,11 @@ class LayerService<T extends DBLayerBase, TDto> {
   private toDtoMapper: (doc: T) => TDto;
   private toDbMapper: (doc: TDto, create: boolean) => T;
 
-  constructor(model: Model<T>, mapper: (doc: T) => TDto, dbMapper: (doc: TDto, create: boolean) => T) {
+  constructor(
+    model: Model<T>,
+    mapper: (doc: T) => TDto,
+    dbMapper: (doc: TDto, create: boolean) => T
+  ) {
     this.repository = new Repository<T>(model);
     this.toDbMapper = dbMapper;
     this.toDtoMapper = mapper;
@@ -22,12 +26,15 @@ class LayerService<T extends DBLayerBase, TDto> {
     return response.map((item) => this.toDtoMapper(item));
   }
   async create(layers: TDto[]): Promise<TDto[]> {
+    console.log("Creating layers", layers);
     let dbObjects = layers.map((item) => this.toDbMapper(item, true));
     let created = [];
     for (const dbObject of dbObjects) {
       try {
         const createdObject = await this.repository.create(dbObject);
-        const fetchedObject = await this.repository.find(createdObject._id.toString());
+        const fetchedObject = await this.repository.find(
+          createdObject._id.toString()
+        );
         created.push(fetchedObject);
       } catch (error) {
         console.error(error);

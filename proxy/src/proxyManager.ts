@@ -19,12 +19,18 @@ export class ProxyManager {
   private apiAccessToken: string;
   private readonly GIS_PATH = "gis";
 
-  constructor(cacheManager: CacheManager, apiAccessToken: string, proxyBasePath: string = "proxy") {
+  constructor(
+    cacheManager: CacheManager,
+    apiAccessToken: string,
+    proxyBasePath: string = "proxy"
+  ) {
     this.proxyBasePath = this.normalizeProxyBasePath(proxyBasePath);
 
     this.proxyHandlers = {};
-    this.proxyHandlers[`${this.proxyBasePath}mapinstances/`] = this.createJsonProxyHandler();
-    this.proxyHandlers[`${this.proxyBasePath}gis/`] = this.createPassthroughProxyHandler();
+    this.proxyHandlers[`${this.proxyBasePath}mapinstances/`] =
+      this.createJsonProxyHandler();
+    this.proxyHandlers[`${this.proxyBasePath}gis/`] =
+      this.createPassthroughProxyHandler();
 
     this.cacheManager = cacheManager;
     this.apiAccessToken = apiAccessToken;
@@ -46,7 +52,10 @@ export class ProxyManager {
       const originalUrl = new URL(req.url!, `http://${req.headers.host}`);
 
       const newPath = originalUrl.pathname.startsWith(this.proxyBasePath)
-        ? targetUrl.pathname + "/" + originalUrl.pathname.slice(this.proxyBasePath.length) + originalUrl.search
+        ? targetUrl.pathname +
+          "/" +
+          originalUrl.pathname.slice(this.proxyBasePath.length) +
+          originalUrl.search
         : targetUrl.pathname + originalUrl.pathname + originalUrl.search;
 
       const options = {
@@ -61,30 +70,34 @@ export class ProxyManager {
         },
       };
 
-      const proxyReq = (targetUrl.protocol === "https:" ? https : http).request(options, (proxyRes) => {
-        let body = "";
-        proxyRes.on("data", (chunk) => {
-          body += chunk;
-        });
+      const proxyReq = (targetUrl.protocol === "https:" ? https : http).request(
+        options,
+        (proxyRes) => {
+          let body = "";
+          proxyRes.on("data", (chunk) => {
+            body += chunk;
+          });
 
-        proxyRes.on("end", () => {
-          try {
-            const json = JSON.parse(body);
-            let modifiedJson = this.modifyJson(json, req, res);
-            const modifiedBody = JSON.stringify(modifiedJson);
-            const headers = { ...proxyRes.headers };
-            headers["content-type"] = "application/json";
-            headers["content-length"] = Buffer.byteLength(modifiedBody).toString();
+          proxyRes.on("end", () => {
+            try {
+              const json = JSON.parse(body);
+              let modifiedJson = this.modifyJson(json, req, res);
+              const modifiedBody = JSON.stringify(modifiedJson);
+              const headers = { ...proxyRes.headers };
+              headers["content-type"] = "application/json";
+              headers["content-length"] =
+                Buffer.byteLength(modifiedBody).toString();
 
-            res.writeHead(proxyRes.statusCode || 200, headers);
-            res.end(modifiedBody);
-          } catch (e) {
-            console.error("Error parsing JSON:", e);
-            res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
-            res.end(body);
-          }
-        });
-      });
+              res.writeHead(proxyRes.statusCode || 200, headers);
+              res.end(modifiedBody);
+            } catch (e) {
+              console.error("Error parsing JSON:", e);
+              res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
+              res.end(body);
+            }
+          });
+        }
+      );
       proxyReq.on("error", (error) => {
         console.error("Proxy error:", error);
         res.writeHead(500, { "Content-Type": "text/plain" });
@@ -96,7 +109,10 @@ export class ProxyManager {
   }
   createPassthroughProxyHandler(): ProxyHandler {
     return (req: IncomingMessage, res: ServerResponse) => {
-      const proxyPath = req.url!.replace(new RegExp(`^${this.proxyBasePath}gis/`), "");
+      const proxyPath = req.url!.replace(
+        new RegExp(`^${this.proxyBasePath}gis/`),
+        ""
+      );
 
       const [sourcePath, query] = proxyPath.split("?");
       const [source, ...pathParts] = sourcePath.split("/");
@@ -113,7 +129,9 @@ export class ProxyManager {
       let targetUrlString = `${sourceUrl}/${path}${query ? `?${query}` : ""}`;
       if (sourceUrl.includes("?")) {
         const [sourceBase, sourceQuery] = sourceUrl.split("?");
-        targetUrlString = `${sourceBase}/${path}?${sourceQuery}${query ? `&${query}` : ""}`;
+        targetUrlString = `${sourceBase}/${path}?${sourceQuery}${
+          query ? `&${query}` : ""
+        }`;
       } else {
         targetUrlString = `${sourceUrl}/${path}${query ? `?${query}` : ""}`;
       }
@@ -122,13 +140,20 @@ export class ProxyManager {
 
       const targetUrl = new URL(targetUrlString);
 
-      const { layerName, layers } = GISRequestAnalyzer.parseRequest(targetUrlString);
+      const { layerName, layers } =
+        GISRequestAnalyzer.parseRequest(targetUrlString);
 
       let hasPermission = false;
       if (layers && layers.length > 0) {
-        hasPermission = layers.every((layer) => this.cacheManager.hasLayerPermission(source, layer, testPermissions));
+        hasPermission = layers.every((layer) =>
+          this.cacheManager.hasLayerPermission(source, layer, testPermissions)
+        );
       } else if (layerName) {
-        hasPermission = this.cacheManager.hasLayerPermission(source, layerName, testPermissions);
+        hasPermission = this.cacheManager.hasLayerPermission(
+          source,
+          layerName,
+          testPermissions
+        );
       }
 
       if (!hasPermission) {
@@ -149,10 +174,13 @@ export class ProxyManager {
         },
       };
 
-      const proxyReq = (targetUrl.protocol === "https:" ? https : http).request(options, (proxyRes) => {
-        res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
-        proxyRes.pipe(res);
-      });
+      const proxyReq = (targetUrl.protocol === "https:" ? https : http).request(
+        options,
+        (proxyRes) => {
+          res.writeHead(proxyRes.statusCode || 200, proxyRes.headers);
+          proxyRes.pipe(res);
+        }
+      );
 
       proxyReq.on("error", (error) => {
         console.error("Proxy error:", error);
@@ -194,19 +222,26 @@ export class ProxyManager {
     const permissions = this.getGroupsFromToken(req, res);
     if (json.layers) {
       json.layers = json.layers.filter((layer: any) => {
-        const p = permissions.some((p) => this.cacheManager.hasPermission(p, layer.id));
+        const p = permissions.some((p) =>
+          this.cacheManager.hasPermission(p, layer.id)
+        );
         return p;
       });
     }
 
-    const remainingGroups = new Set(json.layers.map((layer: any) => layer.group));
+    const remainingGroups = new Set(
+      json.layers.map((layer: any) => layer.group)
+    );
 
     const filterGroups = (groups: any[]): any[] => {
       return groups.filter((group) => {
         if (group.groups) {
           group.groups = filterGroups(group.groups);
         }
-        return remainingGroups.has(group.name) || (group.groups && group.groups.length > 0);
+        return (
+          remainingGroups.has(group.name) ||
+          (group.groups && group.groups.length > 0)
+        );
       });
     };
 
@@ -216,10 +251,10 @@ export class ProxyManager {
 
     if (json.layers) {
       json.layers = json.layers.map((layer: any) => {
-        const { id, origoId, ...rest } = layer;
+        const { id, layer_id, ...rest } = layer;
 
-        if (origoId !== null && origoId !== undefined && origoId !== "") {
-          return { ...rest, Id: origoId };
+        if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
+          return { ...rest, Id: layer_id };
         } else {
           return rest;
         }
@@ -229,10 +264,16 @@ export class ProxyManager {
     return json;
   }
 
-  public getProxyMiddleware(): (req: IncomingMessage, res: ServerResponse, next: () => void) => void {
+  public getProxyMiddleware(): (
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void
+  ) => void {
     return (req, res, next) => {
       const url = new URL(req.url!, `http://${req.headers.host}`);
-      const handler = Object.entries(this.proxyHandlers).find(([path]) => url.pathname.startsWith(path));
+      const handler = Object.entries(this.proxyHandlers).find(([path]) =>
+        url.pathname.startsWith(path)
+      );
       if (handler) {
         handler[1](req, res);
       } else {

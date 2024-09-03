@@ -1,12 +1,15 @@
 import { DataRow } from "@/interfaces";
 import { LinkResourceDto, WMTSLayerDto } from "@/shared/interfaces/dtos";
 
-export function DataRowToWMTSLayerDto(rows: DataRow[], source: LinkResourceDto): WMTSLayerDto[] {
+export function DataRowToWMTSLayerDto(
+  rows: DataRow[],
+  source: LinkResourceDto
+): WMTSLayerDto[] {
   return rows.map((row) => {
     return {
       id: row.id || "",
       name: row.name,
-      origoId: row.origoId,
+      layer_id: row.layer_id,
       source: source,
       title: row.title,
       abstract: row.abstract,

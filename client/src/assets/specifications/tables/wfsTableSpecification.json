@@ -20,7 +20,7 @@
             },
             {
                 "headerName": "Lagernamn i datakällan",
-                "field": "origoId",
+                "field": "layer_id",
                 "hide": false,
                 "inputType": "textfield",
                 "readOnly": false
@@ -126,7 +126,7 @@
                 "headerName": "Extra Attribut",
                 "field": "extendedAttributes",
                 "hide": true,
-                "defaultValue": "",
+                "defaultValue": null,
                 "inputType": "keyvaluepair"
             }
         ]

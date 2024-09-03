@@ -90,7 +90,12 @@ export const RenderIconForm = ({
             )}
             <Grid item xs={12} md={12}>
                 {selectedIconStyle?.extendedLegend && (
-                    <TextField variant="outlined" fullWidth value={selectedIconStyle?.icon.src} />
+                    <TextField variant="outlined" fullWidth value={selectedIconStyle?.icon.src}
+                        onChange={(e) => setSelectedIconStyle(prev => ({
+                            ...prev,
+                            icon: { ...prev.icon, src: e.target.value }
+                        }))}
+                    />
                 )}
             </Grid>
         </Grid>

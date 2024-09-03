@@ -14,7 +14,9 @@ import {
 } from "@/shared/interfaces/dtos";
 
 /// This is a mapper for the published map list item, shown in the list of published maps.
-export class publishedMapListItemMapper implements IMapper<DBPublishedMap, PublishedMapListItemDto> {
+export class publishedMapListItemMapper
+  implements IMapper<DBPublishedMap, PublishedMapListItemDto>
+{
   toDto(model: DBPublishedMap): PublishedMapListItemDto {
     return {
       id: model.id,
@@ -31,7 +33,9 @@ export class publishedMapListItemMapper implements IMapper<DBPublishedMap, Publi
 }
 
 // This mapper is used when creating a published map from a map instance, uses the previewMapMapper to get the map config.
-export class InstanceToPublishedMapMapper implements IMapper<DBPublishedMap, DBMapInstance> {
+export class InstanceToPublishedMapMapper
+  implements IMapper<DBPublishedMap, DBMapInstance>
+{
   private previewMapMapper: PreviewMapMapper;
 
   constructor() {
@@ -55,7 +59,9 @@ export class InstanceToPublishedMapMapper implements IMapper<DBPublishedMap, DBM
   }
 }
 /// Mapper for the published map config, used when working with the published map itself, visible in the admin preview or when publishing to the end users.
-export class PreviewMapMapper implements IMapper<DBMapInstance, PublishedMapConfigDto> {
+export class PreviewMapMapper
+  implements IMapper<DBMapInstance, PublishedMapConfigDto>
+{
   toDBModel(dto: PublishedMapConfigDto, ...contexts: any[]): DBMapInstance {
     throw new Error("Method not implemented, not needed");
   }
@@ -63,13 +69,18 @@ export class PreviewMapMapper implements IMapper<DBMapInstance, PublishedMapConf
   toDto(model: DBMapInstance, ...contexts: any[]): PublishedMapConfigDto {
     const [sources = [], publish = false] = contexts;
     const settings = model.instance.settings?.setting || {};
-    const groupsWithoutId = model.instance.groups ? removeIdFromGroups(model.instance.groups as GroupDto[]) : [];
+    const groupsWithoutId = model.instance.groups
+      ? removeIdFromGroups(model.instance.groups as GroupDto[])
+      : [];
 
     return {
       controls: model.instance.controls?.map((control: any) => control.control),
       ...settings,
       groups: groupsWithoutId,
-      source: createDistinctSources(model.instance.layers as LayerDto[], sources),
+      source: createDistinctSources(
+        model.instance.layers as LayerDto[],
+        sources
+      ),
       layers: transformLayers(model.instance.layers as LayerDto[], publish),
       styles: createDistinctStyles(model.instance.layers as LayerDto[]),
     };
@@ -77,7 +88,9 @@ export class PreviewMapMapper implements IMapper<DBMapInstance, PublishedMapConf
 }
 
 /// Mapper for the published map config, used when working with the published map itself, visible to the end user.
-export class publishedMapMapper implements IMapper<DBPublishedMap, PublishedMapConfigDto> {
+export class publishedMapMapper
+  implements IMapper<DBPublishedMap, PublishedMapConfigDto>
+{
   toDBModel(dto: PublishedMapConfigDto, create?: boolean): DBPublishedMap {
     throw new Error("Method not implemented, not needed");
   }
@@ -115,7 +128,10 @@ function createDistinctSources(layers: any[], sources: LinkResourceDto[]): any {
         value.url = matchingSource.url;
       }
 
-      if (matchingSource.extendedAttributes && matchingSource.extendedAttributes.length > 0) {
+      if (
+        matchingSource.extendedAttributes &&
+        matchingSource.extendedAttributes.length > 0
+      ) {
         matchingSource.extendedAttributes.forEach((attr) => {
           if (attr.key && attr.value !== undefined) {
             try {
@@ -155,14 +171,20 @@ function createDistinctStyles(layers: any[]): any {
               const { icon } = styleItem as IconStyleDto;
               return { image: { ...icon } };
             } else {
-              const { id, type, ...styleWithoutIdAndType } = styleItem as IconStyleDto;
+              const { id, type, ...styleWithoutIdAndType } =
+                styleItem as IconStyleDto;
               return { ...styleWithoutIdAndType };
             }
           }
         });
 
         const stringifiedStyle = JSON.stringify(transformedStyle);
-        if (!acc[name].some((existingStyleArray: any) => JSON.stringify(existingStyleArray) === stringifiedStyle)) {
+        if (
+          !acc[name].some(
+            (existingStyleArray: any) =>
+              JSON.stringify(existingStyleArray) === stringifiedStyle
+          )
+        ) {
           acc[name].push(transformedStyle);
         }
       });
@@ -178,7 +200,14 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
   const proxyUrlSet = process.env.PROXY_UPDATE_URL || "";
   console.log("proxyUrlSet", proxyUrlSet);
   let layers = layerDtos.map((layer) => {
-    const { style, source, clusterStyle, extendedAttributes, origoId, ...restOfLayer } = layer;
+    const {
+      style,
+      source,
+      clusterStyle,
+      extendedAttributes,
+      layer_id,
+      ...restOfLayer
+    } = layer;
     const transformedLayer = {
       ...restOfLayer,
       source: source.name,
@@ -188,11 +217,11 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
       transformedLayer.clusterStyle = clusterStyle.name;
     }
     if (!publish || proxyUrlSet === "") {
-      if (origoId !== null && origoId !== undefined && origoId !== "") {
-        transformedLayer.id = origoId;
+      if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
+        transformedLayer.id = layer_id;
       }
     } else {
-      transformedLayer.origoId = origoId;
+      transformedLayer.layer_id = layer_id;
     }
 
     let extendedProps: any = {};

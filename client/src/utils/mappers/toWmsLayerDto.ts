@@ -1,13 +1,16 @@
 import { DataRow } from "@/interfaces";
 import { LinkResourceDto, WMSLayerDto } from "@/shared/interfaces/dtos";
 
-export function DataRowToWMSLayerDto(rows: DataRow[], source: LinkResourceDto): WMSLayerDto[] {
+export function DataRowToWMSLayerDto(
+  rows: DataRow[],
+  source: LinkResourceDto
+): WMSLayerDto[] {
   return rows.map((row) => {
     let attributesObject: Record<string, any> = parseJson(row.attributes, {});
     return {
       id: row.id || "",
       name: row.name,
-      origoId: row.origoId,
+      layer_id: row.layer_id,
       source: source,
       title: row.title,
       abstract: row.abstract,

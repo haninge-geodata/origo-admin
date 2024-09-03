@@ -2,7 +2,7 @@ import { KeyValuePair, LinkResourceDto, StyleSchemaDto } from ".";
 
 export interface BaseLayerDto {
   id: string;
-  origoId?: string;
+  layer_id?: string;
   name: string;
   source: LinkResourceDto;
   title: string;

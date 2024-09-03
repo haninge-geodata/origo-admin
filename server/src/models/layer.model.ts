@@ -10,7 +10,7 @@ interface KeyValuePair {
 
 interface DBLayerBase extends mongoose.Document {
   _id: mongodb.ObjectId;
-  origoId?: string;
+  layer_id?: string;
   name: string;
   source: mongodb.ObjectId | DBLinkResource;
   title: string;
@@ -34,7 +34,7 @@ const keyValuePairSchema = new mongoose.Schema<KeyValuePair>(
 const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
   {
     name: { type: String, required: true },
-    origoId: { type: String, required: false },
+    layer_id: { type: String, required: false },
     source: { type: Schema.Types.ObjectId, ref: "LinkResource" },
     title: { type: String, required: true },
     abstract: { type: String },
@@ -51,9 +51,15 @@ const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
           if (value === null) return true;
           if (!Array.isArray(value)) return false;
           if (value.length === 0) return true;
-          return value.every((item) => item && typeof item.key === "string" && typeof item.value === "string");
+          return value.every(
+            (item) =>
+              item &&
+              typeof item.key === "string" &&
+              typeof item.value === "string"
+          );
         },
-        message: "extendedAttributes must be null, an empty array, or an array of valid key-value pairs",
+        message:
+          "extendedAttributes must be null, an empty array, or an array of valid key-value pairs",
       },
     },
   },
@@ -96,7 +102,10 @@ wfsLayerSchema.pre("find", function () {
   this.populate("clusterStyle");
 });
 
-const WFSLayerModel = layerModel.discriminator<DBWFSLayer>("WFS", wfsLayerSchema);
+const WFSLayerModel = layerModel.discriminator<DBWFSLayer>(
+  "WFS",
+  wfsLayerSchema
+);
 
 interface DBWMSLayer extends DBLayerBase {
   geometryName: string;
@@ -114,7 +123,10 @@ const wmsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
-const WMSLayerModel = layerModel.discriminator<DBWMSLayer>("WMS", wmsLayerSchema);
+const WMSLayerModel = layerModel.discriminator<DBWMSLayer>(
+  "WMS",
+  wmsLayerSchema
+);
 
 interface DBWMTSLayer extends DBLayerBase {
   format: string;
@@ -128,6 +140,18 @@ const wmtsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
-const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>("WMTS", wmtsLayerSchema);
+const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
+  "WMTS",
+  wmtsLayerSchema
+);
 
-export { DBLayerBase, layerModel, DBWFSLayer, WFSLayerModel, DBWMSLayer, WMSLayerModel, DBWMTSLayer, WMTSLayerModel };
+export {
+  DBLayerBase,
+  layerModel,
+  DBWFSLayer,
+  WFSLayerModel,
+  DBWMSLayer,
+  WMSLayerModel,
+  DBWMTSLayer,
+  WMTSLayerModel,
+};

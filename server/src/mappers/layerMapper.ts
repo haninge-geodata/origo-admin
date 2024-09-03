@@ -1,6 +1,12 @@
 import { IMapper } from "@/interfaces";
 import { DBLinkResource, DBStyleSchema } from "@/models";
-import { DBLayerBase, DBWFSLayer, DBWMSLayer, DBWMTSLayer, layerModel } from "@/models/layer.model";
+import {
+  DBLayerBase,
+  DBWFSLayer,
+  DBWMSLayer,
+  DBWMTSLayer,
+  layerModel,
+} from "@/models/layer.model";
 import {
   BaseLayerDto,
   LinkResourceDto,
@@ -26,7 +32,7 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   toDto(model: DBLayerBase): BaseLayerDto {
     return {
       id: model._id.toString(),
-      origoId: model.origoId,
+      layer_id: model.layer_id,
       name: model.name,
       source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
       title: model.title,
@@ -35,7 +41,9 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
       type: model.type,
       visible: model.visible,
       attribution: model.attribution ?? "",
-      style: model.style ? this._styleSchemaMapper.toDto(model.style as DBStyleSchema) : undefined,
+      style: model.style
+        ? this._styleSchemaMapper.toDto(model.style as DBStyleSchema)
+        : undefined,
       extendedAttributes: model.extendedAttributes ?? undefined,
     };
   }
@@ -43,7 +51,7 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   toDBModel(dto: BaseLayerDto, create: boolean = false): DBLayerBase {
     const dbModel = new layerModel({
       name: dto.name,
-      origoId: dto.origoId,
+      layer_id: dto.layer_id,
       source: this._linkResourceMapper.toDBModel(dto.source),
       title: dto.title,
       abstract: dto.abstract,
@@ -62,7 +70,10 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   }
 }
 
-export class WFSLayerMapper extends BaseLayerMapper implements IMapper<DBWFSLayer, WFSLayerDto> {
+export class WFSLayerMapper
+  extends BaseLayerMapper
+  implements IMapper<DBWFSLayer, WFSLayerDto>
+{
   constructor() {
     super();
   }
@@ -74,7 +85,9 @@ export class WFSLayerMapper extends BaseLayerMapper implements IMapper<DBWFSLaye
       geometryName: model.geometryName,
       attributes: model.attributes ?? null,
       ...(model.opacity != null && { opacity: model.opacity }),
-      clusterStyle: model.clusterStyle ? this._styleSchemaMapper.toDto(model.clusterStyle as DBStyleSchema) : undefined,
+      clusterStyle: model.clusterStyle
+        ? this._styleSchemaMapper.toDto(model.clusterStyle as DBStyleSchema)
+        : undefined,
       clusterOptions: model.clusterOptions ?? null,
     };
   }
@@ -84,13 +97,18 @@ export class WFSLayerMapper extends BaseLayerMapper implements IMapper<DBWFSLaye
     model.geometryName = dto.geometryName;
     model.attributes = dto.attributes ?? {};
     if (dto.opacity != null) model.opacity = dto.opacity;
-    model.clusterStyle = dto.clusterStyle ? new mongoose.Types.ObjectId(dto.clusterStyle.id) : undefined;
+    model.clusterStyle = dto.clusterStyle
+      ? new mongoose.Types.ObjectId(dto.clusterStyle.id)
+      : undefined;
     model.clusterOptions = dto.clusterOptions;
     return model;
   }
 }
 
-export class WMSLayerMapper extends BaseLayerMapper implements IMapper<DBWMSLayer, WMSLayerDto> {
+export class WMSLayerMapper
+  extends BaseLayerMapper
+  implements IMapper<DBWMSLayer, WMSLayerDto>
+{
   constructor() {
     super();
   }
@@ -101,7 +119,9 @@ export class WMSLayerMapper extends BaseLayerMapper implements IMapper<DBWMSLaye
       return {
         ...baseDto,
         geometryName: model.geometryName,
-        ...(model.featureinfoLayer != null && { opacity: model.featureinfoLayer }),
+        ...(model.featureinfoLayer != null && {
+          opacity: model.featureinfoLayer,
+        }),
         format: model.format,
         attributes: model.attributes ?? null,
         renderMode: model.renderMode,
@@ -115,7 +135,8 @@ export class WMSLayerMapper extends BaseLayerMapper implements IMapper<DBWMSLaye
   toDBModel(dto: WMSLayerDto, create: boolean): DBWMSLayer {
     const model = super.toDBModel(dto, create) as DBWMSLayer;
     model.geometryName = dto.geometryName;
-    if (dto.featureinfoLayer != null) model.featureinfoLayer = dto.featureinfoLayer;
+    if (dto.featureinfoLayer != null)
+      model.featureinfoLayer = dto.featureinfoLayer;
     model.attributes = dto.attributes ?? {};
     model.renderMode = dto.renderMode;
     model.format = dto.format;
@@ -123,7 +144,10 @@ export class WMSLayerMapper extends BaseLayerMapper implements IMapper<DBWMSLaye
   }
 }
 
-export class WMTSLayerMapper extends BaseLayerMapper implements IMapper<DBWMTSLayer, WMTSLayerDto> {
+export class WMTSLayerMapper
+  extends BaseLayerMapper
+  implements IMapper<DBWMTSLayer, WMTSLayerDto>
+{
   constructor() {
     super();
   }
@@ -133,7 +157,9 @@ export class WMTSLayerMapper extends BaseLayerMapper implements IMapper<DBWMTSLa
       ...baseDto,
       format: model.format,
       maxScale: model.maxScale ? model.maxScale : undefined,
-      ...(model.featureinfoLayer != null && { opacity: model.featureinfoLayer }),
+      ...(model.featureinfoLayer != null && {
+        opacity: model.featureinfoLayer,
+      }),
     };
   }
 
@@ -141,12 +167,16 @@ export class WMTSLayerMapper extends BaseLayerMapper implements IMapper<DBWMTSLa
     const model = super.toDBModel(dto, create) as DBWMTSLayer;
     model.format = dto.format;
     model.maxScale = dto.maxScale ? dto.maxScale : undefined;
-    if (dto.featureinfoLayer != null) model.featureinfoLayer = dto.featureinfoLayer;
+    if (dto.featureinfoLayer != null)
+      model.featureinfoLayer = dto.featureinfoLayer;
     return model;
   }
 }
 
-export class LayerMapper extends BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
+export class LayerMapper
+  extends BaseLayerMapper
+  implements IMapper<DBLayerBase, BaseLayerDto>
+{
   constructor() {
     super();
   }
@@ -158,6 +188,8 @@ export class LayerMapper extends BaseLayerMapper implements IMapper<DBLayerBase,
   }
 
   toDBModel(dto: WMTSLayerDto, create: boolean): DBWMTSLayer {
-    throw new Error("Method not implemented since it is not needed for this mapper");
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
   }
 }

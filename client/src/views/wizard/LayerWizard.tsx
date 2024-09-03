@@ -11,7 +11,7 @@ import { LinkResourceDto } from "@/shared/interfaces/dtos";
 import { useQuery } from "@tanstack/react-query";
 import { LinkResourceService as linkResourceService } from "@/api";
 
-const steps = ["Välj lager", "Ändra lagerinformation", "Granska & Spara"];
+const steps = ["Välj lager", "Ändra lagerinformation & Spara"];
 
 interface LayerWizardProps {
     title: string;
@@ -128,8 +128,7 @@ export default function LayerWizard({
 
     const handleNextDisabled = () => {
         if (activeStep === 0) return !areLayersSelected;
-        if (activeStep === 1) return !areHandleLayersValid;
-        return false;
+        return !areHandleLayersValid;
     };
 
     const handleNext = () => {
@@ -143,11 +142,10 @@ export default function LayerWizard({
     const handleFinish = async () => {
         try {
             const dtos = mapperFunction(selectedRows, selectedSource!);
-            await layerService.addRange(dtos);
-            setActiveStep(activeStep + 1);
+            const resp = await layerService.addRange(dtos);
             router.back();
         } catch (error) {
-            console.error("Error adding link resource:", error);
+            console.error("Error adding layer:", error);
         }
     };
 
@@ -176,8 +174,6 @@ export default function LayerWizard({
                         setAreHandleLayersValid={setAreHandleLayersValid}
                     />
                 );
-            case 2:
-                return <Complete selectedRows={selectedRows} selectedSource={selectedSource!} />;
             default:
                 return null;
         }
@@ -190,14 +186,16 @@ export default function LayerWizard({
             <Grid container columnSpacing={2.75}>
                 <Grid item xs={12}>
                     <MainCard title={title}>
-                        <Grid sx={{ my: "40px" }}>
-                            <Stepper activeStep={activeStep}>
-                                {steps.map((label) => (
-                                    <Step key={label}>
-                                        <StepLabel>{label}</StepLabel>
-                                    </Step>
-                                ))}
-                            </Stepper>
+                        <Grid container justifyContent="center" sx={{ my: "40px" }}>
+                            <Grid item xs={12} sm={10} md={8} lg={6}>
+                                <Stepper activeStep={activeStep} sx={{ width: '100%' }}>
+                                    {steps.map((label) => (
+                                        <Step key={label}>
+                                            <StepLabel>{label}</StepLabel>
+                                        </Step>
+                                    ))}
+                                </Stepper>
+                            </Grid>
                         </Grid>
                         <Grid sx={{ my: "40px" }}>
                             <StepContent stepIndex={activeStep} />
@@ -224,11 +222,13 @@ export default function LayerWizard({
                             <div></div>
                             {activeStep < steps.length - 1 ? (
                                 <Button disabled={handleNextDisabled()} onClick={handleNext}>
-                                    {activeStep === steps.length - 2 ? "Granska" : "Nästa"}
+                                    Nästa
                                 </Button>
-                            ) : activeStep === steps.length - 1 ? (
-                                <Button onClick={handleFinish}>Spara</Button>
-                            ) : null}
+                            ) : (
+                                <Button disabled={!areHandleLayersValid} onClick={handleFinish}>
+                                    Spara
+                                </Button>
+                            )}
                         </div>
                     </MainCard>
                 </Grid>

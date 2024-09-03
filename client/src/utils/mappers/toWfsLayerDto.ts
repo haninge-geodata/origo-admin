@@ -1,14 +1,20 @@
 import { DataRow } from "@/interfaces";
 import { LinkResourceDto, WFSLayerDto } from "@/shared/interfaces/dtos";
 
-export function DataRowToWFSLayerDto(rows: DataRow[], source: LinkResourceDto): WFSLayerDto[] {
+export function DataRowToWFSLayerDto(
+  rows: DataRow[],
+  source: LinkResourceDto
+): WFSLayerDto[] {
   return rows.map((row) => {
     let attributesObject: Record<string, any> = parseJson(row.attributes, {});
-    let clusterOptionsObject: Record<string, any> = parseJson(row.clusteroptions, {});
+    let clusterOptionsObject: Record<string, any> = parseJson(
+      row.clusteroptions,
+      {}
+    );
     return {
       id: row.id || "",
       name: row.name,
-      origoId: row.origoId,
+      layer_id: row.layer_id,
       source: source,
       title: row.title,
       abstract: row.abstract,
