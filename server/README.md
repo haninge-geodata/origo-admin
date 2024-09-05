@@ -141,7 +141,7 @@ Please store this token securely. It will not be shown again.
    Lägg till den genererade token i NextJS-appens miljövariabler. Skapa eller uppdatera en `.env`-fil i NextJS-projektets rot:
 
 ```code
-API_ACCESS_TOKEN=din_genererade_token_här
+PROTECTED_API_ACCESS_TOKEN=din_genererade_token_här
 ```
 
 5. **Använd token i NextJS**
@@ -151,6 +151,6 @@ I dina NextJS API-rutter, används token för att autentisera anrop till Express
 ```typescript
 const response = await fetch('http://din-express-api/någon-endpoint', {
   headers: {
-    'Authorization': `Bearer ${process.env.API_ACCESS_TOKEN}`
+    'Authorization': `Bearer ${API_ACCESS_TOKEN}`
   }
 });
