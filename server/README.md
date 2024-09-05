@@ -78,15 +78,21 @@ Du kan nu ansluta till mongodb genom att följa stegen 1-5 i sektionen "Installa
 Kopiera .env.template och döp den nya filen till .env. Justera de fält i .env-filen som behöver justeras, ska autentisering användas så ska en api-nyckel genereras enligt stegen nedan.
 Se steg "Behörighetsstyrning installation" nedan för generering av api-nyckel.
 
-Om swagger ska genereras görs detta sedan genom att köra skriptet:
+Om swagger ska genereras görs detta sedan genom att köra kommandot nedan från (server-) projektets rot:
 
 ```
 npm run generate-swagger
 ```
 
-Starta sedan api:et med:
+Starta sedan api:et lokalt för utveckling med:
 ```
 npm run dev
+```
+
+För att installera api:et som en Windows-tjänst, korrigera sökvägen i `.\installation\tasks\create_windowsservice_server.js` och kör:
+
+```
+node ./installation/tasks/create_windowsservice_server.js
 ```
 
 # Behörighetsstyrning installation
