@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Serverside code in NodeJS for Haninge Admin",
   "main": "server.js",
+  "type": "module",
   "dev": "ts-node-dev --pretty --respawn ./src/app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",
@@ -12,10 +13,12 @@
     "build": "rimraf ./dist && npx tsc && tsc-alias -p tsconfig.json && npm run generate-swagger && cp .env.template ./dist/server/.env.template && cp -R ../installation/iis/tasks ./dist/server/src/tasks/ && cp ./src/swagger_output.json ./dist/server/src/",
     "generate-initial-token": "ts-node src/scripts/generateInitialToken.ts",
     "generate-secret-key": "ts-node src/scripts/generateSecretKey.ts",
-    "generate-swagger": "ts-node src/generateSwagger.ts"
+    "generate-swagger": "node --loader ts-node/esm src/generateSwagger.ts"
+
   },
   "keywords": [],
   "author": "",
+
   "license": "ISC",
   "devDependencies": {
     "@types/cors": "^2.8.17",

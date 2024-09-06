@@ -26,7 +26,6 @@ class LayerService<T extends DBLayerBase, TDto> {
     return response.map((item) => this.toDtoMapper(item));
   }
   async create(layers: TDto[]): Promise<TDto[]> {
-    console.log("Creating layers", layers);
     let dbObjects = layers.map((item) => this.toDbMapper(item, true));
     let created = [];
     for (const dbObject of dbObjects) {

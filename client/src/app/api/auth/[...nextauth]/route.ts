@@ -4,12 +4,12 @@ const authOptions: AuthOptions = {
   providers: [
     {
       id: "oidc",
-      name: process.env.PROTECTED_NEXUS_NAME!,
+      name: process.env.PROTECTED_IDP_NAME!,
       type: "oauth",
       version: "2.0",
-      wellKnown: process.env.PROTECTED_NEXUS_WELL_KNOWN,
+      wellKnown: process.env.PROTECTED_IDP_WELL_KNOWN,
       idToken: true,
-      issuer: process.env.PROTECTED_NEXUS_ISSUER,
+      issuer: process.env.PROTECTED_IDP_ISSUER,
       checks: ["pkce", "state"],
       authorization: { params: { scope: "openid groups email oauth" } },
       async profile(profile: any, tokens: any) {
@@ -20,8 +20,8 @@ const authOptions: AuthOptions = {
           image: profile.picture,
         };
       },
-      clientId: process.env.PROTECTED_NEXUS_CLIENT_ID,
-      clientSecret: process.env.PROTECTED_NEXUS_CLIENT_SECRET,
+      clientId: process.env.PROTECTED_IDP_CLIENT_ID,
+      clientSecret: process.env.PROTECTED_IDP_CLIENT_SECRET,
     },
   ],
   callbacks: {

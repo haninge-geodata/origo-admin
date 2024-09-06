@@ -1,7 +1,20 @@
-import { Project, SourceFile, SyntaxKind, Node, InterfaceDeclaration, Type, TypeFlags } from "ts-morph";
-import * as fs from "fs";
-import * as path from "path";
-import * as ts from "typescript";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import {
+  Project,
+  SourceFile,
+  SyntaxKind,
+  Node,
+  InterfaceDeclaration,
+  Type,
+  TypeFlags,
+} from "ts-morph";
+import fs from "fs";
+import path from "path";
+import ts from "typescript";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const project = new Project();
 
@@ -94,7 +107,10 @@ function extractRouteInfo(node: Node, routeName: string) {
           const jsDocComment = node
             .getParent()
             ?.getLeadingCommentRanges()
-            .find((comment) => comment.getKind() === SyntaxKind.MultiLineCommentTrivia)
+            .find(
+              (comment) =>
+                comment.getKind() === SyntaxKind.MultiLineCommentTrivia
+            )
             ?.getText();
           const jsDocInfo = jsDocComment ? parseJSDocComment(jsDocComment) : {};
           const jsDocInfoParams = parseJSDocCommentString(jsDocComment);
@@ -104,8 +120,13 @@ function extractRouteInfo(node: Node, routeName: string) {
           const parameters =
             path.match(/:[a-zA-Z]+/g)?.map((param) => {
               const paramName = param.slice(1);
-              const paramInfo = (jsDocInfoParams.param as string[])?.find((p) => p.includes(paramName)) || "";
-              const [paramType, ...paramDescParts] = paramInfo.split("-").map((s) => s.trim());
+              const paramInfo =
+                (jsDocInfoParams.param as string[])?.find((p) =>
+                  p.includes(paramName)
+                ) || "";
+              const [paramType, ...paramDescParts] = paramInfo
+                .split("-")
+                .map((s) => s.trim());
               const paramDesc = paramDescParts.join("-").trim();
               return {
                 name: paramName,
@@ -130,7 +151,9 @@ function extractRouteInfo(node: Node, routeName: string) {
                   ? {
                       "application/json": {
                         schema: {
-                          $ref: `#/components/schemas/${jsDocInfo.returns.replace(/[\[\]{}*\/]/g, "").trim()}`,
+                          $ref: `#/components/schemas/${jsDocInfo.returns
+                            .replace(/[\[\]{}*\/]/g, "")
+                            .trim()}`,
                         },
                       },
                     }
@@ -144,7 +167,9 @@ function extractRouteInfo(node: Node, routeName: string) {
               content: {
                 "application/json": {
                   schema: {
-                    $ref: `#/components/schemas/${jsDocInfo.request.replace(/[\[\]{}*\/]/g, "").trim()}`,
+                    $ref: `#/components/schemas/${jsDocInfo.request
+                      .replace(/[\[\]{}*\/]/g, "")
+                      .trim()}`,
                   },
                 },
               },
@@ -241,8 +266,14 @@ function processInterface(interfaceDeclaration: InterfaceDeclaration) {
   if (baseTypes.length > 0) {
     const schema = swaggerDocs.components.schemas[name];
     schema.allOf = [
-      ...baseTypes.map((baseType) => ({ $ref: `#/components/schemas/${baseType.getText()}` })),
-      { type: "object", properties: schema.properties, required: schema.required },
+      ...baseTypes.map((baseType) => ({
+        $ref: `#/components/schemas/${baseType.getText()}`,
+      })),
+      {
+        type: "object",
+        properties: schema.properties,
+        required: schema.required,
+      },
     ];
     delete schema.properties;
     delete schema.required;
@@ -278,7 +309,9 @@ project.getSourceFiles().forEach((sourceFile: SourceFile) => {
     // Look for router declarations
     const routerDeclarations = sourceFile
       .getVariableDeclarations()
-      .filter((declaration) => declaration.getType().getText().includes("Router"));
+      .filter((declaration) =>
+        declaration.getType().getText().includes("Router")
+      );
 
     routerDeclarations.forEach((declaration) => {
       declaration.getInitializer()?.forEachChild((child) => {
