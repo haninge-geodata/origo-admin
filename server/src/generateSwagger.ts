@@ -1,5 +1,3 @@
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
 import {
   Project,
   SourceFile,
@@ -9,12 +7,9 @@ import {
   Type,
   TypeFlags,
 } from "ts-morph";
-import fs from "fs";
-import path from "path";
-import ts from "typescript";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import * as fs from "fs";
+import * as path from "path";
+import * as ts from "typescript";
 
 const project = new Project();
 
