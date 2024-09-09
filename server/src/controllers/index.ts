@@ -4,7 +4,7 @@ export * from "./MapSettingController";
 export * from "./MediaController";
 export * from "./StyleSchemaController";
 export * from "./MapInstanceController";
-export * from "./ShareMapController";
+export * from "./FavoritesController";
 export * from "./RelationController";
 export * from "./LayerController";
 export * from "./PermissionController";

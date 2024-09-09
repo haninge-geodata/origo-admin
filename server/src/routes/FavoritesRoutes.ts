@@ -1,7 +1,7 @@
-import { shareMapController as controller } from "../controllers/";
+import { shareMapController as controller } from "../controllers";
 import { createSecureRouter, RouteRegistry } from "@/utils/routeUtils";
 
-const route = "share-map";
+const route = "favorites";
 const router = createSecureRouter(route);
 
 /**
@@ -9,7 +9,9 @@ const router = createSecureRouter(route);
  * @param {string} user - The user ID
  * @returns {ShareMapDto[]}
  */
-router.get(`/${route}/list/:user`, (req, res) => controller.getByUser(req, res));
+router.get(`/${route}/list/:user`, (req, res) =>
+  controller.getByUser(req, res)
+);
 
 /**
  * @route GET /${route}/:id

@@ -6,7 +6,7 @@ export * from "./styleSchema.service";
 export * from "./mapInstance.service";
 export * from "./azure-upload.service";
 export * from "./local-upload.service";
-export * from "./shareMap.service";
+export * from "./favorites.service";
 export * from "./relation.service";
 export * from "./permission.service";
 export * from "./proxy.service";

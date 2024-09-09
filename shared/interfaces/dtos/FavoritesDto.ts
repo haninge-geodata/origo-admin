@@ -1,4 +1,4 @@
-export interface ShareMapDto {
+export interface FavoritesDto {
   id: string;
   name: string;
   user: string;
