@@ -13,6 +13,16 @@ const router = createSecureRouter(route);
 router.get(`/${route}/roles/:id`, (req, res) => controller.get(req, res));
 
 /**
+ * @route GET /${route}/roles/name/:name
+ * @description Get a specific role permission by Name
+ * @param {string} name - The role permission Name
+ * @returns {RoleDto}
+ */
+router.get(`/${route}/roles/name/:name`, (req, res) =>
+  controller.getByName(req, res)
+);
+
+/**
  * @route GET /${route}/roles
  * @description Get all role permissions
  * @returns {RoleDto[]}
@@ -22,7 +32,7 @@ router.get(`/${route}/roles`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}/roles
  * @description Create a new role permission
- * @param {RoleDto} requestBody - The role permission data to create
+ * @request {RoleDto} requestBody - The role permission data to create
  * @returns {RoleDto}
  */
 router.post(`/${route}/roles`, (req, res) => controller.create(req, res));
@@ -33,13 +43,15 @@ router.post(`/${route}/roles`, (req, res) => controller.create(req, res));
  * @param {string} id - The ID of the role permission to duplicate
  * @returns {RoleDto}
  */
-router.post(`/${route}/roles/duplicate/:id`, (req, res) => controller.duplicate(req, res));
+router.post(`/${route}/roles/duplicate/:id`, (req, res) =>
+  controller.duplicate(req, res)
+);
 
 /**
  * @route PUT /${route}/roles/:id
  * @description Update a specific role permission
  * @param {string} id - The role permission ID
- * @param {RoleDto} requestBody - The updated role permission data
+ * @request {RoleDto} requestBody - The updated role permission data
  * @returns {RoleDto}
  */
 router.put(`/${route}/roles/:id`, (req, res) => controller.update(req, res));

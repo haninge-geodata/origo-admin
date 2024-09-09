@@ -22,7 +22,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new map control
- * @param {MapControlDto} requestBody - The map control data to create
+ * @request {MapControlDto} requestBody - The map control data to create
  * @returns {MapControlDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
@@ -31,7 +31,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route PUT /${route}/:id
  * @description Update a map control
  * @param {string} id - The map control ID
- * @param {MapControlDto} requestBody - The updated map control data
+ * @request {MapControlDto} requestBody - The updated map control data
  * @returns {MapControlDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));

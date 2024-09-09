@@ -10,7 +10,7 @@ interface props {
   session: Session | null;
 }
 
-const ClientWrapper: React.FC<props> = ({ children, session }) => {
+const ClientWrapper: React.FC<props> = ({ children, session }: props) => {
   const isDrawerOpen = true;
   const divStyles = {
     marginLeft: isDrawerOpen ? "240px" : "40px",

@@ -24,6 +24,8 @@ const swaggerDocs: any = {
   openapi: "3.0.0",
   info: {
     title: "Your API",
+    description:
+      "This API allows you to manage favorite items.\n\nUsage Guidelines:\n1. Use GET requests to retrieve data.\n2. Use POST requests to create new items. When creating a new item, do not include an 'id' field in the request body. The server will generate and assign an ID automatically.\n3. Use PUT requests to update existing items. Include the item's ID in the URL path, not in the request body.\n4. Use DELETE requests to remove items.\n\nAuthentication:\nAll requests require a valid API key to be included in the header.\n\nFor detailed information on request and response formats, please refer to the schema definitions and endpoint descriptions below.",
     version: "1.0.0",
   },
   tags: [],
@@ -93,6 +95,9 @@ function extractRouteInfo(node: Node, routeName: string) {
           // Handle other template literals
           path = path.replace(/\$\{([^}]+)\}/g, (_, g) => `{${g}}`);
 
+          // Replace :param with {param}
+          path = path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}");
+
           // Add leading slash if missing
           if (!path.startsWith("/")) {
             path = "/" + path;
@@ -113,8 +118,8 @@ function extractRouteInfo(node: Node, routeName: string) {
           const tag = routeName.charAt(0).toUpperCase() + routeName.slice(1);
 
           const parameters =
-            path.match(/:[a-zA-Z]+/g)?.map((param) => {
-              const paramName = param.slice(1);
+            path.match(/\{[a-zA-Z_][a-zA-Z0-9_]*\}/g)?.map((param) => {
+              const paramName = param.slice(1, -1);
               const paramInfo =
                 (jsDocInfoParams.param as string[])?.find((p) =>
                   p.includes(paramName)
@@ -127,7 +132,12 @@ function extractRouteInfo(node: Node, routeName: string) {
                 name: paramName,
                 in: "path",
                 required: true,
-                schema: { type: paramType.replace(/[{}]/g, "").toLowerCase() },
+                schema: {
+                  type: paramType
+                    .replace(/[{}]/g, "")
+                    .toLowerCase()
+                    .split(" ")[0],
+                },
                 description: paramDesc,
               };
             }) || [];
@@ -156,15 +166,19 @@ function extractRouteInfo(node: Node, routeName: string) {
               },
             },
           };
+          // Add request body for POST and PUT methods
+          if (["post", "put"].includes(method) && jsDocInfo.request) {
+            const reqBody = `${jsDocInfo.request
+              .split(" ")[0]
+              .replace(/[\[\]{}*\/]/g, "")
+              .trim()}`;
 
-          if (jsDocInfo.request) {
             swaggerDocs.paths[path][method].requestBody = {
+              required: true,
               content: {
                 "application/json": {
                   schema: {
-                    $ref: `#/components/schemas/${jsDocInfo.request
-                      .replace(/[\[\]{}*\/]/g, "")
-                      .trim()}`,
+                    $ref: `#/components/schemas/${reqBody}`,
                   },
                 },
               },

@@ -7,6 +7,15 @@ class ExtendedPermissionController extends BaseController<PermissionService> {
     super(service);
   }
 
+  async getByName(req: Request, res: Response) {
+    try {
+      const item = await (this.service as any).findByName(req.params.name);
+      res.status(200).json(item);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async duplicate(req: Request, res: Response) {
     try {
       const resp = await (this.service as any).duplicate(req.params.id);
@@ -17,5 +26,7 @@ class ExtendedPermissionController extends BaseController<PermissionService> {
   }
 }
 
-const permissionController = new ExtendedPermissionController(new PermissionService());
+const permissionController = new ExtendedPermissionController(
+  new PermissionService()
+);
 export { permissionController };

@@ -22,7 +22,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new style schema
- * @param {StyleSchemaDto} requestBody - The style schema data to create
+ * @request {StyleSchemaDto} requestBody - The style schema data to create
  * @returns {StyleSchemaDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
@@ -31,7 +31,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route PUT /${route}/:id
  * @description Update a specific style schema
  * @param {string} id - The style schema ID
- * @param {StyleSchemaDto} requestBody - The updated style schema data
+ * @request {StyleSchemaDto} requestBody - The updated style schema data
  * @returns {StyleSchemaDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));

@@ -1,21 +1,23 @@
-import React, { } from "react";
+import React from "react";
 import { ReactQueryClientProvider } from "@/components/TanStack/ReactQueryClientProvider";
 import ThemeProvider from "@/themes/theme";
-import { Session } from "next-auth";
 import ClientWrapper from "@/components/ClientWrapper";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./auth";
 
-type RootLayoutProps = {
-  session: Session | null;
+export default async function RootLayout({
+  children,
+}: {
   children: React.ReactNode;
-};
+}) {
+  const session = await getServerSession(authOptions);
 
-export default async function RootLayout({ children, session }: RootLayoutProps) {
   return (
     <ReactQueryClientProvider>
       <html lang="en">
         <body>
           <ThemeProvider>
-            <ClientWrapper children={children} session={session}></ClientWrapper>
+            <ClientWrapper session={session} children={children}></ClientWrapper>
           </ThemeProvider>
         </body>
       </html>

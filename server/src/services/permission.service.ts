@@ -18,7 +18,6 @@ class PermissionService {
   }
   async findByName(name: string): Promise<RoleDto | null> {
     const caseInsensitiveName = new RegExp(`^${name}$`, "i");
-
     var response = await this.repository.query({ role: caseInsensitiveName });
     if (response.length === 0) {
       return null;
@@ -49,7 +48,10 @@ class PermissionService {
       throw new Error("Role with name already exists");
     }
 
-    var response = await this.repository.update(id, this.mapper.toDBModel(role));
+    var response = await this.repository.update(
+      id,
+      this.mapper.toDBModel(role)
+    );
 
     try {
       await updateProxyCache();

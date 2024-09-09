@@ -22,7 +22,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new map setting
- * @param {MapSettingDto} requestBody - The map setting data to create
+ * @request {MapSettingDto} requestBody - The map setting data to create
  * @returns {MapSettingDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
@@ -31,7 +31,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route PUT /${route}/:id
  * @description Update a specific map setting
  * @param {string} id - The map setting ID
- * @param {MapSettingDto} requestBody - The updated map setting data
+ * @request {MapSettingDto} requestBody - The updated map setting data
  * @returns {MapSettingDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));

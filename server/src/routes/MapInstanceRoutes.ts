@@ -10,7 +10,9 @@ const router = createSecureRouter(route);
  * @param {string} id - The map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/:id/preview`, (req, res) => controller.getPreview(req, res));
+router.get(`/${route}/:id/preview`, (req, res) =>
+  controller.getPreview(req, res)
+);
 
 /**
  * @route GET /${route}/:name/published/latest(.json)?
@@ -28,7 +30,9 @@ router.get(`/${route}/:name/published/latest(.json)?`, (req, res) => {
  * @param {string} id - The published map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/published/:id`, (req, res) => controller.getPublished(req, res));
+router.get(`/${route}/published/:id`, (req, res) =>
+  controller.getPublished(req, res)
+);
 
 /**
  * @route GET /${route}/:id/published/list
@@ -36,7 +40,9 @@ router.get(`/${route}/published/:id`, (req, res) => controller.getPublished(req,
  * @param {string} id - The map instance ID
  * @returns {PublishedMapListItemDto[]}
  */
-router.get(`/${route}/:id/published/list`, (req, res) => controller.getPublishedList(req, res));
+router.get(`/${route}/:id/published/list`, (req, res) =>
+  controller.getPublishedList(req, res)
+);
 
 /**
  * @route GET /${route}/:id
@@ -56,7 +62,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new map instance
- * @param {request} requestBody - The map instance data to create
+ * @request {request} requestBody - The map instance data to create
  * @returns {response}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
@@ -65,10 +71,12 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route POST /${route}/:id/publish
  * @description Publish a specific map instance
  * @param {string} id - The map instance ID
- * @param {MapInstanceDto} requestBody - The map instance data to publish
+ * @request {MapInstanceDto} requestBody - The map instance data to publish
  * @returns {MapInstanceDto}
  */
-router.post(`/${route}/:id/publish`, (req, res) => controller.publish(req, res));
+router.post(`/${route}/:id/publish`, (req, res) =>
+  controller.publish(req, res)
+);
 
 /**
  * @route POST /${route}/:id/republish/:instanceId
@@ -77,7 +85,9 @@ router.post(`/${route}/:id/publish`, (req, res) => controller.publish(req, res))
  * @param {string} instanceId - The specific instance ID to republish
  * @returns {PublishedMapConfigDto}
  */
-router.post(`/${route}/:id/republish/:instanceId`, (req, res) => controller.republish(req, res));
+router.post(`/${route}/:id/republish/:instanceId`, (req, res) =>
+  controller.republish(req, res)
+);
 
 /**
  * @route PUT /${route}/layer/:type/:id/sync
@@ -86,13 +96,15 @@ router.post(`/${route}/:id/republish/:instanceId`, (req, res) => controller.repu
  * @param {MapInstanceDto} id - The layer ID
  * @returns {response}
  */
-router.put(`/${route}/layer/:type/:id/sync`, (req, res) => controller.syncLayer(req, res));
+router.put(`/${route}/layer/:type/:id/sync`, (req, res) =>
+  controller.syncLayer(req, res)
+);
 
 /**
  * @route PUT /${route}/:id
  * @description Update a specific map instance
  * @param {string} id - The map instance ID
- * @param {MapInstanceDto} requestBody - The updated map instance data
+ * @request {MapInstanceDto} requestBody - The updated map instance data
  * @returns {MapInstanceDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));

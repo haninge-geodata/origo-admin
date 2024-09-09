@@ -14,7 +14,7 @@
     "build:custom": "next build && tsc -p tsconfig.server.json",
     "start:custom": "node dist/server.js",
     "build:mac:iis": "npm run build && npm run prepare:mac:iis",
-    "prepare:mac:iis": "rm -rf dist_iis && mkdir dist_iis && cp -R .next/standalone/ dist_iis/ && cp -R .next/static dist_iis/.next/static && cp -R public/ dist_iis/public && cp package.json dist_iis/package.json && cp config.json dist_iis/config.json && cp next.config.mjs dist_iis/next.config.mjs && cp .env.template dist_iis/.env.template && cp -R ../installation/iis/tasks dist_iis/tasks && rm -rf dist_iis/.next/cache && rm -rf dist_iis/node_modules && rm -rf dist_iis/.env",
+    "prepare:mac:iis": "rm -rf dist_iis && mkdir dist_iis && cp -R .next/standalone/ dist_iis/ && cp -R .next/static dist_iis/.next/static && cp -R public/ dist_iis/public && cp package.json dist_iis/package.json && cp next.config.mjs dist_iis/next.config.mjs && cp .env.template dist_iis/.env.template && rm -rf dist_iis/.next/cache && rm -rf dist_iis/node_modules && rm -rf dist_iis/.env",
     "build:iis": "next build && npm run prepare:iis",
     "prepare:iis": "if exist dist_iis rmdir /s /q dist_iis && mkdir dist_iis && xcopy .next\\standalone dist_iis\\.next\\standalone /E /I && xcopy .next\\static dist_iis\\.next\\static /E /I && xcopy public dist_iis\\public /E /I && xcopy package.json dist_iis\\package.json /I && xcopy next.config.mjs dist_iis\\next.config.mjs /I && xcopy .env.template dist_iis\\.env.template /I && xcopy ../installation/iis/tasks dist_iis\\tasks /E /I && if exist dist_iis\\.next\\cache rmdir /s /q dist_iis\\.next\\cache && if exist dist_iis\\node_modules rmdir /s /q dist_iis\\node_modules && if exist dist_iis\\.env del dist_iis\\.env"
   },

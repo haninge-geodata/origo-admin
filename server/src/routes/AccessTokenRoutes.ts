@@ -14,7 +14,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new access token
- * @param {CreateAccessTokenDto} requestBody - The access token data to create
+ * @request {CreateAccessTokenDto} requestBody - The access token data to create
  * @returns {AccessTokenResponseDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));

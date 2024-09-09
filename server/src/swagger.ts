@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import { Express, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
 import { version } from "../package.json";
 import fs from "fs";
@@ -39,9 +39,10 @@ swaggerSpec.components.securitySchemes = {
     bearerFormat: "JWT",
   },
 };
+
 swaggerSpec.servers = [
   {
-    url: BASE_PATH ? BASE_PATH : "/",
+    url: BASE_PATH ? BASE_PATH : "/api",
   },
 ];
 swaggerSpec.security = [
@@ -51,11 +52,15 @@ swaggerSpec.security = [
 ];
 
 function swaggerDocs(app: Express) {
-  const swaggerPath = BASE_PATH ? `/${BASE_PATH}/${SWAGGER_URL_SUFFIX}`.replace(/\/+/g, "/") : `/${SWAGGER_URL_SUFFIX}`;
+  const swaggerPath = BASE_PATH
+    ? `/${BASE_PATH}/${SWAGGER_URL_SUFFIX}`.replace(/\/+/g, "/")
+    : `/${SWAGGER_URL_SUFFIX}`;
 
   app.use(swaggerPath, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  const jsonDocsPath = BASE_PATH ? `/${BASE_PATH}/docs-json`.replace(/\/+/g, "/") : "/docs-json";
+  const jsonDocsPath = BASE_PATH
+    ? `/${BASE_PATH}/docs-json`.replace(/\/+/g, "/")
+    : "/docs-json";
   app.get(jsonDocsPath, (req: Request, res: Response) => {
     res.setHeader("Content-Type", "application/json");
     res.send(swaggerSpec);

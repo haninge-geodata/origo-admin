@@ -16,7 +16,7 @@ router.get(`/${route}/`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}/
  * @description Upload media file(s)
- * @param {request} requestBody - The media file(s) to upload
+ * @request {request} requestBody - The media file(s) to upload
  * @returns {MediaDto[]}
  */
 router.post(`/${route}/`, upload.any(), (req, res) => {

@@ -25,7 +25,7 @@ router.get(`/${route}/:type`, (req, res) => controller.getAll(req, res));
  * @route POST /${route}/:type
  * @description Create a new layer of a specific type
  * @param {string} type - The layer type (wfs, wms, or wmts)
- * @param {BaseLayerDto} requestBody - The layer data to create
+ * @request {BaseLayerDto} requestBody - The layer data to create
  * @returns {BaseLayerDto}
  */
 router.post(`/${route}/:type`, (req, res) => controller.create(req, res));
@@ -37,14 +37,16 @@ router.post(`/${route}/:type`, (req, res) => controller.create(req, res));
  * @param {string} id - The ID of the layer to duplicate
  * @returns {BaseLayerDto}
  */
-router.post(`/${route}/:type/duplicate/:id`, (req, res) => controller.duplicate(req, res));
+router.post(`/${route}/:type/duplicate/:id`, (req, res) =>
+  controller.duplicate(req, res)
+);
 
 /**
  * @route PUT /${route}/:type/:id
  * @description Update a layer of a specific type
  * @param {string} type - The layer type (wfs, wms, or wmts)
  * @param {string} id - The layer ID
- * @param {BaseLayerDto} requestBody - The updated layer data
+ * @request {BaseLayerDto} requestBody - The updated layer data
  * @returns {BaseLayerDto}
  */
 router.put(`/${route}/:type/:id`, (req, res) => controller.update(req, res));

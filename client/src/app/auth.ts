@@ -1,0 +1,52 @@
+import NextAuth, { NextAuthOptions } from "next-auth";
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    {
+      id: "oidc",
+      name: process.env.PROTECTED_IDP_NAME!,
+      type: "oauth",
+      version: "2.0",
+      wellKnown: process.env.PROTECTED_IDP_WELL_KNOWN,
+      idToken: true,
+      issuer: process.env.PROTECTED_IDP_ISSUER,
+      checks: ["pkce", "state"],
+      authorization: { params: { scope: "openid groups email oauth" } },
+      async profile(profile: any, tokens: any) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
+      clientId: process.env.PROTECTED_IDP_CLIENT_ID,
+      clientSecret: process.env.PROTECTED_IDP_CLIENT_SECRET,
+    },
+  ],
+  callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      return true;
+    },
+    async redirect({ url, baseUrl }) {
+      return baseUrl;
+    },
+    async session({ session, token }) {
+      return session;
+    },
+    async jwt({ token, user, account, profile, trigger }) {
+      if (account) {
+        token = {
+          ...token,
+          user: user,
+          access_token: account.access_token,
+          accessTokenExpires: account.expires_at,
+          refreshToken: account.refresh_token,
+          access_token_url: account.access_token_url,
+          id_token: account.id_token,
+        };
+      }
+      return token;
+    },
+  },
+};

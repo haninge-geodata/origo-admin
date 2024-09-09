@@ -2,7 +2,7 @@ export type Column = {
   field: string;
   headerName: string;
   hide?: boolean;
-  defaultValue?: string | number | boolean;
+  defaultValue?: string | number | boolean | null;
   fallbackField?: string;
   inputType?: string;
   readOnly?: boolean;

@@ -37,27 +37,40 @@ export class BaseApiService<T> {
     return this._baseUrl;
   }
   async fetch(id: string): Promise<T> {
-    const response = (await this.getRestClient()).get<T>(`${this.resourcePath}/${id}`);
+    const response = (await this.getRestClient()).get<T>(
+      `${this.resourcePath}/${id}`
+    );
     return response;
   }
 
   async fetchAll(): Promise<T[]> {
-    const response = (await this.getRestClient()).get<T[]>(`${this.resourcePath}`);
+    const response = (await this.getRestClient()).get<T[]>(
+      `${this.resourcePath}`
+    );
     return response;
   }
 
   async add(resource: T): Promise<T> {
-    const response = (await this.getRestClient()).post<T>(`${this.resourcePath}`, resource);
+    const response = (await this.getRestClient()).post<T>(
+      `${this.resourcePath}`,
+      resource
+    );
     return response;
   }
 
   async addRange(resource: T[]): Promise<T[]> {
-    const response = (await this.getRestClient()).post<T[]>(`${this.resourcePath}`, resource);
+    const response = (await this.getRestClient()).post<T[]>(
+      `${this.resourcePath}`,
+      resource
+    );
     return response;
   }
 
   async update(id: string, resource: T): Promise<T> {
-    const response = (await this.getRestClient()).put<T>(`${this.resourcePath}/${id}`, resource);
+    const response = (await this.getRestClient()).put<T>(
+      `${this.resourcePath}/${id}`,
+      resource
+    );
     return response;
   }
 
