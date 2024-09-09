@@ -1,9 +1,9 @@
-import { FavoritesService } from "../services";
+import { FavouritesService } from "../services";
 import { BaseController } from "./BaseController";
 import { Request, Response } from "express";
 
-class ExtendedShareMapController extends BaseController<FavoritesService> {
-  constructor(service: FavoritesService) {
+class ExtendedShareMapController extends BaseController<FavouritesService> {
+  constructor(service: FavouritesService) {
     super(service);
   }
   async getByUser(req: Request, res: Response): Promise<void> {
@@ -17,6 +17,6 @@ class ExtendedShareMapController extends BaseController<FavoritesService> {
   }
 }
 
-const shareMapService = new FavoritesService();
+const shareMapService = new FavouritesService();
 const shareMapController = new ExtendedShareMapController(shareMapService);
 export { shareMapController };

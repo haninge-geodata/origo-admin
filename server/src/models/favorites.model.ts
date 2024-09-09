@@ -1,22 +1,22 @@
 import mongoose from "mongoose";
 import mongodb from "mongodb";
 
-interface DBFavoriteseMap {
+interface DBFavouriteseMap {
   _id: mongodb.ObjectId;
   name: string;
   user: string;
   data: object;
 }
 
-const favoritesSchema = new mongoose.Schema<DBFavoriteseMap>({
+const favouritesSchema = new mongoose.Schema<DBFavouriteseMap>({
   data: { type: Object, required: true },
   name: { type: String, required: true },
   user: { type: String, required: true },
 });
 
-const FavoritesModel = mongoose.model<DBFavoriteseMap>(
-  "Favorites",
-  favoritesSchema
+const FavouritesModel = mongoose.model<DBFavouriteseMap>(
+  "Favourites",
+  favouritesSchema
 );
 
-export { DBFavoriteseMap, FavoritesModel, favoritesSchema };
+export { DBFavouriteseMap, FavouritesModel, favouritesSchema };

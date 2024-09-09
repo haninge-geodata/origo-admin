@@ -1,7 +1,7 @@
 import { shareMapController as controller } from "../controllers";
 import { createSecureRouter, RouteRegistry } from "@/utils/routeUtils";
 
-const route = "favorites";
+const route = "favourites";
 const router = createSecureRouter(route);
 
 /**

@@ -9,7 +9,7 @@ export * from "./StyleSchemaDto";
 export * from "./GroupsDto";
 export * from "./LayerDto";
 export * from "./MapInstanceDto";
-export * from "./FavoritesDto";
+export * from "./FavouritesDto";
 export * from "./RelationDto";
 export * from "./BaseLayerDto";
 export * from "./LayerDto";

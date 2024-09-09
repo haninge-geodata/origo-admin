@@ -32,7 +32,7 @@ import {
   MediaRoutes,
   StyleSchemaRoutes,
   MapInstanceRoutes,
-  FavoritesRoutes,
+  FavouritesRoutes,
   RelationRoutes,
   LayerRoutes,
   PermissionRoutes,
@@ -88,7 +88,7 @@ if (!process.env.DATABASE) {
 initializeDatabase(process.env.DATABASE as string);
 console.info("Database initialized...");
 
-app.use(`${BASE_PATH}/api`, FavoritesRoutes);
+app.use(`${BASE_PATH}/api`, FavouritesRoutes);
 app.use(`${BASE_PATH}/api`, LayerRoutes);
 app.use(`${BASE_PATH}/api`, MapInstanceRoutes);
 app.use(

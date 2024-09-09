@@ -1,50 +1,50 @@
 import { Repository } from "@/repositories/Repository";
-import { DBFavoriteseMap, FavoritesModel } from "@/models/favorites.model";
-import { FavoritesDto } from "@/shared/interfaces/dtos";
-import FavoritesMapper from "@/mappers/favoritesMapMapper";
+import { DBFavouriteseMap, FavouritesModel } from "@/models/favourites.model";
+import { FavouritesDto } from "@/shared/interfaces/dtos";
+import FavouritesMapper from "@/mappers/favouritesMapMapper";
 import { IMapper } from "@/interfaces";
 
-class FavoritesService {
-  private repository: Repository<DBFavoriteseMap>;
-  private _mapper: IMapper<DBFavoriteseMap, FavoritesDto>;
+class FavouritesService {
+  private repository: Repository<DBFavouriteseMap>;
+  private _mapper: IMapper<DBFavouriteseMap, FavouritesDto>;
 
   constructor() {
-    this.repository = new Repository<DBFavoriteseMap>(FavoritesModel);
-    this._mapper = new FavoritesMapper();
+    this.repository = new Repository<DBFavouriteseMap>(FavouritesModel);
+    this._mapper = new FavouritesMapper();
   }
 
-  async find(id: string): Promise<FavoritesDto> {
+  async find(id: string): Promise<FavouritesDto> {
     var response = await this.repository.find(id);
     return this._mapper.toDto(response);
   }
 
   //TODO: Change this when auth is implemented
-  async getByUser(user: string): Promise<FavoritesDto[]> {
+  async getByUser(user: string): Promise<FavouritesDto[]> {
     var response = await this.repository.findByCriteria({ user: user });
     return response.map((item) => this._mapper.toDto(item));
   }
 
-  async create(favorites: FavoritesDto): Promise<FavoritesDto> {
+  async create(favourites: FavouritesDto): Promise<FavouritesDto> {
     var response = await this.repository.create(
-      this._mapper.toDBModel(favorites)
+      this._mapper.toDBModel(favourites)
     );
     return this._mapper.toDto(response);
   }
 
-  async update(id: string, favorites: FavoritesDto): Promise<FavoritesDto> {
-    if (id !== favorites.id)
+  async update(id: string, favourites: FavouritesDto): Promise<FavouritesDto> {
+    if (id !== favourites.id)
       throw new Error("Id in body does not match id in url");
     var response = await this.repository.update(
       id,
-      this._mapper.toDBModel(favorites)
+      this._mapper.toDBModel(favourites)
     );
     return this._mapper.toDto(response);
   }
 
-  async delete(id: string): Promise<FavoritesDto> {
+  async delete(id: string): Promise<FavouritesDto> {
     var response = await this.repository.delete(id);
     return this._mapper.toDto(response);
   }
 }
 
-export { FavoritesService };
+export { FavouritesService };

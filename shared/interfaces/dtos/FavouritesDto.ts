@@ -1,4 +1,4 @@
-export interface FavoritesDto {
+export interface FavouritesDto {
   id: string;
   name: string;
   user: string;

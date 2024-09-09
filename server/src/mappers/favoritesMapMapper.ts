@@ -1,12 +1,12 @@
 import { IMapper } from "@/interfaces";
-import { DBFavoriteseMap } from "@/models/favorites.model";
-import { FavoritesDto } from "@/shared/interfaces/dtos";
+import { DBFavouriteseMap } from "@/models/favourites.model";
+import { FavouritesDto } from "@/shared/interfaces/dtos";
 import mongoose from "mongoose";
 
-export default class FavoritesMapMapper
-  implements IMapper<DBFavoriteseMap, FavoritesDto>
+export default class FavouritesMapMapper
+  implements IMapper<DBFavouriteseMap, FavouritesDto>
 {
-  toDto(model: DBFavoriteseMap): FavoritesDto {
+  toDto(model: DBFavouriteseMap): FavouritesDto {
     return {
       id: model._id.toHexString(),
       name: model.name,
@@ -14,7 +14,7 @@ export default class FavoritesMapMapper
       data: model.data,
     };
   }
-  toDBModel(dto: FavoritesDto, create: boolean = false): DBFavoriteseMap {
+  toDBModel(dto: FavouritesDto, create: boolean = false): DBFavouriteseMap {
     const dbMapControl = {
       _id: new mongoose.Types.ObjectId(dto.id),
       name: dto.name,
