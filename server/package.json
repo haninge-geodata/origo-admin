@@ -10,15 +10,14 @@
     "start": "node dist/server/src/server.js",
     "dev": "nodemon --exec ts-node -r tsconfig-paths/register src/server.ts",
     "build:mac": "rimraf ./dist && npx tsc && tsc-alias -p tsconfig.json && cp .env.template ./dist/server/.env.template && npm run postbuild",
-    "build": "rimraf ./dist && npx tsc && tsc-alias -p tsconfig.json && xcopy .env.template .\\dist\\server\\.env.template* /Y && npm run postbuild",
+    "build": "rimraf ./dist && npx tsc && tsc-alias -p tsconfig.json && xcopy .env.template .\\dist\\server\\ /I && npm run postbuild",
     "generate-initial-token": "ts-node src/scripts/generateInitialToken.ts",
     "generate-secret-key": "ts-node src/scripts/generateSecretKey.ts",
     "generate-swagger": "ts-node src/generateSwagger.ts",
-    "postbuild": "npm run generate-swagger && cp ./src/swagger_output.json ./dist/server/src/"
+    "postbuild": "npm run generate-swagger && xcopy .\\src\\swagger_output.json .\\dist\\server\\src\\ /I /Y"
   },
   "keywords": [],
   "author": "",
-
   "license": "ISC",
   "devDependencies": {
     "@types/cors": "^2.8.17",

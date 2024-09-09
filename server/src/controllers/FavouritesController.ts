@@ -2,7 +2,7 @@ import { FavouritesService } from "../services";
 import { BaseController } from "./BaseController";
 import { Request, Response } from "express";
 
-class ExtendedShareMapController extends BaseController<FavouritesService> {
+class ExtendedFavouritesController extends BaseController<FavouritesService> {
   constructor(service: FavouritesService) {
     super(service);
   }
@@ -17,6 +17,6 @@ class ExtendedShareMapController extends BaseController<FavouritesService> {
   }
 }
 
-const shareMapService = new FavouritesService();
-const shareMapController = new ExtendedShareMapController(shareMapService);
-export { shareMapController };
+const favouritesService = new FavouritesService();
+const favouritesController = new ExtendedFavouritesController(favouritesService);
+export { favouritesController };
