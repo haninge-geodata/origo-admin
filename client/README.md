@@ -16,6 +16,7 @@ Installationsguiden förutsätter att Origo Admin repository:t finns lokalt på 
 - Börja med att skapa en .env-fil i roten på client-katalogen.
 - Kopiera innehållet från .env.template och lägg in korrekta värden för resp. parameter.
 - Öppna Powershell eller terminalen i 'client'-mappen.
+- Kör `npm install`
 - Kör `npm run build:iis` om du är på windows och `npm run build:mac:iis` om du är på mac
 - Kopiera sedan äver dist_iis som skapats i client-mappen till servern.
 - Lägg katalogen där du vill ha den deployad

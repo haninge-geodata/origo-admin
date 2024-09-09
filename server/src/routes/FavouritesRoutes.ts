@@ -1,45 +1,44 @@
-import { FavoritesDto } from "@/shared/interfaces/dtos";
-import { favoritesController as controller } from "../controllers";
+import { favouritesController as controller } from "../controllers";
 import { createSecureRouter, RouteRegistry } from "@/utils/routeUtils";
 
-const route = "favorites";
+const route = "favourites";
 const router = createSecureRouter(route);
 
 /**
  * @route GET /${route}/list/{user}
  * @param {string} user - The user ID
- * @returns {FavoritesDto[]}
+ * @returns {FavouritesDto[]}
  */
 router.get(`/${route}/list/:user`, (req, res) =>
   controller.getByUser(req, res)
 );
 
 /**
- * @route GET /${route}/{id}
- * @param {string} id - The share map ID
- * @returns {FavoritesDto}
+ * @route GET /${route}/:id
+ * @param {string} id - The favourite ID
+ * @returns {FavouritesDto}
  */
 router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
 
 /**
  * @route POST /${route}/
- * @request {FavoritesDto} requestBody - The share map data to create
- * @returns {FavoritesDto}
+ * @request {FavouritesDto} requestBody - The favourite data to create
+ * @returns {FavouritesDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
 
 /**
- * @route PUT /${route}/{id}
- * @param {string} id - The share map ID
- * @request {FavoritesDto} requestBody - The updated share map data
- * @returns {FavoritesDto}
+ * @route PUT /${route}/:id
+ * @param {string} id - The favourite ID
+ * @request {FavouritesDto} requestBody - The updated favourite data
+ * @returns {FavouritesDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
 
 /**
- * @route DELETE /${route}/{id}
- * @param {string} id - The share map ID
- * @returns {FavoritesDto}
+ * @route DELETE /${route}/:id
+ * @param {string} id - The favourite ID
+ * @returns {FavouritesDto}
  */
 router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
 

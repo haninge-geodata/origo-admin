@@ -6,3 +6,4 @@ export * from "./styleSchema.model";
 export * from "./mapInstance.model";
 export * from "./permission.model";
 export * from "./accessToken.model";
+export * from "./favourites.model";
