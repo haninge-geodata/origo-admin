@@ -6,7 +6,11 @@ const environment = process.env.NODE_ENV || "local";
 console.info(`Environment set to: ${environment}`);
 
 let envPath = "";
-if (environment === "" || environment === "local" || environment === "development") {
+if (
+  environment === "" ||
+  environment === "local" ||
+  environment === "development"
+) {
   envPath = path.resolve(__dirname, "..", `.env`);
 } else {
   envPath = path.resolve(__dirname, "..", `.env.${environment}`);
@@ -28,7 +32,7 @@ import {
   MediaRoutes,
   StyleSchemaRoutes,
   MapInstanceRoutes,
-  ShareMapRoutes,
+  FavoritesRoutes,
   RelationRoutes,
   LayerRoutes,
   PermissionRoutes,
@@ -66,7 +70,10 @@ app.use(cors());
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
 app.use((req, res, next) => {
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
   res.setHeader("Expires", "0");
   res.setHeader("Pragma", "no-cache");
   next();
@@ -81,7 +88,7 @@ if (!process.env.DATABASE) {
 initializeDatabase(process.env.DATABASE as string);
 console.info("Database initialized...");
 
-app.use(`${BASE_PATH}/api`, ShareMapRoutes);
+app.use(`${BASE_PATH}/api`, FavoritesRoutes);
 app.use(`${BASE_PATH}/api`, LayerRoutes);
 app.use(`${BASE_PATH}/api`, MapInstanceRoutes);
 app.use(

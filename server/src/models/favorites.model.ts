@@ -1,19 +1,22 @@
 import mongoose from "mongoose";
 import mongodb from "mongodb";
 
-interface DBShareMap {
+interface DBFavoriteseMap {
   _id: mongodb.ObjectId;
   name: string;
   user: string;
   data: object;
 }
 
-const shareMapSchema = new mongoose.Schema<DBShareMap>({
+const favoritesSchema = new mongoose.Schema<DBFavoriteseMap>({
   data: { type: Object, required: true },
   name: { type: String, required: true },
   user: { type: String, required: true },
 });
 
-const ShareMapModel = mongoose.model<DBShareMap>("ShareMap", shareMapSchema);
+const FavoritesModel = mongoose.model<DBFavoriteseMap>(
+  "Favorites",
+  favoritesSchema
+);
 
-export { DBShareMap, ShareMapModel, shareMapSchema };
+export { DBFavoriteseMap, FavoritesModel, favoritesSchema };
