@@ -13,6 +13,14 @@ const router = createSecureRouter(route);
 router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
 
 /**
+ * @route GET /${route}/name/{name}
+ * @description Get link resources by name
+ * @param {string} name - The link resource name
+ * @returns {LinkResourceDto[]}
+ */
+router.get(`/${route}/name/:name`, (req, res) => controller.getByName(req, res));
+
+/**
  * @route GET /${route}/type/:type
  * @description Get link resources by type
  * @param {string} type - The link resource type

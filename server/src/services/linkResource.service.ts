@@ -20,6 +20,11 @@ class LinkResourceService {
     return response.map((item) => this._linkResourceMapper.toDto(item));
   }
 
+  async getByName(name: string): Promise<LinkResourceDto[]> {
+    var response = await this.repository.query({ name: name });
+    return response.map((item) => this._linkResourceMapper.toDto(item));
+  }
+
   async findByType(type: string): Promise<LinkResourceDto[]> {
     var response = await this.repository.query({ type: type });
     return response.map((item) => this._linkResourceMapper.toDto(item));
