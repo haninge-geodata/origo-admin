@@ -13,6 +13,16 @@ const router = createSecureRouter(route);
 router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
 
 /**
+ * @route GET /${route}/name/{name}
+ * @description Get style schema(s) by name
+ * @param {string} name - The style schema name
+ * @returns {StyleSchemaDto[]}
+ */
+router.get(`/${route}/name/:name`, (req, res) =>
+  controller.getByName(req, res)
+);
+
+/**
  * @route GET /${route}
  * @description Get all style schemas
  * @returns {StyleSchemaDto[]}
