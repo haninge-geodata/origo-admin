@@ -12,6 +12,16 @@ class LayerController {
     }
   }
 
+  async getByName(req: Request, res: Response) {
+    try {
+      const service = createLayerService("all");
+      const items = await service.getByName(req.params.name);
+      res.status(200).json(items);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async getAll(req: Request, res: Response) {
     try {
       const service = createLayerService(req.params.type);

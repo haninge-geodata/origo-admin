@@ -5,6 +5,14 @@ const route = "layers";
 const router = createSecureRouter(route);
 
 /**
+ * @route GET /${route}/name/{name}
+ * @description Get specific layers by name
+ * @param {string} name - The layer name
+ * @returns {BaseLayerDto[]}
+ */
+router.get(`/${route}/name/:name`, (req, res) => controller.getByName(req, res));
+
+/**
  * @route GET /${route}/:type/:id
  * @description Get a specific layer by type and ID
  * @param {string} type - The layer type (wfs, wms, wmts or all)
