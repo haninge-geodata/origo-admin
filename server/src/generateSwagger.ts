@@ -191,13 +191,23 @@ function extractRouteInfo(node: Node, routeName: string) {
 
             swaggerDocs.paths[path][method].requestBody = {
               required: true,
-              content: {
-                "application/json": {
-                  schema: {
-                    $ref: `#/components/schemas/${reqBody}`,
-                  },
-                },
-              },
+              // If the request body type is an array, present the example as an array
+              content: jsDocInfo.request.split(" ")[0].slice(1, -1).endsWith("[]") ? {
+                  "application/json": {
+                    schema: {
+                      "type": "array",
+                      "items": {
+                        $ref: `#/components/schemas/${reqBody}`
+                      }
+                    }
+                  }
+                } : {
+                  "application/json": {
+                    schema: {
+                      $ref: `#/components/schemas/${reqBody}`
+                    }
+                  }
+                }
             };
           }
         }
