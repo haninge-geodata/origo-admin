@@ -1,6 +1,5 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 import { ActorDto } from "@/shared/interfaces/dtos";
 
 const API_ACCESS_TOKEN = process.env.PROTECTED_API_ACCESS_TOKEN;
@@ -19,13 +18,12 @@ async function handler(req: NextRequest) {
       { status: 400 }
     );
   }
+  const headers: Record<string, string> = {};
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${API_ACCESS_TOKEN}`,
-  };
+  req.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
 
-  //Verifiying the user
   if (AUTH_ENABLED && PROTECTED_ADMIN_ROLE !== null) {
     if (
       !jwtPayload ||
@@ -56,6 +54,7 @@ async function handler(req: NextRequest) {
           console.info("Access denied");
           return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+        headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
         headers["X-User-Info"] = JSON.stringify(userInfo.sub);
       }
     } catch (error) {
@@ -65,11 +64,6 @@ async function handler(req: NextRequest) {
   }
 
   try {
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${API_ACCESS_TOKEN}`,
-    };
-
     let response: Response;
 
     if (method === "GET" || method === "DELETE") {
@@ -78,11 +72,21 @@ async function handler(req: NextRequest) {
         headers,
       });
     } else if (method === "POST" || method === "PUT") {
-      const body = await req.json();
+      if (!req.body) {
+        return NextResponse.json(
+          { error: "Missing request body" },
+          { status: 400 }
+        );
+      }
+
+      const headers = new Headers(req.headers);
+      const bodyBuffer = await req.arrayBuffer();
+      headers.set("content-length", bodyBuffer.byteLength.toString());
+
       response = await fetch(url, {
         method,
-        headers,
-        body: JSON.stringify(body),
+        headers: headers,
+        body: bodyBuffer,
       });
     } else {
       return NextResponse.json(
@@ -117,15 +121,6 @@ async function handler(req: NextRequest) {
       { error: "An unexpected error occurred" },
       { status: 500 }
     );
-  }
-}
-
-function decodeToken(token: string): any {
-  try {
-    return jwt.decode(token);
-  } catch (error) {
-    console.error("Error decoding token:", error);
-    return null;
   }
 }
 

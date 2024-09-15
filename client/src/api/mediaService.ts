@@ -11,7 +11,11 @@ class MediaService extends BaseApiService<MediaDto> {
     files.forEach((file, index) => {
       formData.append("files", file);
     });
-    const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}`, formData);
+
+    const response = (await this.getRestClient()).post<MediaDto[]>(
+      `${this.resourcePath}`,
+      formData
+    );
     return response;
   }
 }

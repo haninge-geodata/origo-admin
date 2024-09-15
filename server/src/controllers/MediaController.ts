@@ -12,7 +12,10 @@ class MediaController {
   private service: IUploadService;
 
   constructor() {
-    this.service = process.env.USE_AZURE_STORAGE === "true" ? new AzureUploadService() : new LocalUploadService();
+    this.service =
+      process.env.USE_AZURE_STORAGE === "true"
+        ? new AzureUploadService()
+        : new LocalUploadService();
   }
 
   async getAll(req: Request, res: Response) {
@@ -43,7 +46,9 @@ class MediaController {
     const { id } = req.params;
     try {
       let file = await this.service.deleteFile(id);
-      res.status(200).json({ message: "Ikonen har tagits bort framgångsrikt", file: file });
+      res
+        .status(200)
+        .json({ message: "Ikonen har tagits bort framgångsrikt", file: file });
     } catch (error) {
       this.handleError(res, error);
     }

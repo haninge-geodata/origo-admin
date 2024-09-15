@@ -10,14 +10,11 @@ class RestClient {
     this._baseUrl = baseUrl;
   }
 
-  private getHeaders(): HeadersInit {
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
-    return headers;
-  }
-
-  private async request<T>(method: string, path: string, body?: any): Promise<T> {
+  private async request<T>(
+    method: string,
+    path: string,
+    body?: any
+  ): Promise<T> {
     if (!this._baseUrl) {
       throw new Error("Base URL is not set");
     }
@@ -26,14 +23,22 @@ class RestClient {
     const proxyUrl = new URL(this._proxyUrl, window.location.origin);
     proxyUrl.searchParams.append("url", apiUrl);
 
-    const headers = this.getHeaders();
     const options: RequestInit = {
       method,
-      headers,
     };
 
     if (body !== undefined) {
-      options.body = JSON.stringify(body);
+      if (
+        body instanceof FormData ||
+        (typeof body === "object" && body.constructor.name === "FormData")
+      ) {
+        options.body = body;
+      } else {
+        options.headers = {
+          "Content-Type": "application/json",
+        };
+        options.body = JSON.stringify(body);
+      }
     }
 
     const response = await fetch(proxyUrl.toString(), options);
@@ -43,7 +48,9 @@ class RestClient {
       console.error("Error Response:", response);
       const errorText = await response.text();
       console.error("Error Details:", errorText);
-      throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+      throw new Error(
+        `Network response was not ok: ${response.status} ${response.statusText}`
+      );
     }
 
     if (response.status === 204) {
@@ -59,8 +66,7 @@ class RestClient {
   }
 
   async post<T>(path: string, body?: any): Promise<T> {
-    const requestBody = body == null || body === undefined || Object.keys(body).length === 0 ? {} : body;
-    return this.request<T>("POST", path, requestBody);
+    return this.request<T>("POST", path, body);
   }
 
   async put<T>(path: string, body: any): Promise<T> {
