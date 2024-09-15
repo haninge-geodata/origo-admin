@@ -15,6 +15,10 @@ class StyleSchemaService {
     var response = await this.repository.find(id);
     return this._mapper.toDto(response);
   }
+  async getByName(name: string): Promise<StyleSchemaDto[]> {
+    var response = await this.repository.findByCriteria({ name: name });
+    return response.map((item) => this._mapper.toDto(item));
+  }
   async findAll(): Promise<StyleSchemaDto[]> {
     var response = await this.repository.findAll();
     return response.map((item) => this._mapper.toDto(item));

@@ -30,7 +30,7 @@ class DashboardService {
     let swaggerPath = BASE_PATH ? `/${BASE_PATH}/${SWAGGER_URL_SUFFIX}`.replace(/\/+/g, "/") : `/${SWAGGER_URL_SUFFIX}`;
 
     if (NODE_ENV === "production") {
-      return swaggerPath;
+      return `${PROTOCOL}://${HOST}${swaggerPath}`;
     } else {
       return `${PROTOCOL}://${HOST}:${PORT}${swaggerPath}`;
     }

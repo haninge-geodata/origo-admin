@@ -5,6 +5,14 @@ const route = "layers";
 const router = createSecureRouter(route);
 
 /**
+ * @route GET /${route}/name/{name}
+ * @description Get specific layers by name
+ * @param {string} name - The layer name
+ * @returns {BaseLayerDto[]}
+ */
+router.get(`/${route}/name/:name`, (req, res) => controller.getByName(req, res));
+
+/**
  * @route GET /${route}/:type/:id
  * @description Get a specific layer by type and ID
  * @param {string} type - The layer type (wfs, wms, wmts or all)
@@ -25,8 +33,8 @@ router.get(`/${route}/:type`, (req, res) => controller.getAll(req, res));
  * @route POST /${route}/:type
  * @description Create a new layer of a specific type
  * @param {string} type - The layer type (wfs, wms, or wmts)
- * @request {BaseLayerDto} requestBody - The layer data to create
- * @returns {BaseLayerDto}
+ * @request {BaseLayerDto[]} requestBody - Array of layer data to create
+ * @returns {BaseLayerDto[]}
  */
 router.post(`/${route}/:type`, (req, res) => controller.create(req, res));
 

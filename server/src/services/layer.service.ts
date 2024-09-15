@@ -21,6 +21,12 @@ class LayerService<T extends DBLayerBase, TDto> {
     let response = await this.repository.find(id);
     return this.toDtoMapper(response);
   }
+
+  async getByName(name: string): Promise<TDto[]> {
+    var response = await this.repository.query({ name: name });
+    return response.map((item) => this.toDtoMapper(item));
+  }
+
   async findAll(): Promise<TDto[]> {
     let response = await this.repository.findAll();
     return response.map((item) => this.toDtoMapper(item));

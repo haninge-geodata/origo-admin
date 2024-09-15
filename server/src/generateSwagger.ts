@@ -66,7 +66,7 @@ function parseJSDocCommentString(jsDocComment: string | undefined) {
     const match = line.match(/@(\w+)\s+(.*)/);
     if (match) {
       const [, tag, content] = match;
-      if (tag === "param") {
+      if (tag === "param" || tag === "returns") {
         if (!result[tag]) result[tag] = [];
         (result[tag] as string[]).push(content);
       } else {
@@ -143,7 +143,27 @@ function extractRouteInfo(node: Node, routeName: string) {
             }) || [];
 
           swaggerDocs.paths[path] = swaggerDocs.paths[path] || {};
-
+          
+          // Find out if the returned object is an array and set the response content schema accordingly
+          let contentSchema;
+          const schemaReference = jsDocInfo.returns ? `#/components/schemas/${jsDocInfo.returns.replace(/[\[\]{}*\/]/g, "").trim()}` : undefined;
+          let isArray = false;
+          if (jsDocInfoParams.returns) {
+            if (Array.isArray(jsDocInfoParams.returns)) {
+              isArray = jsDocInfoParams.returns[0].slice(1, -1).endsWith("[]");
+            } else {
+              isArray = jsDocInfoParams.returns.slice(1, -1).endsWith("[]");
+            }
+            contentSchema = isArray ? {
+                "type": "array",
+                "items": {
+                  $ref: schemaReference
+                }
+              } : {
+                $ref: schemaReference
+              };
+          }
+          
           swaggerDocs.paths[path][method] = {
             tags: [tag],
             summary: jsDocInfo.summary || `${method.toUpperCase()} ${path}`,
@@ -155,16 +175,12 @@ function extractRouteInfo(node: Node, routeName: string) {
                 content: jsDocInfo.returns
                   ? {
                       "application/json": {
-                        schema: {
-                          $ref: `#/components/schemas/${jsDocInfo.returns
-                            .replace(/[\[\]{}*\/]/g, "")
-                            .trim()}`,
-                        },
-                      },
+                        schema: contentSchema
+                      }
                     }
-                  : undefined,
-              },
-            },
+                  : undefined
+              }
+            }
           };
           // Add request body for POST and PUT methods
           if (["post", "put"].includes(method) && jsDocInfo.request) {
@@ -175,13 +191,23 @@ function extractRouteInfo(node: Node, routeName: string) {
 
             swaggerDocs.paths[path][method].requestBody = {
               required: true,
-              content: {
-                "application/json": {
-                  schema: {
-                    $ref: `#/components/schemas/${reqBody}`,
-                  },
-                },
-              },
+              // If the request body type is an array, present the example as an array
+              content: jsDocInfo.request.split(" ")[0].slice(1, -1).endsWith("[]") ? {
+                  "application/json": {
+                    schema: {
+                      "type": "array",
+                      "items": {
+                        $ref: `#/components/schemas/${reqBody}`
+                      }
+                    }
+                  }
+                } : {
+                  "application/json": {
+                    schema: {
+                      $ref: `#/components/schemas/${reqBody}`
+                    }
+                  }
+                }
             };
           }
         }
