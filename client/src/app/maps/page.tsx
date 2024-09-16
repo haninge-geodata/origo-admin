@@ -109,19 +109,15 @@ export default function Page() {
                 </Grid>
                 <Grid item xs={12} md={12} lg={12}>
                     <MainCard>
-                        {data && Array.isArray(data) && data.length > 0 ? (
-                            <DetailedDataTable
-                                data={mapDataToTableFormat(data, mapSpec.specification)}
-                                isSearchable={true}
-                                pagination={true}
-                                rowsPerPage={10}
-                                onAdd={handleAddClick}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ) : (
-                            <Typography>No data available</Typography>
-                        )}
+                        <DetailedDataTable
+                            data={mapDataToTableFormat(data!, mapSpec.specification)}
+                            isSearchable={true}
+                            pagination={true}
+                            rowsPerPage={10}
+                            onAdd={handleAddClick}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                        />
                     </MainCard>
                     <FormDialog open={isDialogOpen} onClose={handleDialogClose} title="Skapa ny kartinstans"
                         contentText="Skapa ny kartinstans genom att fylla i titel nedan och trycka Skapa."
