@@ -64,7 +64,7 @@ router.put(`/${route}/:type/:id`, (req, res) => controller.update(req, res));
  * @description Delete a layer of a specific type
  * @param {string} type - The layer type (wfs, wms, or wmts)
  * @param {string} id
- * @returns
+ * @returns {BaseLayerDto}
  */
 router.delete(`/${route}/:type/:id`, (req, res) => controller.delete(req, res));
 
