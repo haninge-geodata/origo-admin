@@ -62,8 +62,8 @@ if (BASE_PATH) {
   console.info(`Using BASE_PATH=${BASE_PATH}`);
 }
 
-app.use(express.json());
 app.use(bodyParser.json({ limit: "500mb" }));
+app.use(express.json());
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
 
 app.use(cors());
