@@ -13,7 +13,7 @@ class BaseController<T> {
     this.service = service;
   }
 
-  async get(req: Request, res: Response) {
+  async getById(req: Request, res: Response) {
     try {
       const item = await this.service.find(req.params.id);
       res.status(200).json(item);
@@ -49,7 +49,7 @@ class BaseController<T> {
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async deleteById(req: Request, res: Response) {
     try {
       await this.service.delete(req.params.id);
       console.info("BaseController: Setting status to 204");

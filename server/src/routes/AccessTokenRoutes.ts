@@ -25,7 +25,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @param {string} id - The access token ID
  * @returns
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 
