@@ -3,6 +3,7 @@ import path from "path";
 
 console.info("Initializing environment...");
 const environment = process.env.NODE_ENV || "local";
+
 console.info(`Environment set to: ${environment}`);
 
 let envPath = "";
@@ -17,9 +18,9 @@ if (
 }
 
 dotenv.config({ path: envPath });
+const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER!;
 
 import express from "express";
-
 import * as bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
@@ -109,6 +110,7 @@ app.use(`${BASE_PATH}`, ProxyRoutes);
 app.use(`${BASE_PATH}`, AccessTokenRoutes);
 app.use(`${BASE_PATH}`, RouteRoutes);
 app.use(`${BASE_PATH}`, DashboardRoutes);
+app.use("/uploads", express.static(path.resolve(UPLOAD_FOLDER)));
 
 interface NodeError extends Error {
   code?: string;
