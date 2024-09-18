@@ -10,7 +10,7 @@ const router = createSecureRouter(route);
  * @param {string} id - The role permission ID
  * @returns {RoleDto}
  */
-router.get(`/${route}/roles/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/roles/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}/roles/name/:name
@@ -62,7 +62,7 @@ router.put(`/${route}/roles/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The role permission ID
  * @returns {RoleDto}
  */
-router.delete(`/${route}/roles/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/roles/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 export default router;

@@ -141,8 +141,7 @@ export default function Page() {
                             variant="standard"
                         />} />
                     <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av kartinstansen!"
-                        onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
-                    </AlertDialog>
+                        onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning" />
                 </Grid>
             </Grid>
         </main >

@@ -42,7 +42,7 @@ class MediaController {
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async deleteById(req: Request, res: Response) {
     const { id } = req.params;
     try {
       let file = await this.service.deleteFile(id);

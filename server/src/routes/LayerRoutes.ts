@@ -19,7 +19,7 @@ router.get(`/${route}/name/:name`, (req, res) => controller.getByName(req, res))
  * @param {string} id - The layer ID
  * @returns {BaseLayerDto}
  */
-router.get(`/${route}/:type/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:type/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}/:type
@@ -64,9 +64,9 @@ router.put(`/${route}/:type/:id`, (req, res) => controller.update(req, res));
  * @description Delete a layer of a specific type
  * @param {string} type - The layer type (wfs, wms, or wmts)
  * @param {string} id
- * @returns
+ * @returns {BaseLayerDto}
  */
-router.delete(`/${route}/:type/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:type/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 

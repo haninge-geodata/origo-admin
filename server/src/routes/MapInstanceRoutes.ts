@@ -5,32 +5,32 @@ const route = "mapinstances";
 const router = createSecureRouter(route);
 
 /**
- * @route GET /${route}/:id/preview
+ * @route GET /${route}/:id/preview(\.json)?
  * @description Get a preview of a specific map instance
  * @param {string} id - The map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/:id/preview`, (req, res) =>
+router.get(`/${route}/:id/preview(\.json)?`, (req, res) =>
   controller.getPreview(req, res)
 );
 
 /**
- * @route GET /${route}/:name/published/latest(.json)?
+ * @route GET /${route}/:name/published/latest(\.json)?
  * @description Get the latest published version of a map instance by name
  * @param {string} name - The map instance name
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/:name/published/latest(.json)?`, (req, res) => {
+router.get(`/${route}/:name/published/latest(\.json)?`, (req, res) => {
   controller.getLatestPublished(req, res);
 });
 
 /**
- * @route GET /${route}/published/:id
+ * @route GET /${route}/published/:id(\.json)?
  * @description Get a specific published map instance
  * @param {string} id - The published map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/published/:id`, (req, res) =>
+router.get(`/${route}/published/:id(\.json)?`, (req, res) =>
   controller.getPublished(req, res)
 );
 
@@ -50,7 +50,7 @@ router.get(`/${route}/:id/published/list`, (req, res) =>
  * @param {string} id - The map instance ID
  * @returns {MapInstanceDto}
  */
-router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}
@@ -115,7 +115,7 @@ router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The map instance ID
  * @returns {MapInstanceDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 

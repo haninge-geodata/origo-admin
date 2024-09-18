@@ -2,7 +2,7 @@ import { createLayerService } from "@/utils/layerServiceFactory";
 import { Request, Response } from "express";
 
 class LayerController {
-  async get(req: Request, res: Response) {
+  async getById(req: Request, res: Response) {
     try {
       const service = createLayerService(req.params.type);
       const item = await service.find(req.params.id);
@@ -62,7 +62,7 @@ class LayerController {
     }
   }
 
-  async delete(req: Request, res: Response) {
+  async deleteById(req: Request, res: Response) {
     try {
       const service = createLayerService(req.params.type);
       const item = await service.delete(req.params.id);

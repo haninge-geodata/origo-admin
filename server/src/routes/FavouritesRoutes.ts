@@ -18,7 +18,7 @@ router.get(`/${route}/list/:user`, (req, res) =>
  * @param {string} id - The favourite ID
  * @returns {FavouritesDto}
  */
-router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route POST /${route}/
@@ -40,7 +40,7 @@ router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The favourite ID
  * @returns {FavouritesDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 export default router;
