@@ -16,7 +16,7 @@ import {
   InstanceToPublishedMapMapper,
   PreviewMapMapper,
   publishedMapListItemMapper,
-  publishedMapMapper,
+  publishedMapMapper
 } from "@/mappers/publishedMapMapper";
 import { instanceListItemMapper, instanceMapper } from "@/mappers/InstanceMapper";
 import { linkResourceMapper } from "@/mappers/";
@@ -105,11 +105,13 @@ class MapInstanceService {
 
   async getLatestPublished(name: string): Promise<PublishedMapConfigDto> {
     let response = await this.publishedRepository.query({ name: name }, { publishedDate: "desc" }, 1);
-    return this.publishedMapMapper.toDto(response[0]);
+    let dbSources = await this.linkResourceRepository.findAll();
+    return this.publishedMapMapper.toDto(response[0], dbSources, true);
   }
   async getPublished(id: string): Promise<PublishedMapConfigDto> {
     let response = await this.publishedRepository.find(id);
-    return this.publishedMapMapper.toDto(response);
+    let dbSources = await this.linkResourceRepository.findAll();
+    return this.publishedMapMapper.toDto(response, dbSources, true);
   }
 
   async create(mapInstance: MapInstanceDto): Promise<MapInstanceDto> {
