@@ -44,14 +44,12 @@ class LocalUploadService implements IUploadService {
     return created.map((item) => mapDBMediaToMediaDto(item, this.uploadUrl));
   }
 
-  async deleteFile(id: string): Promise<MediaDto> {
+  async deleteFile(id: string): Promise<void> {
     const file = await this.repository.find(id);
     const filename = file.filename;
-    const rootPath = path.resolve(__dirname, "../");
-    const filePath = path.join(rootPath, UPLOAD_FOLDER, filename);
+    const filePath = path.resolve(UPLOAD_FOLDER, filename);
     await fsPromises.unlink(filePath);
     await this.repository.delete(id);
-    return mapDBMediaToMediaDto(file, this.uploadFolder);
   }
 
   getMulterConfig = () => {
@@ -67,8 +65,7 @@ class LocalUploadService implements IUploadService {
 
 const storage: StorageEngine = multer.diskStorage({
   destination: (req, file, callback) => {
-    const rootPath = path.resolve(__dirname, "../");
-    const localUploadPath = path.join(rootPath, UPLOAD_FOLDER);
+    const localUploadPath = path.resolve(UPLOAD_FOLDER);
 
     if (!fs.existsSync(localUploadPath)) {
       fs.mkdirSync(localUploadPath, { recursive: true });

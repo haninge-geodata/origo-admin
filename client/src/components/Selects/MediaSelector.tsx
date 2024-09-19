@@ -197,12 +197,6 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                     </Box>
                                     <Box component="div">
                                         <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.mimetype}</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Laddades upp: 2024-02-16</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Uppladdad av: Administratör</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Används i följande lager:</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
                                     </Box>
                                 </>
                             ) : <Typography sx={{ p: 2 }}>Välj en ikon för att visa information.</Typography>}
