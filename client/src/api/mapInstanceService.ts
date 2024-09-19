@@ -4,9 +4,9 @@ import {
   PublishedMapBaseDto,
   PublishedMapConfigDto,
   PublishedMapDto,
+  SyncLayerRequestDto
 } from "@/shared/interfaces/dtos";
 import { BaseApiService } from "./baseService";
-import { SyncLayerRequest } from "@/shared/interfaces/requests";
 
 class MapInstanceService extends BaseApiService<MapInstanceDto> {
   constructor() {
@@ -42,7 +42,7 @@ class MapInstanceService extends BaseApiService<MapInstanceDto> {
     return response;
   }
 
-  async syncLayer(req: SyncLayerRequest, type: string, layerId: string): Promise<boolean> {
+  async syncLayer(req: SyncLayerRequestDto, type: string, layerId: string): Promise<boolean> {
     const restClient = await this.getRestClient();
     const response = await restClient.put<boolean>(`${this.resourcePath}/layer/${type}/${layerId}/sync/`, req);
     return response;

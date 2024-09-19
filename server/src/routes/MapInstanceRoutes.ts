@@ -94,6 +94,7 @@ router.post(`/${route}/:id/republish/:instanceId`, (req, res) =>
  * @description Synchronize a specific layer in map instances
  * @param {MapInstanceDto} type - The layer type
  * @param {MapInstanceDto} id - The layer ID
+ * @request {SyncLayerRequestDto} requestBody - An array of map instances to update, the layer type and id to sync with and an array of actions (`source`, `style` and/or `details`).
  * @returns {response}
  */
 router.put(`/${route}/layer/:type/:id/sync`, (req, res) =>
