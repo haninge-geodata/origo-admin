@@ -110,7 +110,7 @@ app.use(`${BASE_PATH}`, ProxyRoutes);
 app.use(`${BASE_PATH}`, AccessTokenRoutes);
 app.use(`${BASE_PATH}`, RouteRoutes);
 app.use(`${BASE_PATH}`, DashboardRoutes);
-app.use("/uploads", express.static(path.resolve(UPLOAD_FOLDER)));
+app.use(`${BASE_PATH}/uploads`, express.static(path.resolve(UPLOAD_FOLDER)));
 
 interface NodeError extends Error {
   code?: string;
