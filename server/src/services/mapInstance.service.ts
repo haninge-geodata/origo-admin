@@ -108,7 +108,7 @@ class MapInstanceService {
     return this.publishedMapMapper.toDto(response[0]);
   }
   async getPublished(id: string): Promise<PublishedMapConfigDto> {
-    let response = await this.publishedRepository.find(id.replace(/\.json$/g, ""));
+    let response = await this.publishedRepository.find(id.replace(/\.json$/ig, ""));
     return this.publishedMapMapper.toDto(response);
   }
 
