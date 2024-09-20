@@ -328,7 +328,7 @@ project.getSourceFiles().forEach((sourceFile: SourceFile) => {
     }
 
     // Look for router declarations
-    const routerDeclarations = sourceFile
+    /*const routerDeclarations = sourceFile
       .getVariableDeclarations()
       .filter((declaration) =>
         declaration.getType().getText().includes("Router")
@@ -338,9 +338,9 @@ project.getSourceFiles().forEach((sourceFile: SourceFile) => {
       declaration.getInitializer()?.forEachChild((child) => {
         extractRouteInfo(child, routeName);
       });
-    });
+    });*/
 
-    // Also search for router method calls directly
+    // Search for router method calls directly
     let routeMethodCalls = 0;
     sourceFile.forEachDescendant((node) => {
       if (Node.isCallExpression(node)) {
