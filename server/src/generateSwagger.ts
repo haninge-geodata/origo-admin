@@ -149,9 +149,10 @@ function extractRouteInfo(node: Node, routeName: string) {
               $ref: schemaReference
             };
           
+          const routeFromComment = jsDocInfoParams.route?.[0];
           swaggerDocs.paths[path][method] = {
             tags: [tag],
-            summary: jsDocInfoParams.summary?.[0] || `${method.toUpperCase()} ${path}`,
+            summary: jsDocInfoParams.summary?.[0] || jsDocInfoParams.description?.[0] || `${method.toUpperCase()} ${parseRouteString(routeFromComment, routeName)}`,
             description: jsDocInfoParams.description?.join("\n") || "",
             parameters: parameters,
             responses: {
