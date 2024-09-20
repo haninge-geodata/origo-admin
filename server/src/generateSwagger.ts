@@ -35,43 +35,50 @@ const swaggerDocs: any = {
   },
 };
 
-function parseJSDocComment(text: string): { [key: string]: string } {
-  const lines = text.split("\n");
-  const result: { [key: string]: string } = {};
-  let currentTag = "";
-  lines.forEach((line) => {
-    line = line
-      .trim()
-      .replace(/^\*\s*/, "")
-      .replace(/\s*\*\/$/, "");
-    const match = line.match(/@(\w+)\s+(.+)/);
-    if (match) {
-      currentTag = match[1];
-      result[currentTag] = match[2].trim();
-    } else if (currentTag && line) {
-      result[currentTag] += " " + line;
-    }
-  });
-  return result;
+function parseRouteString(routeString: string | undefined, routeName: string) : string {
+  if (routeString) {
+    return routeString
+      // Remove quotation marks
+      .replace(/['"``]/g, "")
+      // Remove the request method if present
+      .replace(/get |post |put |delete /ig, "")
+      // Replace ${route} with the actual route name
+      .replace(/\$\{route\}/g, routeName || "{route}")
+      // Handle other template literals
+      .replace(/\$\{([^}]+)\}/g, (_, g) => `{${g}}`)
+      // Replace :param with {param}
+      .replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}")
+      // Remove regex sections that restrict param values
+      .replace(/(\})(\(.*?\)([/]|$))/g, "$1$3")
+      // Remove regex sections that add optional path sections
+      .replace(/(\(.*?\)[?]([/]|$))/g, "$2")
+      // Add leading slash if missing
+      .replace(/^([^/])/g, "/{$1}");
+  }
+  return '';
 }
 
-function parseJSDocCommentString(jsDocComment: string | undefined) {
+function parseJSDocCommentString(jsDocComment: string | undefined, routeName: string |undefined): { [key: string]: string[] } {
   if (!jsDocComment) return {};
 
   const lines = jsDocComment.split("\n");
-  const result: { [key: string]: string | string[] } = {};
+  const result: { [key: string]: string[] } = {};
 
+  let currentTag = "";
   lines.forEach((line) => {
     line = line.trim().replace(/^\*\s*/, "");
     const match = line.match(/@(\w+)\s+(.*)/);
     if (match) {
       const [, tag, content] = match;
-      if (tag === "param" || tag === "returns") {
-        if (!result[tag]) result[tag] = [];
-        (result[tag] as string[]).push(content);
+      currentTag = tag;
+      if (!result[tag]) result[tag] = [];
+      if (tag === "route") {
+        (result[tag] as string[]).push(parseRouteString(content.trim(), routeName || "{route}"));
       } else {
-        result[tag] = content;
+        (result[tag] as string[]).push(content.trim());
       }
+    } else if (currentTag && line) {
+      (result[currentTag] as string[]).push(line.trim());
     }
   });
 
@@ -87,21 +94,7 @@ function extractRouteInfo(node: Node, routeName: string) {
         const args = node.getArguments();
         if (args.length >= 2) {
           const pathArg = args[0];
-          let path = pathArg.getText().replace(/['"``]/g, "");
-
-          // Replace ${route} with the actual route name
-          path = path.replace(/\$\{route\}/g, routeName);
-
-          // Handle other template literals
-          path = path.replace(/\$\{([^}]+)\}/g, (_, g) => `{${g}}`);
-
-          // Replace :param with {param}
-          path = path.replace(/:([a-zA-Z_][a-zA-Z0-9_]*)/g, "{$1}");
-
-          // Add leading slash if missing
-          if (!path.startsWith("/")) {
-            path = "/" + path;
-          }
+          let path = parseRouteString(pathArg.getText(), routeName);
 
           // Parse JSDoc comment
           const jsDocComment = node
@@ -112,13 +105,12 @@ function extractRouteInfo(node: Node, routeName: string) {
                 comment.getKind() === SyntaxKind.MultiLineCommentTrivia
             )
             ?.getText();
-          const jsDocInfo = jsDocComment ? parseJSDocComment(jsDocComment) : {};
-          const jsDocInfoParams = parseJSDocCommentString(jsDocComment);
+          const jsDocInfoParams = parseJSDocCommentString(jsDocComment, routeName);
           // Create tag from routeName
           const tag = routeName.charAt(0).toUpperCase() + routeName.slice(1);
 
           const parameters =
-            path.match(/\{[a-zA-Z_][a-zA-Z0-9_]*\}/g)?.map((param) => {
+            path.match(/\{[A-Z_][A-Z0-9_]*\}/ig)?.map((param) => {
               const paramName = param.slice(1, -1);
               const paramInfo =
                 (jsDocInfoParams.param as string[])?.find((p) =>
@@ -144,35 +136,28 @@ function extractRouteInfo(node: Node, routeName: string) {
 
           swaggerDocs.paths[path] = swaggerDocs.paths[path] || {};
           
-          // Find out if the returned object is an array and set the response content schema accordingly
-          let contentSchema;
-          const schemaReference = jsDocInfo.returns ? `#/components/schemas/${jsDocInfo.returns.replace(/[\[\]{}*\/]/g, "").trim()}` : undefined;
-          let isArray = false;
-          if (jsDocInfoParams.returns) {
-            if (Array.isArray(jsDocInfoParams.returns)) {
-              isArray = jsDocInfoParams.returns[0].slice(1, -1).endsWith("[]");
-            } else {
-              isArray = jsDocInfoParams.returns.slice(1, -1).endsWith("[]");
-            }
-            contentSchema = isArray ? {
-                "type": "array",
-                "items": {
-                  $ref: schemaReference
-                }
-              } : {
+          // Find out if the (first) return object is an array and set the response content schema accordingly
+          const firstReturn = jsDocInfoParams.returns?.[0] || "";
+          const schemaReference = jsDocInfoParams.returns ? `#/components/schemas/${firstReturn.replace(/[\[\]{}*\/]/g, "").trim()}` : undefined;
+          const isArray = firstReturn.slice(1, -1).endsWith("[]");
+          const contentSchema = isArray ? {
+              "type": "array",
+              "items": {
                 $ref: schemaReference
-              };
-          }
+              }
+            } : {
+              $ref: schemaReference
+            };
           
           swaggerDocs.paths[path][method] = {
             tags: [tag],
-            summary: jsDocInfo.summary || `${method.toUpperCase()} ${path}`,
-            description: jsDocInfo.description || "",
+            summary: jsDocInfoParams.summary?.[0] || `${method.toUpperCase()} ${path}`,
+            description: jsDocInfoParams.description?.join("\n") || "",
             parameters: parameters,
             responses: {
               "200": {
                 description: "Successful response",
-                content: jsDocInfo.returns
+                content: jsDocInfoParams.returns
                   ? {
                       "application/json": {
                         schema: contentSchema
@@ -183,8 +168,8 @@ function extractRouteInfo(node: Node, routeName: string) {
             }
           };
           // Add request body for POST and PUT methods
-          if (["post", "put"].includes(method) && jsDocInfo.request) {
-            const reqBody = `${jsDocInfo.request
+          if (["post", "put"].includes(method) && jsDocInfoParams.request) {
+            const reqBody = `${(jsDocInfoParams.request?.[0] || "")
               .split(" ")[0]
               .replace(/[\[\]{}*\/]/g, "")
               .trim()}`;
@@ -192,7 +177,7 @@ function extractRouteInfo(node: Node, routeName: string) {
             swaggerDocs.paths[path][method].requestBody = {
               required: true,
               // If the request body type is an array, present the example as an array
-              content: jsDocInfo.request.split(" ")[0].slice(1, -1).endsWith("[]") ? {
+              content: (jsDocInfoParams.request?.[0] || "").split(" ")[0].slice(1, -1).endsWith("[]") ? {
                   "application/json": {
                     schema: {
                       "type": "array",
