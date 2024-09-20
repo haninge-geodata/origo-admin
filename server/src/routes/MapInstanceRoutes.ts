@@ -25,12 +25,12 @@ router.get(`/${route}/:name/published/latest(\.json)?`, (req, res) => {
 });
 
 /**
- * @route GET /${route}/published/:id(\.json)?
+ * @route GET /${route}/published/:id
  * @description Get a specific published map instance
  * @param {string} id - The published map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/published/:id(\.json)?`, (req, res) =>
+router.get(`/${route}/published/:id`, (req, res) =>
   controller.getPublished(req, res)
 );
 
