@@ -315,7 +315,7 @@ project.getSourceFiles().forEach((sourceFile: SourceFile) => {
 
   if (sourceFile.getFilePath().includes("dtos")) {
     sourceFile.getInterfaces().forEach(processInterface);
-  } else {
+  } else if (sourceFile.getFilePath().includes("src/routes/")) {
     let routeName = "";
 
     // Find the route variable declaration
