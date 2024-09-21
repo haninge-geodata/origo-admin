@@ -1,9 +1,11 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { ActorDto } from "@/shared/interfaces/dtos";
+import { userInfoService } from "@/lib/auth/userInforService";
 
 const API_ACCESS_TOKEN = process.env.PROTECTED_API_ACCESS_TOKEN;
-const PROTECTED_ADMIN_ROLE = process.env.PROTECTED_ADMIN_ROLE;
+const ADMIN_ROLE = process.env.PROTECTED_ADMIN_ROLE;
+const TOKEN_EXPIRES_IN = process.env.PROTECTED_TOKEN_EXPIRY_SECONDS;
 const AUTH_ENABLED = process.env.AUTH_ENABLED === "true";
 const ROLE_ROUTE = "permissions/roles/name/";
 const BASE_URL = process.env.BASE_URL;
@@ -13,10 +15,7 @@ async function handler(req: NextRequest) {
   const url = req.nextUrl.searchParams.get("url");
   const jwtPayload = await getToken({ req });
   if (!url || Array.isArray(url)) {
-    return NextResponse.json(
-      { error: "Missing or invalid url query parameter" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing or invalid url query parameter" }, { status: 400 });
   }
   const headers: Record<string, string> = {};
 
@@ -24,42 +23,45 @@ async function handler(req: NextRequest) {
     headers[key] = value;
   });
 
-  if (AUTH_ENABLED && PROTECTED_ADMIN_ROLE !== null) {
-    if (
-      !jwtPayload ||
-      (jwtPayload.access_token === null &&
-        jwtPayload.access_token !== undefined)
-    ) {
+  if (AUTH_ENABLED && ADMIN_ROLE !== null) {
+    if (!jwtPayload || (jwtPayload.access_token === null && jwtPayload.access_token !== undefined)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
-      const userInfo = await getUserInfo(jwtPayload.access_token as string);
-      const userGroups = userInfo.groups || [];
-      const username = userInfo.username || userInfo.name || userInfo.sub || "";
-      const roleInfo = await getRoleInfo(PROTECTED_ADMIN_ROLE!);
+      const tokenExpirySeconds = parseInt(TOKEN_EXPIRES_IN || "3600", 10);
+      const userInfo = await userInfoService.getUserInfo(jwtPayload.access_token as string, tokenExpirySeconds);
 
+      const userGroups = userInfo.claims.split(",").map((dn: string) => dn.trim());
+      const roleInfo = await getRoleInfo(ADMIN_ROLE!);
+
+      headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
+      headers["X-User-Info"] = JSON.stringify(userInfo.username);
+
+      console.log("User info:", userInfo);
+      console.log("Role info:", roleInfo);
       if (!roleInfo || !roleInfo.actors || roleInfo.actors.length === 0) {
-        console.warn(
-          "Warning: Empty role info, granting access, make sure the add the ADMIN Role to permissions!"
-        );
+        console.warn("Warning: Empty role info, granting access, make sure to add the ADMIN Role to permissions!");
       } else {
         const hasAccess = roleInfo.actors.some(
-          (actor: ActorDto) =>
-            (actor.type === "Group" && userGroups.includes(actor.name)) ||
-            (actor.type === "User" && actor.name === username)
+          (actor: ActorDto) => (actor.type === "Group" && userGroups.includes(actor.name)) || (actor.type === "User" && actor.name === userInfo.username)
         );
+        console.log("User has access:", hasAccess);
+        console.log("User groups:", userGroups);
 
         if (!hasAccess) {
-          console.info("Access denied");
-          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+          console.error("Error in authentication process: User not authorized");
+          const url = req.nextUrl.clone();
+          url.pathname = "/api/auth/signin";
+          return NextResponse.redirect(url);
+          // return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
-        headers["X-User-Info"] = JSON.stringify(userInfo.sub);
       }
     } catch (error) {
-      console.error("Error in authentication process:", error);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("Error in authentication process: User not authorized");
+      const url = req.nextUrl.clone();
+      url.pathname = "/api/auth/signin";
+      return NextResponse.redirect(url);
     }
   }
 
@@ -73,31 +75,23 @@ async function handler(req: NextRequest) {
       });
     } else if (method === "POST" || method === "PUT") {
       if (!req.body) {
-        return NextResponse.json(
-          { error: "Missing request body" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Missing request body" }, { status: 400 });
       }
 
-      const headers = new Headers(req.headers);
       const bodyBuffer = await req.arrayBuffer();
-      headers.set("content-length", bodyBuffer.byteLength.toString());
+      headers["content-length"] = bodyBuffer.byteLength.toString();
 
       response = await fetch(url, {
         method,
-        headers: headers,
+        headers,
         body: bodyBuffer,
       });
     } else {
-      return NextResponse.json(
-        { error: "Method not allowed" },
-        { status: 405 }
-      );
+      return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
     }
 
     if (
-      (response.status === 204 &&
-        response.headers.get("Content-Length") === "0") ||
+      (response.status === 204 && response.headers.get("Content-Length") === "0") ||
       response.headers.get("Content-Length") === null ||
       (response.status === 200 && response.statusText === "No Content")
     ) {
@@ -117,45 +111,8 @@ async function handler(req: NextRequest) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
-}
-
-async function getWellKnownConfig() {
-  const wellKnownUrl = process.env.PROTECTED_IDP_WELL_KNOWN;
-  if (!wellKnownUrl) {
-    throw new Error("Well-known URL is not configured");
-  }
-
-  const response = await fetch(wellKnownUrl);
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch well-known config: ${response.statusText}`
-    );
-  }
-
-  return await response.json();
-}
-
-async function getUserInfo(access_Token: string) {
-  const wellKnownConfig = await getWellKnownConfig();
-  const userInfoEndpoint = wellKnownConfig.userinfo_endpoint;
-  if (!userInfoEndpoint) {
-    throw new Error("User info endpoint not found in well-known config");
-  }
-  const response = await fetch(userInfoEndpoint, {
-    headers: {
-      Authorization: `Bearer ${access_Token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user info: ${response.statusText}`);
-  }
-  return await response.json();
 }
 
 async function getRoleInfo(roleName: string) {

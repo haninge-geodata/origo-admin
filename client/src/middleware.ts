@@ -7,10 +7,18 @@ export async function middleware(req: NextRequest) {
   const isPublicPath = publicPaths.some((path) => req.nextUrl.pathname.startsWith(path));
   const authEnabled = process.env.PROTECTED_AUTH_ENABLED === undefined || process.env.PROTECTED_AUTH_ENABLED === "true";
 
-  if (authEnabled && !token && !isPublicPath) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/api/auth/signin";
-    return NextResponse.redirect(url);
+  if (authEnabled && !isPublicPath) {
+    if (!token) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/api/auth/signin";
+      return NextResponse.redirect(url);
+    }
+
+    if (token.error === "RefreshAccessTokenError") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/api/auth/signout";
+      return NextResponse.redirect(url);
+    }
   }
 
   return NextResponse.next();
