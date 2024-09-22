@@ -16,7 +16,7 @@ export async function middleware(req: NextRequest) {
 
     if (token.error === "RefreshAccessTokenError") {
       const url = req.nextUrl.clone();
-      url.pathname = "/api/auth/signout";
+      url.pathname = "/api/auth/signin";
       return NextResponse.redirect(url);
     }
   }
