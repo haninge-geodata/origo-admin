@@ -289,18 +289,6 @@ export default function Page({ params: { id } }: any) {
                             <Box component='div' sx={{ width: '100%', borderBottom: '1px solid #ccc', my: 4 }} />
                             <Grid item xs={12}>
                                 <TabContainer items={items}>
-                                    {
-                                        data && mapInstanceTableData && selectedMapInstanceRows && <DetailedDataTable
-                                            data={mapInstanceTableData}
-                                            isSearchable={true}
-                                            expandable={false}
-                                            pagination={true}
-                                            rowsPerPage={10}
-                                            selectedRows={selectedMapInstanceRows}
-                                            sortingEnabled={true}
-                                            onSelectionChanged={onMapInstanceRowSelectionChanged}
-                                        />
-                                    }
                                     {data && sourcesTableData && selectedSourcesRows && <DetailedDataTable
                                         data={sourcesTableData}
                                         isSearchable={true}

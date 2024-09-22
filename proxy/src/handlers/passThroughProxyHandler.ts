@@ -65,6 +65,8 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
         hasPermission = layers.every((layer) => cacheManager.hasLayerPermission(source, layer, permissions));
       } else if (layerName) {
         hasPermission = cacheManager.hasLayerPermission(source, layerName, permissions);
+      } else if (source) {
+        hasPermission = cacheManager.hasSourcePermission(source, permissions);
       }
 
       if (!hasPermission) {

@@ -251,6 +251,41 @@ export class CacheManager {
     }
     return this.optimizedPermissionCache.hasLayerPermission(source, layerName, actors);
   }
+  hasSourcePermission(source: string, actors: string[]): boolean {
+    if (!this.permissionCache) {
+      throw new Error("Optimized permission cache is not initialized");
+    }
+
+    const permissionId = this.resourcesCache
+      ?.getResources()
+      .filter((r) => r.type === "source" && r.name === source)
+      .map((r) => r.id);
+
+    if (permissionId && permissionId.length === 1) {
+      for (const actor of actors) {
+        if (this.permissionCache.hasPermission(actor, permissionId[0])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  hasControlPermission(actors: string, control: string): boolean {
+    if (!this.permissionCache) {
+      throw new Error("Optimized permission cache is not initialized");
+    }
+
+    const permissionId = this.resourcesCache
+      ?.getResources()
+      .filter((r) => r.type === "control" && r.name === control)
+      .map((r) => r.id);
+    if (permissionId && permissionId.length === 1) {
+      return this.permissionCache.hasPermission(actors, permissionId[0]);
+    }
+    return false;
+  }
 
   getPermissionDetails(permissionId: string): Permission | undefined {
     if (!this.permissionCache) {

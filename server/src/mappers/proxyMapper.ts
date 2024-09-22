@@ -51,10 +51,15 @@ class proxySourceMapper implements IMapper<DBLinkResource, ProxyResourceDto> {
 
 class proxyControlMapper implements IMapper<DBMapControl, ProxyResourceDto> {
   toDto(model: DBMapControl): ProxyResourceDto {
+    let name = (model.control as { name: string }).name;
+    if (!name) {
+      name = model.title;
+    }
+
     return {
       type: "control",
       id: model._id.toString(),
-      name: model.title,
+      name: name,
     };
   }
   toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBMapControl {
