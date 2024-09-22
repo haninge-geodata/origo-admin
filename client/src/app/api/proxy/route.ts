@@ -5,7 +5,6 @@ import { userInfoService } from "@/lib/auth/userInforService";
 
 const API_ACCESS_TOKEN = process.env.PROTECTED_API_ACCESS_TOKEN;
 const ADMIN_ROLE = process.env.PROTECTED_ADMIN_ROLE;
-const TOKEN_EXPIRES_IN = process.env.PROTECTED_TOKEN_EXPIRY_SECONDS;
 const AUTH_ENABLED = process.env.AUTH_ENABLED === "true";
 const ROLE_ROUTE = "permissions/roles/name/";
 const BASE_URL = process.env.BASE_URL;
@@ -29,9 +28,7 @@ async function handler(req: NextRequest) {
     }
 
     try {
-      const tokenExpirySeconds = parseInt(TOKEN_EXPIRES_IN || "3600", 10);
-      const userInfo = await userInfoService.getUserInfo(jwtPayload.access_token as string, tokenExpirySeconds);
-
+      const userInfo = await userInfoService.getUserInfo(jwtPayload.access_token as string, jwtPayload.accessTokenExpires as number);
       const userGroups = userInfo.claims.split(",").map((dn: string) => dn.trim());
       const roleInfo = await getRoleInfo(ADMIN_ROLE!);
 
@@ -50,7 +47,6 @@ async function handler(req: NextRequest) {
           const url = req.nextUrl.clone();
           url.pathname = "/api/auth/signin";
           return NextResponse.redirect(url);
-          // return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
       }
     } catch (error) {

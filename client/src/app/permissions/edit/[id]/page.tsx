@@ -24,6 +24,10 @@ import { DataRow, TableData } from "@/interfaces";
 import sourcesSpec from "@/assets/specifications/tables/linkResourceTableSpecification.json";
 import { LinkResourceService as sourcesService } from '@/api';
 
+//Controls
+import controlsSpec from "@/assets/specifications/tables/mapControlTableSpecification.json";
+import { MapControlService as controlsService } from '@/api';
+
 //Map instances
 import mapInstanceSpec from "@/assets/specifications/tables/mapInstanceTableSpecification.json";
 import { MapInstanceService as mapInstanceService } from '@/api';
@@ -51,6 +55,12 @@ export default function Page({ params: { id } }: any) {
     const [selectedSourcesRows, setSelectedSourcesRows] = useState<DataRow[]>([]);
     const [sourcesTableData, setSourcesTableData] = useState<TableData>();
 
+    //Controls
+    const controlsKey = "controls";
+    const { data: controlsData } = useQuery({ queryKey: [controlsKey], queryFn: () => controlsService.fetchAll() });
+    const [selectedControlsRows, setSelectedControlsRows] = useState<DataRow[]>([]);
+    const [controlsTableData, setControlsTableData] = useState<TableData>();
+
     //Map instances
     const mapInstanceKey = "mapInstances";
     const { data: mapInstanceData } = useQuery({ queryKey: [mapInstanceKey], queryFn: () => mapInstanceService.fetchAll() });
@@ -64,10 +74,9 @@ export default function Page({ params: { id } }: any) {
     };
 
     const items: Item[] = [
-        { id: 0, label: 'Kartinstanser' },
-        { id: 1, label: 'Källor' },
-        { id: 2, label: 'Lager' },
-        { id: 3, label: 'Kontroller' }
+        { id: 0, label: 'Källor' },
+        { id: 1, label: 'Lager' },
+        { id: 2, label: 'Kontroller' }
     ];
     interface Item {
         id: number;
@@ -84,6 +93,10 @@ export default function Page({ params: { id } }: any) {
             const selectedSourcesPermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'linkresources') || [];
             const selectedSourcesRows = selectedSourcesPermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
             setSelectedSourcesRows(selectedSourcesRows);
+
+            const selectedControlsPermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'controls') || [];
+            const selectedControlsRows = selectedControlsPermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
+            setSelectedControlsRows(selectedControlsRows);
 
             const selectedMapInstancePermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'mapinstances') || [];
             const selectedMapInstanceRows = selectedMapInstancePermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
@@ -107,6 +120,12 @@ export default function Page({ params: { id } }: any) {
             setSourcesTableData(mapDataToTableFormat(sourcesData!, sourcesSpec.specification));
         }
     }, [sourcesData])
+
+    useEffect(() => {
+        if (controlsData) {
+            setControlsTableData(mapDataToTableFormat(controlsData!, controlsSpec.specification));
+        }
+    }, [controlsData])
 
     useEffect(() => {
         if (mapInstanceData) {
@@ -134,12 +153,17 @@ export default function Page({ params: { id } }: any) {
             type: 'linkresources'
         }));
 
+        const updatedControlsPermissions: PermissionDto[] = selectedControlsRows.map(row => ({
+            id: row.id,
+            type: 'controls'
+        }));
+
         const updatedMapInstancePermissions: PermissionDto[] = selectedMapInstanceRows.map(row => ({
             id: row.id,
             type: 'mapinstances'
         }));
 
-        const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedMapInstancePermissions];
+        const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedControlsPermissions, ...updatedMapInstancePermissions];
 
         const updatedData: RoleDto = {
             id: data?.id,
@@ -188,6 +212,18 @@ export default function Page({ params: { id } }: any) {
             return updatedRows;
         });
     };
+
+    const onControlsRowSelectionChanged = (ids: string[]) => {
+        setSelectedControlsRows((prevRows) => {
+            const newSelectedIds = new Set(ids);
+            const remainingRows = prevRows.filter(row => newSelectedIds.has(row.id));
+            const newRows = ids
+                .filter(id => !prevRows.some(row => row.id === id))
+                .map(id => controlsTableData?.rows.find(row => row.id.toString() === id))
+                .filter((row): row is DataRow => row !== undefined);
+            return [...remainingRows, ...newRows];
+        });
+    }
 
     const onMapInstanceRowSelectionChanged = (ids: string[]) => {
         setSelectedMapInstanceRows((prevRows) => {
@@ -288,7 +324,16 @@ export default function Page({ params: { id } }: any) {
                                         sortingEnabled={true}
                                         onSelectionChanged={onLayerRowSelectionChanged}
                                     />}
-                                    <>Kontroller - Vänta på refaktorering av kontroller menyn från att vara ikoner till lista istället.</>
+                                    {data && controlsTableData && selectedControlsRows && <DetailedDataTable
+                                        data={controlsTableData}
+                                        isSearchable={true}
+                                        expandable={false}
+                                        pagination={true}
+                                        rowsPerPage={10}
+                                        selectedRows={selectedControlsRows}
+                                        sortingEnabled={true}
+                                        onSelectionChanged={onControlsRowSelectionChanged}
+                                    />}
                                 </TabContainer>
                             </Grid>
                         </Grid>

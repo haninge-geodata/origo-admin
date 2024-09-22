@@ -28,21 +28,14 @@ export class UserInfoService {
 
     const response = await fetch(wellKnownUrl);
     if (!response.ok) {
-      throw new Error(
-        `Failed to fetch well-known config: ${response.statusText}`
-      );
+      throw new Error(`Failed to fetch well-known config: ${response.statusText}`);
     }
 
     return await response.json();
   }
 
-  public async getUserInfo(
-    usernameOrToken: string,
-    expires_in: number
-  ): Promise<UserInfo> {
-    let userInfo =
-      this.cache.getByToken(usernameOrToken) ||
-      this.cache.getByUsername(usernameOrToken);
+  public async getUserInfo(usernameOrToken: string, expires_in: number): Promise<UserInfo> {
+    let userInfo = this.cache.getByToken(usernameOrToken) || this.cache.getByUsername(usernameOrToken);
 
     if (!userInfo) {
       userInfo = await this.fetchUserInfo(usernameOrToken, expires_in);
@@ -52,10 +45,7 @@ export class UserInfoService {
     return userInfo;
   }
 
-  private async fetchUserInfo(
-    accessToken: string,
-    expires_in: number
-  ): Promise<UserInfo> {
+  private async fetchUserInfo(accessToken: string, expires_in: number): Promise<UserInfo> {
     const wellKnownConfig = await this.getWellKnownConfig();
 
     const response = await fetch(wellKnownConfig.userinfo_endpoint, {

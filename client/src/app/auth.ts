@@ -42,21 +42,21 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user, account, profile, trigger }) {
-      const tokenExpirySeconds = parseInt(process.env.PROTECTED_TOKEN_EXPIRY_SECONDS || "3600", 10);
-      const tokenRefreshMarginSeconds = parseInt(process.env.PROTECTED_TOKEN_REFRESH_MARGIN_SECONDS || "1800", 10);
+      const tokenRefreshMarginSeconds = 1800; // 30 minutes
 
       // Initial sign in
       if (account && user) {
+        const expiresIn = account.expires_in ? (account.expires_in as number) * 1000 : 3600 * 1000;
+
         return {
           access_token: account.access_token,
-          accessTokenExpires: Date.now() + tokenExpirySeconds * 1000,
+          accessTokenExpires: Date.now() + expiresIn,
           refreshToken: account.refresh_token,
           access_token_url: account.access_token_url,
           user: user,
         };
       }
 
-      // Return previous token if the access token has not expired yet
       if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number) - tokenRefreshMarginSeconds * 1000) {
         return token;
       }
@@ -75,7 +75,7 @@ export const authOptions: NextAuthOptions = {
       return {
         ...token,
         access_token: refreshedToken.access_token,
-        accessTokenExpires: Date.now() + tokenExpirySeconds * 1000,
+        accessTokenExpires: Date.now() + (refreshedToken.expires_in as number) * 1000,
         refreshToken: refreshedToken.refresh_token ?? token.refreshToken,
       };
     },
