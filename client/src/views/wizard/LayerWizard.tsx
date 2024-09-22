@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { LinkResourceDto } from "@/shared/interfaces/dtos";
 import { useQuery } from "@tanstack/react-query";
 import { LinkResourceService as linkResourceService } from "@/api";
+import { useApp } from "@/contexts/AppContext";
 
 const steps = ["Välj lager", "Ändra lagerinformation & Spara"];
 
@@ -61,6 +62,7 @@ export default function LayerWizard({
     const [areLayersSelected, setAreLayersSelected] = useState(false);
     const [areHandleLayersValid, setAreHandleLayersValid] = useState(false);
     const [activeStep, setActiveStep] = useState(0);
+    const { showToast, showToastAfterNavigation } = useApp();
 
     useEffect(() => {
         if (data) {
@@ -91,23 +93,30 @@ export default function LayerWizard({
     };
 
     const onSearchClick = async () => {
-        if (customOnSearchClick) {
-            const newTableData = await customOnSearchClick(
-                selectedSourceId,
-                sources,
-                useCapabilities,
-                tableSpec,
-                mapDataToTableFormat
-            );
-            setTableData(newTableData);
-        } else {
-            const capabilitiesHook = useCapabilities();
-            if (selectedSourceId) {
-                const selectedSource = sources?.find(source => source.id === selectedSourceId);
-                const response = await capabilitiesHook.loadCapabilities(selectedSource!.url);
-                const mappedData = mapDataToTableFormat(response.Layers, tableSpec.specification);
-                setTableData(mappedData);
+        try {
+            if (customOnSearchClick) {
+                const newTableData = await customOnSearchClick(
+                    selectedSourceId,
+                    sources,
+                    useCapabilities,
+                    tableSpec,
+                    mapDataToTableFormat
+                );
+                setTableData(newTableData);
+            } else {
+
+                const capabilitiesHook = useCapabilities();
+                if (selectedSourceId) {
+                    const selectedSource = sources?.find(source => source.id === selectedSourceId);
+                    const response = await capabilitiesHook.loadCapabilities(selectedSource!.url);
+                    const mappedData = mapDataToTableFormat(response.Layers, tableSpec.specification);
+                    setTableData(mappedData);
+                }
             }
+        } catch (error) {
+            showToast("Ett fel inträffade, kunde inte hämta lager", "error");
+            console.error("Error fetching capabilities:", error);
+            setTableData(undefined);
         }
     };
 
@@ -143,9 +152,11 @@ export default function LayerWizard({
         try {
             const dtos = mapperFunction(selectedRows, selectedSource!);
             const resp = await layerService.addRange(dtos);
+            showToastAfterNavigation("Lagren har lagts till", "success");
             router.back();
         } catch (error) {
             console.error("Error adding layer:", error);
+            showToast("Ett fel inträffade, kunde inte lägga till lager", "error");
         }
     };
 

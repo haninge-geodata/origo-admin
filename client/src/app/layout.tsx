@@ -4,6 +4,7 @@ import ThemeProvider from "@/themes/theme";
 import ClientWrapper from "@/components/ClientWrapper";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
+import { AppProvider } from '../contexts/AppContext';
 
 export default async function RootLayout({
   children,
@@ -17,7 +18,9 @@ export default async function RootLayout({
       <html lang="en">
         <body>
           <ThemeProvider>
-            <ClientWrapper session={session} children={children}></ClientWrapper>
+            <AppProvider>
+              <ClientWrapper session={session} children={children}></ClientWrapper>
+            </AppProvider>
           </ThemeProvider>
         </body>
       </html>

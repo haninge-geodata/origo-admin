@@ -7,11 +7,10 @@ class AccessTokenService extends BaseApiService<AccessTokenListItemDto> {
   }
 
   async create(createAccessToken: CreateAccessTokenDto): Promise<AccessTokenResponseDto> {
-    const response = (await this.getRestClient()).post<AccessTokenResponseDto>(
-      `${this.resourcePath}/`,
-      createAccessToken
-    );
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<AccessTokenResponseDto>(`${this.resourcePath}/`, createAccessToken);
+      return response;
+    });
   }
 }
 

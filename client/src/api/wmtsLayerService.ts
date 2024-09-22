@@ -5,8 +5,10 @@ class WMTSLayerService extends BaseApiService<WMTSLayerDto> {
     super("layers/wmts");
   }
   async duplicate(id: string): Promise<WMTSLayerDto> {
-    const response = (await this.getRestClient()).post<WMTSLayerDto>(`${this.resourcePath}/duplicate/${id}`);
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<WMTSLayerDto>(`${this.resourcePath}/duplicate/${id}`);
+      return response;
+    });
   }
 }
 

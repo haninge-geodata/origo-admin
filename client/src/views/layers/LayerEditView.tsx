@@ -12,6 +12,7 @@ import { mapRowToTableFormat } from "@/utils/mappers/toDataTable";
 import SyncLayerDialogDialog from "@/components/Dialogs/SyncLayerDialog";
 import { MapInstanceService as mapInstanceService } from "@/api";
 import { KeyValuePair } from '@/shared/interfaces/dtos';
+import { useApp } from '@/contexts/AppContext';
 
 interface LayerEditViewProps {
     id: string;
@@ -40,6 +41,7 @@ export default function LayerEditView({
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
     const router = useRouter();
+    const { showToast, showToastAfterNavigation } = useApp();
 
     const { data: relationData } = useQuery({
         queryKey: ['relations'],
@@ -98,8 +100,10 @@ export default function LayerEditView({
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             queryClient.invalidateQueries({ queryKey: ['relations'] });
             router.back();
+            showToastAfterNavigation('Ändringarna har sparats', 'success');
         } catch (error) {
             console.error('Error updating link resource:', error);
+            showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
         }
     };
 

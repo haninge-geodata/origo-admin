@@ -19,6 +19,7 @@ import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import { TreeView } from '@mui/x-tree-view/TreeView';
 import InformationDialog from '@/components/Dialogs/InformationDialog';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useApp } from '@/contexts/AppContext';
 
 export default function Page() {
     const queryKeyRoutes = "routes";
@@ -34,6 +35,7 @@ export default function Page() {
     const [isAllAccess, setIsAllAccess] = useState(false);
     const [isConfirmTokenDialogOpen, setConfirmTokenDialogOpen] = useState(false);
     const [createdToken, setCreatedToken] = useState('');
+    const { showToast, showToastAfterNavigation } = useApp();
 
     const handleCancelClick = () => {
         router.back();
@@ -116,6 +118,7 @@ export default function Page() {
     const confirmCloseTokenDialog = async () => {
         setConfirmTokenDialogOpen(false);
         router.back();
+        showToastAfterNavigation('API-nyckeln har skapats', 'success');
     }
 
     const handlePermissionChange = (permission: string) => {

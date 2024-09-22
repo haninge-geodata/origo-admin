@@ -6,8 +6,10 @@ class WFSLayerService extends BaseApiService<WFSLayerDto> {
     super("layers/wfs");
   }
   async duplicate(id: string): Promise<WFSLayerDto> {
-    const response = (await this.getRestClient()).post<WFSLayerDto>(`${this.resourcePath}/duplicate/${id}`);
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<WFSLayerDto>(`${this.resourcePath}/duplicate/${id}`);
+      return response;
+    });
   }
 }
 

@@ -6,6 +6,7 @@ import styles from "@/app/page.module.css";
 import { useRouter } from "next/navigation";
 import JSONEditor from "@/components/Editors/JSONEditor";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useApp } from '@/contexts/AppContext';
 
 interface GenericJsonFormProps {
     id?: string;
@@ -32,6 +33,7 @@ export default function GenericJsonForm({
     const queryClient = useQueryClient();
     const [formTitle, setFormTitle] = useState('');
     const [jsonContent, setJsonContent] = useState<object>(initialJsonContent);
+    const { showToastAfterNavigation, showToast } = useApp();
 
     const { data } = useQuery({
         queryKey: [queryKey, id],
@@ -58,13 +60,16 @@ export default function GenericJsonForm({
         const dto = dtoMapper(formTitle, jsonContent, id);
         try {
             if (id) {
+                showToastAfterNavigation('Ändringarna har sparats', 'success');
                 await service.update(id, dto);
             } else {
+                showToastAfterNavigation('Nytt objekt har skapats', 'success');
                 await service.add(dto);
             }
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             router.back();
         } catch (error) {
+            showToast('Ett fel inträffade. Försök igen senare.', 'error');
             console.error(`Error ${id ? 'updating' : 'adding'} item:`, error);
         }
     };

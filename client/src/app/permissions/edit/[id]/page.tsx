@@ -31,10 +31,12 @@ import { MapControlService as controlsService } from '@/api';
 //Map instances
 import mapInstanceSpec from "@/assets/specifications/tables/mapInstanceTableSpecification.json";
 import { MapInstanceService as mapInstanceService } from '@/api';
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page({ params: { id } }: any) {
     const key = "permissions";
     const { data, } = useQuery({ queryKey: [key, id], queryFn: () => service.fetch(id) });
+    const { showToast, showToastAfterNavigation } = useApp();
 
     const [actorData, setActorData] = useState<Array<Record<string, any>>>();
 
@@ -143,38 +145,45 @@ export default function Page({ params: { id } }: any) {
     }, [layerTableData, layerData, selectedSourcesRows]);
 
     const handleUpdateClick = async () => {
-        const updatedLayerPermissions: PermissionDto[] = selectedLayerRows.map(row => ({
-            id: row.id,
-            type: 'layers'
-        }));
+        try {
+            const updatedLayerPermissions: PermissionDto[] = selectedLayerRows.map(row => ({
+                id: row.id,
+                type: 'layers'
+            }));
 
-        const updatedSourcesPermissions: PermissionDto[] = selectedSourcesRows.map(row => ({
-            id: row.id,
-            type: 'linkresources'
-        }));
+            const updatedSourcesPermissions: PermissionDto[] = selectedSourcesRows.map(row => ({
+                id: row.id,
+                type: 'linkresources'
+            }));
 
-        const updatedControlsPermissions: PermissionDto[] = selectedControlsRows.map(row => ({
-            id: row.id,
-            type: 'controls'
-        }));
+            const updatedControlsPermissions: PermissionDto[] = selectedControlsRows.map(row => ({
+                id: row.id,
+                type: 'controls'
+            }));
 
-        const updatedMapInstancePermissions: PermissionDto[] = selectedMapInstanceRows.map(row => ({
-            id: row.id,
-            type: 'mapinstances'
-        }));
+            const updatedMapInstancePermissions: PermissionDto[] = selectedMapInstanceRows.map(row => ({
+                id: row.id,
+                type: 'mapinstances'
+            }));
 
-        const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedControlsPermissions, ...updatedMapInstancePermissions];
+            const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedControlsPermissions, ...updatedMapInstancePermissions];
 
-        const updatedData: RoleDto = {
-            id: data?.id,
-            role: data?.role ?? '',
-            actors: actorData as ActorDto[],
-            permissions: updatedPermissions
-        };
+            const updatedData: RoleDto = {
+                id: data?.id,
+                role: data?.role ?? '',
+                actors: actorData as ActorDto[],
+                permissions: updatedPermissions
+            };
 
-        await service.update(id, updatedData);
-        queryClient.invalidateQueries({ queryKey: [key] });
-        router.back();
+            await service.update(id, updatedData);
+            queryClient.invalidateQueries({ queryKey: [key] });
+            showToastAfterNavigation('Rollen har uppdaterats', 'success');
+
+            router.back();
+        } catch (error) {
+            showToast('Kunde inte uppdatera rollen.', 'error');
+            console.error(error);
+        }
     };
 
     const onLayerRowSelectionChanged = (ids: string[]) => {

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import MainCard from "@/components/Cards/MainCard/MainCard";
 import envStore from "@/stores/Environment";
 import { Pageview } from "@mui/icons-material";
+import { useApp } from "@/contexts/AppContext";
 
 interface PublishProps {
     id: string;
@@ -22,6 +23,7 @@ const Publish = ({ id }: PublishProps) => {
     const [isConfirmRepublishDialogOpen, setConfirmRepublishDialogOpen] = useState(false);
     const [selectedInstance, setSelectedInstance] = useState<any>();
     const [origoUrl, setOrigoUrl] = useState('');
+    const { showToast } = useApp();
 
     useEffect(() => {
         const fetchBaseUrl = async () => {
@@ -45,8 +47,14 @@ const Publish = ({ id }: PublishProps) => {
     }
 
     const handleSave = async () => {
-        const resp = await service.publish(id);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
+        try {
+            const resp = await service.publish(id);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            showToast('Kartinstansen publicerades!', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
+            console.error(error);
+        }
     };
 
     const handleRepublish = async (id: string) => {
@@ -54,11 +62,17 @@ const Publish = ({ id }: PublishProps) => {
         setSelectedInstance(selectedInstance);
         setConfirmRepublishDialogOpen(true);
     };
-
     const confirmRepublish = async () => {
-        await service.republish(id, selectedInstance!.id);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        handleRepublishDialogClose();
+        try {
+            await service.republish(id, selectedInstance!.id);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            handleRepublishDialogClose();
+            showToast('Kartinstansen har publicerats!', 'success');
+
+        } catch (error) {
+            showToast('Ett fel inträffade, kunde inte ompublicera kartinstansen', 'error');
+            console.error(error);
+        }
     }
 
     const handleRepublishDialogClose = () => {
@@ -78,7 +92,7 @@ const Publish = ({ id }: PublishProps) => {
         <Box component='div'>
             <Grid item xs={12} md={12} lg={12}>
                 <MainCard>
-                    <>
+                    {data && <>
                         <Box sx={{ position: 'relative', mb: 2 }}>
                             <>
                                 <Button onClick={handleGlobalPreview}
@@ -95,19 +109,19 @@ const Publish = ({ id }: PublishProps) => {
                                 </Button>
                             </>
                         </Box>
-                        {data &&
-                            <DetailedDataTable
-                                data={mapDataToTableFormat(data!, spec.specification)}
-                                onAdd={handlePublish}
-                                pagination={true}
-                                rowsPerPage={10}
-                                customEvents={[
-                                    { label: "Ompublicera", action: (id) => handleRepublish(id) },
-                                    { label: "Förhandsgranska", action: (id) => handlePreview(id) },
-                                ]}
-                                customOnAddLabel="Publicera"
-                            ></DetailedDataTable>}
-                    </>
+
+                        <DetailedDataTable
+                            data={mapDataToTableFormat(data!, spec.specification)}
+                            onAdd={handlePublish}
+                            pagination={true}
+                            rowsPerPage={10}
+                            customEvents={[
+                                { label: "Ompublicera", action: (id) => handleRepublish(id) },
+                                { label: "Förhandsgranska", action: (id) => handlePreview(id) },
+                            ]}
+                            customOnAddLabel="Publicera"
+                        ></DetailedDataTable>
+                    </>}
                 </MainCard>
             </Grid>
             <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
