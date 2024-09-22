@@ -1,3 +1,4 @@
+import axios from "axios";
 import { JWT } from "next-auth/jwt";
 
 type RefreshTokenResponse = {
@@ -7,42 +8,43 @@ type RefreshTokenResponse = {
   error?: string;
 };
 
-export async function refreshAccessToken(token: JWT, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
+export async function refreshAccessToken(token: JWT, scope: string, access_token_url: string, clientId: string, clientSecret: string): Promise<RefreshTokenResponse> {
   const refreshToken = token.refreshToken as string;
-  const access_token_url = token.access_token_url as string;
-
-  const formBody = new URLSearchParams({
-    grant_type: "refresh_token",
-    refresh_token: refreshToken,
-    scope: "openid email groups oauth",
-    client_id: clientId,
-    client_secret: clientSecret,
-  }).toString();
+  const params = new URLSearchParams();
+  params.append("grant_type", "refresh_token");
+  params.append("refresh_token", refreshToken);
+  params.append("scope", scope);
+  params.append("client_id", clientId);
+  params.append("client_secret", clientSecret);
 
   try {
-    const response = await fetch(access_token_url, {
-      method: "POST",
+    const response = await axios.post<RefreshTokenResponse>(access_token_url, params.toString(), {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: formBody,
     });
 
-    const data: RefreshTokenResponse = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || `HTTP error! status: ${response.status}`);
-    }
-
+    const data = response.data;
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       expires_in: data.expires_in,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error refreshing OAuth token:", error);
+    let errorMessage = "An unknown error occurred";
+    if (axios.isAxiosError(error)) {
+      if (error.response && error.response.data) {
+        errorMessage = error.response.data.error || error.message;
+      } else {
+        errorMessage = error.message;
+      }
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
     return {
-      error: error instanceof Error ? error.message : "An unknown error occurred",
+      error: errorMessage,
     };
   }
 }

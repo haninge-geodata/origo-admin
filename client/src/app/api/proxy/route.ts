@@ -38,16 +38,12 @@ async function handler(req: NextRequest) {
       headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
       headers["X-User-Info"] = JSON.stringify(userInfo.username);
 
-      console.log("User info:", userInfo);
-      console.log("Role info:", roleInfo);
       if (!roleInfo || !roleInfo.actors || roleInfo.actors.length === 0) {
         console.warn("Warning: Empty role info, granting access, make sure to add the ADMIN Role to permissions!");
       } else {
         const hasAccess = roleInfo.actors.some(
           (actor: ActorDto) => (actor.type === "Group" && userGroups.includes(actor.name)) || (actor.type === "User" && actor.name === userInfo.username)
         );
-        console.log("User has access:", hasAccess);
-        console.log("User groups:", userGroups);
 
         if (!hasAccess) {
           console.error("Error in authentication process: User not authorized");

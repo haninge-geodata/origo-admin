@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
       idToken: true,
       issuer: process.env.PROTECTED_IDP_ISSUER,
       checks: ["pkce", "state"],
-      authorization: { params: { scope: "openid groups email oauth" } },
+      authorization: { params: { scope: process.env.PROTECTED_IDP_SCOPE } },
       async profile(profile: any, tokens: any) {
         return {
           id: profile.sub,
@@ -61,8 +61,13 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      const refreshedToken = await refreshAccessToken(token, process.env.PROTECTED_IDP_CLIENT_ID!, process.env.PROTECTED_IDP_CLIENT_SECRET!);
-
+      const refreshedToken = await refreshAccessToken(
+        token,
+        process.env.PROTECTED_IDP_SCOPE!,
+        process.env.PROTECTED_IDP_TOKEN_URL!,
+        process.env.PROTECTED_IDP_CLIENT_ID!,
+        process.env.PROTECTED_IDP_CLIENT_SECRET!
+      );
       if (refreshedToken.error) {
         return { ...token, error: "RefreshAccessTokenError" };
       }

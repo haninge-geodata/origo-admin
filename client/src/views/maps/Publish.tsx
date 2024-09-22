@@ -67,7 +67,7 @@ const Publish = ({ id }: PublishProps) => {
     }
 
     const handlePreview = (instanceId: string) => {
-        window.open(`${origoUrl}/published/${instanceId}`, '_blank');
+        window.open(`${origoUrl}/${instanceId}/preview`, '_blank');
     }
 
     const handleGlobalPreview = () => {
@@ -80,18 +80,20 @@ const Publish = ({ id }: PublishProps) => {
                 <MainCard>
                     <>
                         <Box sx={{ position: 'relative', mb: 2 }}>
-                            <Button onClick={handleGlobalPreview}
-                                variant="contained"
-                                startIcon={<Pageview />}
-                                sx={{
-                                    position: 'relative',
-                                    top: 0,
-                                    right: 0,
-                                    zIndex: 1,
-                                    color: 'white'
-
-                                }}
-                            >Förhandsgranska</Button>
+                            <>
+                                <Button onClick={handleGlobalPreview}
+                                    variant="contained"
+                                    startIcon={<Pageview />}
+                                    sx={{
+                                        position: 'relative',
+                                        top: 0,
+                                        right: 0,
+                                        zIndex: 1,
+                                        color: 'white'
+                                    }}
+                                >Förhandsgranska
+                                </Button>
+                            </>
                         </Box>
                         {data &&
                             <DetailedDataTable
