@@ -52,9 +52,14 @@ export function extractTokenFromRequest(req: any): accessToken | null {
 
   // If not found in header, try to extract from cookie
   const cookies = parseCookies(req.headers.cookie);
+  console.log("Cookies:", req.headers.cookies);
+
   const cookieToken = cookies["OIDC_AUTH_CODE"];
+  const expires = cookies["OIDC_ACCESS_TOKEN_EXPIRES"];
+
+  console.log("Cookie token:", cookies);
   if (cookieToken) {
-    return { value: cookieToken, expiresAt: 0 };
+    return { value: cookieToken, expiresAt: expires ? parseInt(expires) : 600 };
   }
 
   // TODO: If token is not found, return the simulated token if it's not expired

@@ -42,8 +42,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async jwt({ token, user, account, profile, trigger }) {
-      const tokenRefreshMarginSeconds = 1800; // 30 minutes
-
       // Initial sign in
       if (account && user) {
         const expiresIn = account.expires_in ? (account.expires_in as number) * 1000 : 3600 * 1000;
@@ -57,7 +55,7 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
-      if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number) - tokenRefreshMarginSeconds * 1000) {
+      if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number)) {
         return token;
       }
 

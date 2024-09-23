@@ -12,7 +12,8 @@ const BASE_URL = process.env.BASE_URL;
 async function handler(req: NextRequest) {
   const { method } = req;
   const url = req.nextUrl.searchParams.get("url");
-  const jwtPayload = await getToken({ req });
+  const jwtPayload = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
   if (!url || Array.isArray(url)) {
     return NextResponse.json({ error: "Missing or invalid url query parameter" }, { status: 400 });
   }
