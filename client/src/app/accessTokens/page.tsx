@@ -10,6 +10,7 @@ import spec from "@/assets/specifications/tables/accessTokenTableSpecification.j
 import DetailedDataTable from "@/components/Tables/DetailedDataTable";
 import { useState } from "react";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page() {
     const queryKey = "access-token";
@@ -20,6 +21,7 @@ export default function Page() {
     const { data, isLoading, error } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchAll() });
     const router = useRouter();
     const pathname = usePathname()
+    const { showToast } = useApp();
 
     const handleAddClick = () => {
         const addUrl = `${pathname}/add/`;
@@ -46,8 +48,10 @@ export default function Page() {
             let id = toBeDeteledId!;
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
+            showToast('API-Nyckeln har raderats', 'success');
             setAlertDialogOpen(false);
         } catch (error) {
+            showToast('API-Nyckeln kunde inte raderas', 'error');
             console.error(errorMessage, error);
         }
     }

@@ -13,6 +13,7 @@ import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import { StyleSchemaDto, StyleType, StyleItemDto } from "@/shared/interfaces/dtos";
 import FormDialog from "@/components/Dialogs/FormDialog";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page() {
     const queryKey = "styleSchemas";
@@ -25,6 +26,7 @@ export default function Page() {
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [toBeDeteledId, setToBeDeletedId] = useState<string | null>(null);
+    const { showToast } = useApp();
 
     interface flattenedStyleSchemaData {
         id: string;
@@ -104,8 +106,11 @@ export default function Page() {
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             setAlertDialogOpen(false);
+            showToast('Stilschemat har raderats!', 'success');
+
         } catch (error) {
-            console.error('Error deleting WMS Layer:', error);
+            showToast('Stilschemat kunde inte raderas', 'error');
+            console.error('Error deleting style Layer:', error);
         }
     }
 

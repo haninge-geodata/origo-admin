@@ -12,6 +12,7 @@ import LinkResourceDialog from "@/components/Dialogs/LinkResourceDialog";
 import { LinkResourceDto } from "@/shared/interfaces/dtos";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
 import React from "react";
+import { useApp } from "@/contexts/AppContext";
 
 
 interface LayersListingViewProps {
@@ -29,6 +30,7 @@ export default function LayersListingView({ type, service, specification }: Laye
     const [selectedLayer, setSelectedLayer] = useState<any>();
     const [key, setKey] = useState(0);
     const queryClient = useQueryClient();
+    const { showToast } = useApp();
 
     useEffect(() => {
     }, [data]);
@@ -53,9 +55,15 @@ export default function LayersListingView({ type, service, specification }: Laye
     };
 
     const confirmDuplicate = async () => {
-        await service.duplicate(selectedLayer!.id);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        handleDuplicateDialogClose();
+        try {
+            await service.duplicate(selectedLayer!.id);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            handleDuplicateDialogClose();
+            showToast('Lagret duplicerades', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade, lagret kunde inte dupliceras.', 'error');
+            console.error('Error duplicating layer:', error);
+        }
     }
 
     const handleDuplicateDialogClose = () => {
@@ -76,21 +84,27 @@ export default function LayersListingView({ type, service, specification }: Laye
     };
 
     const onSubmit = async (linkResource: LinkResourceDto, mapInstanceIds: string[]) => {
-        selectedLayer!.source = linkResource;
-        await service.update(selectedLayer!.id, selectedLayer!);
-        if (mapInstanceIds.length > 0) {
-            const request = { mapInstances: mapInstanceIds, actions: ['source'] };
-            mapInstanceService.syncLayer(request, selectedLayer!.type, selectedLayer!.id);
-            handleDialogClose();
+        try {
+            selectedLayer!.source = linkResource;
+            await service.update(selectedLayer!.id, selectedLayer!);
+            if (mapInstanceIds.length > 0) {
+                const request = { mapInstances: mapInstanceIds, actions: ['source'] };
+                mapInstanceService.syncLayer(request, selectedLayer!.type, selectedLayer!.id);
+                handleDialogClose();
+            }
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            showToast('Källan har uppdaterats', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade, källan kunde inte uppdateras.', 'error');
+            console.error('Error updating source:', error);
         }
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
     }
-
 
     const handleDelete = async (id: string) => {
         const selectedLayer = data!.find((layer: any) => layer.id === id);
         setSelectedLayer(selectedLayer);
         setAlertDialogOpen(true);
+
     };
     const confirmDelete = async () => {
         try {
@@ -98,8 +112,9 @@ export default function LayersListingView({ type, service, specification }: Laye
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             setAlertDialogOpen(false);
-
+            showToast('Lagret har raderats', 'success');
         } catch (error) {
+            showToast('Ett fel inträffade när lagret skulle raderas.', 'error');
             console.error(`Error deleting ${type} Layer:`, error);
         }
     };
@@ -116,7 +131,7 @@ export default function LayersListingView({ type, service, specification }: Laye
         <main className={styles.main}>
             <Grid container spacing={2}>
                 <Grid item xs={12}>
-                    <Typography variant="h2">{type}</Typography>
+                    <Typography variant="h3">{type}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                     <MainCard>

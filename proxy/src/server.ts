@@ -11,8 +11,16 @@ const resourcesEndpoint = process.env.RESOURCES_ENDPOINT_URL!;
 const rolesEndpoint = process.env.ROLES_ENDPOINT_URL!;
 const PROXY_BASE_PATH = process.env.PROXY_BASE_PATH || "proxy";
 const API_ACCESS_TOKEN = process.env.API_ACCESS_TOKEN!;
-const cacheManager = new CacheManager(rolesEndpoint, resourcesEndpoint, API_ACCESS_TOKEN);
-const proxyManager = new ProxyManager(cacheManager, API_ACCESS_TOKEN, PROXY_BASE_PATH);
+const cacheManager = new CacheManager(
+  rolesEndpoint,
+  resourcesEndpoint,
+  API_ACCESS_TOKEN
+);
+const proxyManager = new ProxyManager(
+  cacheManager,
+  API_ACCESS_TOKEN,
+  PROXY_BASE_PATH
+);
 
 async function initializeServer() {
   try {
@@ -39,7 +47,10 @@ app.post("/admin/refresh-cache", async (req, res) => {
 app.get("/health", async (req, res) => {
   const healthStatus = await cacheManager.healthCheck();
 
-  if (healthStatus.status === "healthy" || healthStatus.status === "recovered") {
+  if (
+    healthStatus.status === "healthy" ||
+    healthStatus.status === "recovered"
+  ) {
     res.status(200).json(healthStatus);
   } else {
     res.status(503).json(healthStatus);

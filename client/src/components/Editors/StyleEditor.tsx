@@ -21,6 +21,7 @@ import { RenderIconForm } from "@/views/styleform/IconForm";
 import { RenderCustomForm } from "@/views/styleform/CustomForm";
 import { isEqual, set } from "lodash";
 import { getIcon } from "@/utils/helpers/iconHelper";
+import { useApp } from "@/contexts/AppContext";
 
 interface StyleEditorProps {
     id: string;
@@ -40,6 +41,7 @@ export const StyleEditor = ({ onRouterBackClick, id }: StyleEditorProps) => {
     const BACKGROUND_COLOR_HOVER = "#e6f7ff";
     const DeleteComponent = getIcon('DeleteOutline', '#1890FF', 25);
     const [key, setKey] = useState(0);
+    const { showToast } = useApp();
 
     useEffect(() => {
         if (data) {
@@ -119,22 +121,28 @@ export const StyleEditor = ({ onRouterBackClick, id }: StyleEditorProps) => {
     };
 
     const handleSave = async () => {
-        if (!styleSchema || (!activeItem)) return;
-        const updatedStyles = styleSchema.styles.map(styleRow =>
-            styleRow.map(styleItem => {
-                if (activeItem && styleItem.id === activeItem.id) {
-                    return sanitizeObject({ ...activeItem });
-                }
-                return styleItem;
-            })
-        );
-        const updatedStyleSchema = {
-            ...styleSchema,
-            styles: updatedStyles
-        };
-        setStyleSchema(updatedStyleSchema);
-        await service.update(updatedStyleSchema.id!, updatedStyleSchema);
-        resetForm();
+        try {
+            if (!styleSchema || (!activeItem)) return;
+            const updatedStyles = styleSchema.styles.map(styleRow =>
+                styleRow.map(styleItem => {
+                    if (activeItem && styleItem.id === activeItem.id) {
+                        return sanitizeObject({ ...activeItem });
+                    }
+                    return styleItem;
+                })
+            );
+            const updatedStyleSchema = {
+                ...styleSchema,
+                styles: updatedStyles
+            };
+            setStyleSchema(updatedStyleSchema);
+            await service.update(updatedStyleSchema.id!, updatedStyleSchema);
+            resetForm();
+            showToast('Ändringarna har sparats', 'success');
+        } catch (error) {
+            showToast('Ändringarna kunde inte sparas!', 'error');
+            console.error(error);
+        }
     }
     const handleCancelClick = () => {
         resetForm();
@@ -197,18 +205,25 @@ export const StyleEditor = ({ onRouterBackClick, id }: StyleEditorProps) => {
         setKey(key + 1);
     }
     const deleteStyle = async (id: string) => {
-        const updatedStyles = styleSchema.styles.filter(styleRow =>
-            !styleRow.some(styleItem => styleItem.id === id)
-        );
+        try {
+            const updatedStyles = styleSchema.styles.filter(styleRow =>
+                !styleRow.some(styleItem => styleItem.id === id)
+            );
 
-        const updatedStyleSchema = {
-            ...styleSchema,
-            styles: updatedStyles
-        };
+            const updatedStyleSchema = {
+                ...styleSchema,
+                styles: updatedStyles
+            };
 
-        await service.update(updatedStyleSchema.id!, updatedStyleSchema);
-        setStyleSchema(updatedStyleSchema);
-        resetForm();
+            await service.update(updatedStyleSchema.id!, updatedStyleSchema);
+            setStyleSchema(updatedStyleSchema);
+            resetForm();
+            showToast('Ikonregeln har raderats', 'success');
+
+        } catch (error) {
+            console.error(error);
+            showToast('Kunde inte radera ikonregeln.', 'error');
+        }
     }
 
     const DeleteButton = ({ onClick }: any) => (

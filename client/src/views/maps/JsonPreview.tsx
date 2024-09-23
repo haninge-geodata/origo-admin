@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Box, IconButton } from '@mui/material';
 import JSONEditor from '@/components/Editors/JSONEditor';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { useApp } from '@/contexts/AppContext';
 
 interface JsonPreviewProps {
     id: string;
@@ -14,6 +15,8 @@ const JsonPreview = ({ id, updateKey }: JsonPreviewProps) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const queryKey = ["preview", id];
     const queryClient = useQueryClient();
+    const { showToast } = useApp();
+
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: queryKey,
         queryFn: () => service.fetchPreview(id)
@@ -25,6 +28,7 @@ const JsonPreview = ({ id, updateKey }: JsonPreviewProps) => {
     }, [updateKey, id]);
 
     const onChange = () => {
+        showToast('Ändringar direkt i JSON:en kommer inte sparas.', 'info');
         console.info('Pointless to change, it will not be saved anyway :)')
     }
 
@@ -32,6 +36,7 @@ const JsonPreview = ({ id, updateKey }: JsonPreviewProps) => {
         await queryClient.invalidateQueries({ queryKey: queryKey });
         await refetch();
         setRefreshKey(prev => prev + 1);
+        showToast('JSON:en har uppdaterats', 'info');
     }
 
     return (

@@ -1,18 +1,19 @@
 import { IMapper } from "@/interfaces";
-import { DBLinkResource } from "@/models";
+import { DBLinkResource, DBMapControl } from "@/models";
 import { DBLayerBase } from "@/models/layer.model";
-import { ProxyLayerDto, ProxyRoleDto } from "@/shared/interfaces/proxy";
+import { ProxyResourceDto, ProxyRoleDto } from "@/shared/interfaces/proxy";
 import { DBRole } from "@/models/permission.model";
 import { linkResourceMapper } from "@/mappers/linkResourceMapper";
 import { LinkResourceDto } from "@/shared/interfaces/dtos";
+import { DBPublishedMap } from "@/models/publishedMap.model";
 
-class proxyLayerMapper implements IMapper<DBLayerBase, ProxyLayerDto> {
+class proxyLayerMapper implements IMapper<DBLayerBase, ProxyResourceDto> {
   private _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
 
   constructor() {
     this._linkResourceMapper = new linkResourceMapper();
   }
-  toDto(model: DBLayerBase): ProxyLayerDto {
+  toDto(model: DBLayerBase): ProxyResourceDto {
     const src = this._linkResourceMapper.toDto(model.source as DBLinkResource);
     return {
       type: "layer",
@@ -23,12 +24,72 @@ class proxyLayerMapper implements IMapper<DBLayerBase, ProxyLayerDto> {
       sourceUrl: src.url,
     };
   }
-  toDBModel(dto: ProxyLayerDto, create?: boolean | undefined): DBLayerBase {
-    throw new Error("Method not implemented since it is not needed for this mapper");
+  toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBLayerBase {
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
   }
 }
 
-export class proxyRoleMapper implements IMapper<DBRole, ProxyRoleDto> {
+class proxySourceMapper implements IMapper<DBLinkResource, ProxyResourceDto> {
+  toDto(model: DBLinkResource): ProxyResourceDto {
+    return {
+      type: "source",
+      id: model._id.toString(),
+      name: model.name,
+    };
+  }
+  toDBModel(
+    dto: ProxyResourceDto,
+    create?: boolean | undefined
+  ): DBLinkResource {
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
+  }
+}
+
+class proxyControlMapper implements IMapper<DBMapControl, ProxyResourceDto> {
+  toDto(model: DBMapControl): ProxyResourceDto {
+    let name = (model.control as { name: string }).name;
+    if (!name) {
+      name = model.title;
+    }
+
+    return {
+      type: "control",
+      id: model._id.toString(),
+      name: name,
+    };
+  }
+  toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBMapControl {
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
+  }
+}
+
+class proxyPublishedMapMapper
+  implements IMapper<DBPublishedMap, ProxyResourceDto>
+{
+  toDto(model: DBPublishedMap): ProxyResourceDto {
+    return {
+      type: "map",
+      id: model._id.toString(),
+      name: model.title,
+    };
+  }
+  toDBModel(
+    dto: ProxyResourceDto,
+    create?: boolean | undefined
+  ): DBPublishedMap {
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
+  }
+}
+
+class proxyRoleMapper implements IMapper<DBRole, ProxyRoleDto> {
   toDto(model: DBRole): ProxyRoleDto {
     return {
       id: model._id.toString(),
@@ -44,8 +105,16 @@ export class proxyRoleMapper implements IMapper<DBRole, ProxyRoleDto> {
     };
   }
   toDBModel(dto: ProxyRoleDto, create?: boolean): DBRole {
-    throw new Error("Method not implemented since it is not needed for this mapper");
+    throw new Error(
+      "Method not implemented since it is not needed for this mapper"
+    );
   }
 }
 
-export { proxyLayerMapper };
+export {
+  proxyLayerMapper,
+  proxyRoleMapper,
+  proxySourceMapper,
+  proxyPublishedMapMapper,
+  proxyControlMapper,
+};

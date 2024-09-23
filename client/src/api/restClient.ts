@@ -40,9 +40,7 @@ class RestClient {
         options.body = JSON.stringify(body);
       }
     }
-
     const response = await fetch(proxyUrl.toString(), options);
-
     if (!response.ok) {
       console.error("Error Response not ok");
       console.error("Error Response:", response);
