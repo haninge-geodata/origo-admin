@@ -4,11 +4,27 @@ import { CacheManager } from "./cacheManager";
 import { ProxyManager } from "./proxyManager";
 import { authorize } from "./lib/auth/authorize";
 import { access_token } from "./lib/auth/access_token";
-import { callback } from "./lib/auth/callback";
+import cors from "cors";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import { extractTokenFromRequest } from "./lib/auth/auth";
 
 dotenv.config();
 
 const app = express();
+
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
+
+app.use(cookieParser());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const port = process.env.PORT || 3020;
 const resourcesEndpoint = process.env.RESOURCES_ENDPOINT_URL!;
 const rolesEndpoint = process.env.ROLES_ENDPOINT_URL!;
@@ -39,9 +55,14 @@ app.post("/admin/refresh-cache", async (req, res) => {
   }
 });
 
-app.get("/authorize", authorize);
-app.post("/access_token", access_token);
-app.get("/api/auth/callback/oidc", callback);
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  next();
+});
+
+app.post("/auth/access_token", access_token);
+app.get("/auth/authorize", authorize);
 
 app.get("/health", async (req, res) => {
   const healthStatus = await cacheManager.healthCheck();

@@ -83,7 +83,6 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
         headers: {
           ...req.headers,
           host: targetUrl.host,
-          Authorization: `Bearer ${apiAccessToken}`,
         },
       };
 

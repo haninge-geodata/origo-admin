@@ -37,54 +37,28 @@ export function extractGroups(token: string): string[] {
   return [];
 }
 
-export const simulatedToken: accessToken = {
-  value: "",
-  expiresAt: Date.now() + 7200 * 1000, // 2 hours from now
-};
-
 export function extractTokenFromRequest(req: any): accessToken | null {
+  const cookies = req.cookies;
+  if (cookies && cookies.access_token) {
+    return { value: cookies.access_token, expiresAt: 0 };
+  }
+  // if no auth in cookies check the headers
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
-    //TODO: Check if token is expired!!"!"
-    //return authHeader.substring(7);
     return { value: authHeader.substring(7), expiresAt: 0 };
   }
+  // If no auth header, check the session
+  if (req.session && (req.session as any).accessToken) {
+    const expiresAt = (req.session as any).expires_in ? Date.now() + (req.session as any).expires_in * 1000 : 0;
+    const token = (req.session as any).accessToken;
 
-  // If not found in header, try to extract from cookie
-  const cookies = parseCookies(req.headers.cookie);
-  console.log("Cookies:", req.headers.cookies);
-
-  const cookieToken = cookies["OIDC_AUTH_CODE"];
-  const expires = cookies["OIDC_ACCESS_TOKEN_EXPIRES"];
-
-  console.log("Cookie token:", cookies);
-  if (cookieToken) {
-    return { value: cookieToken, expiresAt: expires ? parseInt(expires) : 600 };
-  }
-
-  // TODO: If token is not found, return the simulated token if it's not expired
-  if (Date.now() < simulatedToken.expiresAt) {
-    console.log("Returning simulated token");
-    return simulatedToken;
+    return {
+      value: (req.session as any).accessToken,
+      expiresAt: (req.session as any).expires_in ? Date.now() + (req.session as any).expires_in * 1000 : 0,
+    };
+  } else {
+    console.log("No token found in session");
   }
 
   return null;
-}
-
-function parseCookies(cookieHeader: string | undefined): {
-  [key: string]: string;
-} {
-  const cookies: { [key: string]: string } = {};
-
-  if (cookieHeader) {
-    cookieHeader.split(";").forEach((cookie) => {
-      const parts = cookie.split("=");
-      const key = parts.shift()?.trim();
-      const value = decodeURIComponent(parts.join("="));
-      if (key) {
-        cookies[key] = value;
-      }
-    });
-  }
-  return cookies;
 }

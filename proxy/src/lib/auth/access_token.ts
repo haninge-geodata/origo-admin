@@ -1,13 +1,13 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { TokenSet } from "openid-client";
 import { getOpenidClient } from "./openidIssuer";
 
-export const access_token = async (req: Request, res: Response): Promise<void> => {
+export const access_token = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const client = await getOpenidClient();
-    const { code, refresh_token } = req.body;
+    const code = req.body.code || req.query.code;
+    const { refresh_token } = req.body;
     let tokenSet: TokenSet | null = null;
-
     if (code && refresh_token) {
       res.status(400).send("Bad Request: Send either code or refresh token. Not both.");
       return;
@@ -16,20 +16,9 @@ export const access_token = async (req: Request, res: Response): Promise<void> =
     if (code) {
       tokenSet = await client.grant({
         grant_type: "authorization_code",
-        code: code,
+        code: code as string,
         redirect_uri: process.env.REDIRECT_URI,
       });
-
-      if (process.env.SET_ACCESS_TOKEN_COOKIE === "true") {
-        res.cookie("OIDC_AUTH_CODE", code, {
-          domain: process.env.AUTHORIZATION_CODE_COOKIE_DOMAIN,
-          expires: new Date(tokenSet.expires_at! * 1000),
-          httpOnly: true,
-          path: "/",
-          secure: true,
-          sameSite: "lax",
-        });
-      }
     } else if (refresh_token) {
       tokenSet = await client.grant({
         grant_type: "refresh_token",
@@ -44,8 +33,17 @@ export const access_token = async (req: Request, res: Response): Promise<void> =
       throw new Error("Failed to obtain token set");
     }
 
-    const userInfo = await client.userinfo(tokenSet.access_token!);
+    res.cookie("access_token", tokenSet.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      partitioned: true,
+      maxAge: tokenSet.expires_in ? tokenSet.expires_in * 1000 : 3600000,
+      path: "/",
+      domain: process.env.AUTHORIZATION_CODE_COOKIE_DOMAIN,
+    });
 
+    const userInfo = await client.userinfo(tokenSet.access_token!);
     res.json({
       authenticated: true,
       access_token: tokenSet.access_token,
@@ -56,6 +54,6 @@ export const access_token = async (req: Request, res: Response): Promise<void> =
     });
   } catch (error) {
     console.error("Access token error:", error);
-    res.status(500).send("Access token error");
+    res.status(500).json({ error: "Access token error", details: error instanceof Error ? error.message : "Unknown error" });
   }
 };
