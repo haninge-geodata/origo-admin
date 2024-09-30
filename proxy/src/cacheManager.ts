@@ -19,21 +19,30 @@ class OptimizedPermissionCache {
   }
 
   private buildCache(resources: any[], roles: any[]) {
-    const permissionMap = new Map<string, Set<string>>();
+    const permissionToActors = new Map<string, Set<string>>();
     roles.forEach((role) => {
       role.permissions.forEach((perm: any) => {
-        if (!permissionMap.has(perm.id)) {
-          permissionMap.set(perm.id, new Set());
+        if (!permissionToActors.has(perm.id)) {
+          permissionToActors.set(perm.id, new Set());
         }
         role.actors.forEach((actor: any) => {
-          permissionMap.get(perm.id)!.add(actor.name);
+          permissionToActors.get(perm.id)!.add(actor.name);
         });
       });
     });
 
     resources.forEach((resource) => {
       const key = `${resource.source}:${resource.name}`;
-      this.layerPermissions.set(key, permissionMap.get(resource.id) || new Set());
+      const resourcePermissionActors = permissionToActors.get(resource.id);
+
+      if (resourcePermissionActors) {
+        if (!this.layerPermissions.has(key)) {
+          this.layerPermissions.set(key, new Set());
+        }
+        resourcePermissionActors.forEach((actorName) => {
+          this.layerPermissions.get(key)!.add(actorName);
+        });
+      }
     });
   }
 
@@ -175,15 +184,10 @@ export class CacheManager {
       };
 
       // Fetch roles and resources concurrently
-      const [rolesResponse, resourcesResponse] = await Promise.all([
-        fetch(this.rolesEndpoint, { headers }),
-        fetch(this.resourcesEndpoint, { headers }),
-      ]);
+      const [rolesResponse, resourcesResponse] = await Promise.all([fetch(this.rolesEndpoint, { headers }), fetch(this.resourcesEndpoint, { headers })]);
 
       if (!rolesResponse.ok || !resourcesResponse.ok) {
-        throw new Error(
-          `HTTP error! Roles status: ${rolesResponse.status}, Resources status: ${resourcesResponse.status}`
-        );
+        throw new Error(`HTTP error! Roles status: ${rolesResponse.status}, Resources status: ${resourcesResponse.status}`);
       }
 
       const [roles, resources] = await Promise.all([rolesResponse.json(), resourcesResponse.json()]);
@@ -197,7 +201,7 @@ export class CacheManager {
       console.info("Cache refresh completed");
     } catch (error) {
       console.error("Error refreshing cache:", error);
-      throw error;
+      console.error("Cache will not be updated, please check access token and urls for roles and resources i .env");
     }
   }
 
@@ -247,6 +251,41 @@ export class CacheManager {
     }
     return this.optimizedPermissionCache.hasLayerPermission(source, layerName, actors);
   }
+  hasSourcePermission(source: string, actors: string[]): boolean {
+    if (!this.permissionCache) {
+      throw new Error("Optimized permission cache is not initialized");
+    }
+
+    const permissionId = this.resourcesCache
+      ?.getResources()
+      .filter((r) => r.type === "source" && r.name === source)
+      .map((r) => r.id);
+
+    if (permissionId && permissionId.length === 1) {
+      for (const actor of actors) {
+        if (this.permissionCache.hasPermission(actor, permissionId[0])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  hasControlPermission(actors: string, control: string): boolean {
+    if (!this.permissionCache) {
+      throw new Error("Optimized permission cache is not initialized");
+    }
+
+    const permissionId = this.resourcesCache
+      ?.getResources()
+      .filter((r) => r.type === "control" && r.name === control)
+      .map((r) => r.id);
+    if (permissionId && permissionId.length === 1) {
+      return this.permissionCache.hasPermission(actors, permissionId[0]);
+    }
+    return false;
+  }
 
   getPermissionDetails(permissionId: string): Permission | undefined {
     if (!this.permissionCache) {
@@ -260,11 +299,18 @@ export class CacheManager {
     return this.permissionCache !== null && this.resourcesCache !== null;
   }
 
-  async healthCheck(): Promise<{ status: string; message: string; lastUpdated?: string }> {
+  async healthCheck(): Promise<{
+    status: string;
+    message: string;
+    lastUpdated?: string;
+  }> {
     if (!this.isCacheInitialized()) {
       try {
         await this.initializeCache();
-        return { status: "recovered", message: "Cache was empty and has been initialized." };
+        return {
+          status: "recovered",
+          message: "Cache was empty and has been initialized.",
+        };
       } catch (error) {
         return {
           status: "error",

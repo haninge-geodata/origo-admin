@@ -94,40 +94,76 @@ export const ListComponent = ({ isDisabled, setGroups, groups, setSelectedGroup,
                 borderRight: selectedGroup?.id === group.id ? "2px solid #334c63" : "inherit",
                 color: selectedGroup?.id === group.id ? BACKGROUND_COLOR : "inherit",
                 ...(level > 0 && { paddingLeft: `${level * 30}px` }),
-            }
+            },
         };
+
         return (
             <>
                 {level === 0 && <Divider />}
                 <ListItemButton {...listItemButtonProps} disabled={isDisabled}>
-                    <ListItemText primary={group.title} />
-                    <Box component='div' sx={{ display: 'flex', alignItems: 'center' }}>
+                    <ListItemText
+                        primary={group.title}
+                        sx={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            flexGrow: 1,
+                            minWidth: 0,
+                            marginRight: '8px',
+                        }}
+                    />
+                    <Box
+                        component='div'
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            flexShrink: 0,
+                            flexWrap: 'wrap',
+                            gap: '4px',
+                        }}
+                    >
                         {selectedGroup?.id === group.id && (
                             <>
-                                <IconButton onClick={() => handleAddItem(group.id)}>
+                                <IconButton onClick={() => handleAddItem(group.id)} size="small">
                                     {NewFolderComponent}
                                 </IconButton>
-                                <IconButton onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteGroup(group.id);
-                                }} size="small">
+                                <IconButton
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteGroup(group.id);
+                                    }}
+                                    size="small"
+                                >
                                     {DeleteComponent}
                                 </IconButton>
                             </>
                         )}
-                        {group.groups?.length ? open ? <ExpandLess /> : <ExpandMore /> : null}
+                        {group.groups?.length ? (
+                            open ? (
+                                <ExpandLess fontSize="small" />
+                            ) : (
+                                <ExpandMore fontSize="small" />
+                            )
+                        ) : null}
                     </Box>
-                </ListItemButton >
+                </ListItemButton>
                 <Collapse in={open} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding>
                         {group.groups?.map((subGroup, index) => (
-                            <NestedGroup key={index} group={subGroup} level={level + 1} onDeleteGroup={onDeleteGroup} />
+                            <NestedGroup
+                                key={index}
+                                group={subGroup}
+                                level={level + 1}
+                                onDeleteGroup={onDeleteGroup}
+                            />
                         ))}
                     </List>
                 </Collapse>
             </>
         );
     };
+
 
     return (<Grid item xs={12} md={3} sx={{ display: "flex", flexDirection: "column" }}>
         <Paper sx={{ flex: 1, overflowY: 'auto', borderRadius: "0%" }} elevation={3}>

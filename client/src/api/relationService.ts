@@ -7,8 +7,10 @@ class RelationService extends BaseApiService<RelationDto> {
   }
 
   async fetchRelations(id: string, findIn: string, path: string): Promise<RelationDto[]> {
-    const response = (await this.getRestClient()).get<RelationDto[]>(`${this.resourcePath}/${id}/${findIn}/${path}`);
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).get<RelationDto[]>(`${this.resourcePath}/${id}/${findIn}/${path}`);
+      return response;
+    });
   }
 }
 

@@ -6,8 +6,10 @@ class PermissionService extends BaseApiService<RoleDto> {
     super("permissions/roles");
   }
   async duplicate(id: string): Promise<RoleDto> {
-    const response = (await this.getRestClient()).post<RoleDto>(`${this.resourcePath}/duplicate/${id}`);
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<RoleDto>(`${this.resourcePath}/duplicate/${id}`);
+      return response;
+    });
   }
 }
 

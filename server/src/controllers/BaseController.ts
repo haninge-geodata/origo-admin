@@ -52,7 +52,6 @@ class BaseController<T> {
   async deleteById(req: Request, res: Response) {
     try {
       await this.service.delete(req.params.id);
-      console.info("BaseController: Setting status to 204");
       res.status(204).end();
     } catch (error) {
       this.handleError(res, error);

@@ -8,6 +8,7 @@ import { useQueryClient, useQuery } from "@tanstack/react-query";
 import DetailedDataTable from "@/components/Tables/DetailedDataTable";
 import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import { useApp } from '@/contexts/AppContext';
 
 interface GenericListViewProps {
     queryKey: string;
@@ -37,6 +38,8 @@ export default function GenericListView({
     const router = useRouter();
     const pathname = usePathname();
     const queryClient = useQueryClient();
+    const { showToast } = useApp();
+
 
     const handleAddClick = () => {
         const addUrl = `${pathname}/add/`;
@@ -67,7 +70,10 @@ export default function GenericListView({
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             setAlertDialogOpen(false);
+            showToast('Objektet har raderats', 'success');
+
         } catch (error) {
+            showToast('Kunde inte radera objektet.', 'error');
             console.error(errorMessage, error);
         }
     };

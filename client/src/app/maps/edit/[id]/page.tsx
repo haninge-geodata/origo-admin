@@ -13,6 +13,7 @@ import { GroupDto, LayerDto, MapControlDto, MapSettingDto } from "@/shared/inter
 import JsonPreview from "@/views/maps/JsonPreview";
 import Publish from "@/views/maps/Publish";
 import { TabContainer } from "@/components/Tabs/TabContainer";
+import { useApp } from "@/contexts/AppContext";
 
 const items: Item[] = [
     { id: 0, label: 'Inställningar' },
@@ -35,6 +36,7 @@ export default function Page({ params: { id } }: any) {
     const [layers, setLayers] = useState(null as unknown as LayerDto[]);
     const [key, setKey] = useState(0);
     const queryClient = useQueryClient();
+    const { showToast } = useApp();
 
     useEffect(() => {
         if (data) {
@@ -54,63 +56,81 @@ export default function Page({ params: { id } }: any) {
         setKey(key + 1);
     };
 
-
-
     const handleSaveLayersAndGroups = async (updatedGroups: GroupDto[], updatedLayers: LayerDto[]) => {
-        const updatedData = {
-            id: mapInstanceData!.id,
-            title: mapInstanceData!.title,
-            name: mapInstanceData!.name,
-            abstract: mapInstanceData!.abstract,
-            instance: {
-                groups: updatedGroups,
-                layers: updatedLayers,
-                controls: mapInstanceData!.instance?.controls || [],
-                settings: mapInstanceData!.instance?.settings
-            },
-        };
-        setMapInstanceData(updatedData);
-        await service.update(updatedData?.id!, updatedData!);
-        setKey(key + 1);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
+        try {
+            const updatedData = {
+                id: mapInstanceData!.id,
+                title: mapInstanceData!.title,
+                name: mapInstanceData!.name,
+                abstract: mapInstanceData!.abstract,
+                instance: {
+                    groups: updatedGroups,
+                    layers: updatedLayers,
+                    controls: mapInstanceData!.instance?.controls || [],
+                    settings: mapInstanceData!.instance?.settings
+                },
+            };
+            setMapInstanceData(updatedData);
+            await service.update(updatedData?.id!, updatedData!);
+            setKey(key + 1);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            showToast('Ändringarna har sparats', 'success');
+
+        } catch (error) {
+            showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
+            console.error(error);
+        }
     }
 
     const handleSaveSettings = async (title: string, name: string, settings: MapSettingDto, abstract?: string) => {
-        const updatedData = {
-            id: mapInstanceData!.id,
-            title: title,
-            name: name,
-            abstract: abstract,
-            instance: {
-                groups: mapInstanceData!.instance?.groups,
-                layers: mapInstanceData!.instance?.layers,
-                controls: mapInstanceData!.instance?.controls || [],
-                settings: settings
-            },
-        };
-        setMapInstanceData(updatedData);
-        await service.update(updatedData?.id!, updatedData!);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        setKey(key + 1);
+        try {
+            const updatedData = {
+                id: mapInstanceData!.id,
+                title: title,
+                name: name,
+                abstract: abstract,
+                instance: {
+                    groups: mapInstanceData!.instance?.groups,
+                    layers: mapInstanceData!.instance?.layers,
+                    controls: mapInstanceData!.instance?.controls || [],
+                    settings: settings
+                },
+            };
+            setMapInstanceData(updatedData);
+            await service.update(updatedData?.id!, updatedData!);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            setKey(key + 1);
+            showToast('Ändringarna har sparats', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
+            console.error(error);
+        }
     }
 
     const handleSaveControls = async (controls: MapControlDto[]) => {
-        const updatedData = {
-            id: mapInstanceData!.id,
-            title: mapInstanceData!.title,
-            name: mapInstanceData!.name,
-            abstract: mapInstanceData!.abstract,
-            instance: {
-                groups: mapInstanceData!.instance?.groups,
-                layers: mapInstanceData!.instance?.layers,
-                controls: controls,
-                settings: mapInstanceData!.instance?.settings
-            },
-        };
-        setMapInstanceData(updatedData);
-        await service.update(updatedData?.id!, updatedData!);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        setKey(key + 1);
+        try {
+            const updatedData = {
+                id: mapInstanceData!.id,
+                title: mapInstanceData!.title,
+                name: mapInstanceData!.name,
+                abstract: mapInstanceData!.abstract,
+                instance: {
+                    groups: mapInstanceData!.instance?.groups,
+                    layers: mapInstanceData!.instance?.layers,
+                    controls: controls,
+                    settings: mapInstanceData!.instance?.settings
+                },
+            };
+            setMapInstanceData(updatedData);
+            await service.update(updatedData?.id!, updatedData!);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            setKey(key + 1);
+            showToast('Ändringarna har sparats', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
+            console.error(error);
+
+        }
     }
 
     return (

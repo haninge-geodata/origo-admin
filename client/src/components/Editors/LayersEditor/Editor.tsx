@@ -105,7 +105,6 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
     const handleNameChange = (value: string) => {
         setGroupName(value);
         setIsNameFilled(!!value.trim());
-        //foreach layer in localLayersState and update group name
         const updLayers: LayerDto[] = localLayersState.map(layer => ({
             ...layer,
             group: value
@@ -128,12 +127,11 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
     }
 
     const updateLayersFromLocalLayerState = () => {
-        const nonSelectedGroupLayers = layers.filter(layer => layer.group !== groupName);
-        const selectedGroupLayers = localLayersState.filter(layer => layer.group === groupName || layer.group === undefined);
-        const updatedLayers = [...nonSelectedGroupLayers, ...selectedGroupLayers];
-
+        const nonSelectedGroupLayers = layers.filter(layer => layer.group !== unEditedGroupName);
+        const updatedLayers = [...nonSelectedGroupLayers, ...localLayersState];
         setLayers(updatedLayers);
     };
+
     const fetchLayerData = async (type: LayerType) => {
         const service = layerServices[type];
         const response = await service.fetchAll();
