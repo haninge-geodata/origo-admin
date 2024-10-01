@@ -8,6 +8,7 @@ export const access_token = async (req: Request, res: Response, next: NextFuncti
     const code = req.body.code || req.query.code;
     const { refresh_token } = req.body;
     let tokenSet: TokenSet | null = null;
+
     if (code && refresh_token) {
       res.status(400).send("Bad Request: Send either code or refresh token. Not both.");
       return;
@@ -33,27 +34,19 @@ export const access_token = async (req: Request, res: Response, next: NextFuncti
       throw new Error("Failed to obtain token set");
     }
 
-    res.cookie("access_token", tokenSet.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      partitioned: true,
-      maxAge: tokenSet.expires_in ? tokenSet.expires_in * 1000 : 3600000,
-      path: "/",
-      domain: process.env.AUTHORIZATION_CODE_COOKIE_DOMAIN,
-    });
-
     const userInfo = await client.userinfo(tokenSet.access_token!);
-    res.json({
-      authenticated: true,
-      access_token: tokenSet.access_token,
-      refresh_token: tokenSet.refresh_token,
-      id_token: tokenSet.id_token,
-      expires_at: tokenSet.expires_at,
-      displayname: userInfo[process.env.DISPLAY_NAME as string],
-    });
+
+    // Store tokenSet and userInfo in res.locals
+    res.locals.tokenSet = tokenSet;
+    res.locals.userInfo = userInfo;
+
+    // Call next to pass control back to server.ts
+    next();
   } catch (error) {
     console.error("Access token error:", error);
-    res.status(500).json({ error: "Access token error", details: error instanceof Error ? error.message : "Unknown error" });
+    res.status(500).json({
+      error: "Access token error",
+      details: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 };

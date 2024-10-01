@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 
 export type accessToken = {
   value: string;
-  expiresAt: number;
+  expiresIn: number;
 };
 
 export function decodeToken(token: string): any {
@@ -38,14 +38,16 @@ export function extractGroups(token: string): string[] {
 }
 
 export function extractTokenFromRequest(req: any): accessToken | null {
-  const cookies = req.cookies;
-  if (cookies && cookies.access_token) {
-    return { value: cookies.access_token, expiresAt: 0 };
+  const cookies = req.Cookies;
+
+  if (cookies && cookies.oidc_access_token && cookies.oidc_access_token_expires_in) {
+    return { value: cookies.oidc_access_token, expiresIn: cookies.oidc_access_token_expires_in };
   }
+
   // if no auth in cookies check the headers
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith("Bearer ")) {
-    return { value: authHeader.substring(7), expiresAt: 0 };
+    return { value: authHeader.substring(7), expiresIn: 0 };
   }
   // If no auth header, check the session
   if (req.session && (req.session as any).accessToken) {
@@ -54,7 +56,7 @@ export function extractTokenFromRequest(req: any): accessToken | null {
 
     return {
       value: (req.session as any).accessToken,
-      expiresAt: (req.session as any).expires_in ? Date.now() + (req.session as any).expires_in * 1000 : 0,
+      expiresIn: (req.session as any).expires_in ? Date.now() + (req.session as any).expires_in * 1000 : 0,
     };
   } else {
     console.log("No token found in session");

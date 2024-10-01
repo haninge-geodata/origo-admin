@@ -49,7 +49,7 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
 
       let userInfo;
       try {
-        userInfo = await userInfoService.getUserInfo(token.value, token.expiresAt);
+        userInfo = await userInfoService.getUserInfo(token.value, token.expiresIn);
       } catch (error) {
         console.error("Error retrieving user info:", error);
         res.writeHead(401, { "Content-Type": "text/plain" });

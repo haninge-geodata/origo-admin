@@ -7,8 +7,6 @@ import { access_token } from "./lib/auth/access_token";
 import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import session from "express-session";
-import { extractTokenFromRequest } from "./lib/auth/auth";
 
 dotenv.config();
 
@@ -16,7 +14,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: true,
+    origin: process.env.AUTH_CLIENT_DOMAIN,
     credentials: true,
   })
 );
@@ -57,11 +55,47 @@ app.post("/admin/refresh-cache", async (req, res) => {
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header("Access-Control-Allow-Origin", process.env.AUTH_CLIENT_DOMAIN);
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,HEAD");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
-app.post("/auth/access_token", access_token);
+app.post("/auth/access_token", access_token, (req, res) => {
+  const tokenSet = res.locals.tokenSet;
+  const userInfo = res.locals.userInfo;
+  const expires_in = Math.floor((tokenSet.expires_at * 1000 - Date.now()) / 1000);
+  const expires_at = new Date(expires_in * 1000 + Date.now());
+  res.cookie("oidc_access_token", tokenSet.access_token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    partitioned: true,
+    expires: expires_at,
+    domain: process.env.AUTH_CLIENT_DOMAIN,
+  });
+
+  res.cookie("oidc_access_token_expires_in", expires_in, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    partitioned: true,
+    expires: expires_at,
+    domain: process.env.AUTH_CLIENT_DOMAIN,
+  });
+
+  res.json({
+    authenticated: true,
+    access_token: tokenSet.access_token,
+    refresh_token: tokenSet.refresh_token,
+    id_token: tokenSet.id_token,
+    expires_at: tokenSet.expires_at,
+    displayname: userInfo[process.env.DISPLAY_NAME as string],
+  });
+});
+
 app.get("/auth/authorize", authorize);
 
 app.get("/health", async (req, res) => {
