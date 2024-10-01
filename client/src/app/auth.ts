@@ -12,7 +12,12 @@ export const authOptions: NextAuthOptions = {
       idToken: true,
       issuer: process.env.PROTECTED_IDP_ISSUER,
       checks: ["pkce", "state"],
-      authorization: { params: { scope: process.env.PROTECTED_IDP_SCOPE } },
+      authorization: {
+        params: {
+          scope: process.env.PROTECTED_IDP_SCOPE,
+          redirect_uri: process.env.PROTECTED_IDP_REDIRECT_URI,
+        },
+      },
       async profile(profile: any, tokens: any) {
         return {
           id: profile.sub,

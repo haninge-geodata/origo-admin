@@ -21,7 +21,7 @@ export class UserInfoService {
   }
 
   private async fetchWellKnownConfig(): Promise<WellKnownConfig> {
-    const wellKnownUrl = process.env.IDP_WELL_KNOWN;
+    const wellKnownUrl = process.env.WELL_KNOWN;
     if (!wellKnownUrl) {
       throw new Error("Well-known URL is not configured");
     }

@@ -41,8 +41,6 @@ async function initializeServer() {
   }
 }
 
-app.use(proxyManager.getProxyMiddleware());
-
 app.post("/admin/refresh-cache", async (req, res) => {
   try {
     await cacheManager.refreshCache();
@@ -107,6 +105,8 @@ app.get("/health", async (req, res) => {
     res.status(503).json(healthStatus);
   }
 });
+
+app.use(proxyManager.getProxyMiddleware());
 
 initializeServer().then(() => {
   app.listen(port, () => {

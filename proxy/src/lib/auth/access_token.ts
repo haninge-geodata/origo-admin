@@ -24,6 +24,8 @@ export const access_token = async (req: Request, res: Response, next: NextFuncti
       tokenSet = await client.grant({
         grant_type: "refresh_token",
         refresh_token: refresh_token,
+        scope: process.env.SCOPE,
+        redirect_uri: process.env.REDIRECT_URI,
       });
     } else {
       res.status(400).send("Bad Request: Neither code nor refresh token found.");

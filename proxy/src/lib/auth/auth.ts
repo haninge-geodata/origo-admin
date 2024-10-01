@@ -38,7 +38,7 @@ export function extractGroups(token: string): string[] {
 }
 
 export function extractTokenFromRequest(req: any): accessToken | null {
-  const cookies = req.Cookies;
+  const cookies = req.cookies;
 
   if (cookies && cookies.oidc_access_token && cookies.oidc_access_token_expires_in) {
     return { value: cookies.oidc_access_token, expiresIn: cookies.oidc_access_token_expires_in };
