@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build:windows": "tsc && (if exist \".env\" echo F| xcopy .env dist\\.env /Y) && (xcopy installation\\tasks dist\\tasks /E /I /Y)"
   },
   "keywords": [],
   "author": "",
