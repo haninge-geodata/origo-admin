@@ -21,6 +21,7 @@ export function createJsonProxyHandler(
 ): ProxyHandler {
   return async (req: IncomingMessage, res: ServerResponse) => {
     try {
+      const proxyHost = process.env.HOST;
       const targetUrl = new URL(mapInstancesEndpointUrl);
       const originalUrl = new URL(req.url!, `http://${req.headers.host}`);
 
@@ -84,7 +85,8 @@ export function createJsonProxyHandler(
             }
 
             const protocol = targetUrl.protocol.startsWith("https") ? "https" : "http";
-            const proxyBaseUrl = `${protocol}://${req.headers.host}${proxyBasePath}`;
+            const hostName = proxyHost || `${protocol}://${req.headers.host}`;
+            const proxyBaseUrl = `${hostName}${proxyBasePath}`;
 
             let modifiedJson = await filterJsonService.filterJson(json, proxyBaseUrl, userInfo, cacheManager);
             const modifiedBody = JSON.stringify(modifiedJson);
