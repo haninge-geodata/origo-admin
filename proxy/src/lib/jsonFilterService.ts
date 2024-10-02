@@ -6,7 +6,7 @@ export class FilterJsonService {
     let permissions = userInfo.claims
       .replace(/^CN=/gi,"")
       .split(",CN=")
-      .map((claim : string) => claim.split(",")[0]);
+      .map((claim : string) => `CN=${claim}`);
     permissions.push(userInfo.username);
 
     if (json.layers) {
