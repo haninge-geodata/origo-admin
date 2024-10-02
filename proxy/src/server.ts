@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 const port = process.env.PORT || 3020;
 const resourcesEndpoint = process.env.RESOURCES_ENDPOINT_URL!;
 const rolesEndpoint = process.env.ROLES_ENDPOINT_URL!;
-const PROXY_BASE_PATH = process.env.PROXY_BASE_PATH || "proxy";
+const PROXY_BASE_PATH = process.env.PROXY_BASE_PATH || "/proxy";
 const API_ACCESS_TOKEN = process.env.API_ACCESS_TOKEN!;
 const cacheManager = new CacheManager(rolesEndpoint, resourcesEndpoint, API_ACCESS_TOKEN);
 const proxyManager = new ProxyManager(cacheManager, API_ACCESS_TOKEN, PROXY_BASE_PATH);
@@ -41,7 +41,7 @@ async function initializeServer() {
   }
 }
 
-app.post("/admin/refresh-cache", async (req, res) => {
+app.post(`${PROXY_BASE_PATH}/refresh-cache`, async (req, res) => {
   try {
     await cacheManager.refreshCache();
     res.send("Cache refreshed successfully");
@@ -59,7 +59,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.post("/auth/access_token", access_token, (req, res) => {
+app.post(`${PROXY_BASE_PATH}/auth/access_token`, access_token, (req, res) => {
   const tokenSet = res.locals.tokenSet;
   const userInfo = res.locals.userInfo;
   const expires_in = Math.floor((tokenSet.expires_at * 1000 - Date.now()) / 1000);
@@ -94,9 +94,9 @@ app.post("/auth/access_token", access_token, (req, res) => {
   });
 });
 
-app.get("/auth/authorize", authorize);
+app.get(`${PROXY_BASE_PATH}/auth/authorize`, authorize);
 
-app.get("/health", async (req, res) => {
+app.get(`${PROXY_BASE_PATH}/health`, async (req, res) => {
   const healthStatus = await cacheManager.healthCheck();
 
   if (healthStatus.status === "healthy" || healthStatus.status === "recovered") {
