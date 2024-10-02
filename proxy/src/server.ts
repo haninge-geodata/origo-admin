@@ -41,7 +41,7 @@ async function initializeServer() {
   }
 }
 
-app.post(`${PROXY_BASE_PATH}/refresh-cache`, async (req, res) => {
+app.get(`${PROXY_BASE_PATH}/refresh-cache`, async (req, res) => {
   try {
     await cacheManager.refreshCache();
     res.send("Cache refreshed successfully");
