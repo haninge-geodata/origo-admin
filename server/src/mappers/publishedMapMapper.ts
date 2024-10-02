@@ -94,11 +94,7 @@ export class publishedMapMapper
   toDBModel(dto: PublishedMapConfigDto, create?: boolean): DBPublishedMap {
     throw new Error("Method not implemented, not needed");
   }
-  toDto(model: DBPublishedMap, ...contexts: any[]): PublishedMapConfigDto {
-    const [sources = [], transformLayerIds = false] = contexts;
-    if (transformLayerIds) {
-      model.map.layers = transformLayers(model.map.layers as LayerDto[], false);
-    }
+  toDto(model: DBPublishedMap): PublishedMapConfigDto {
     return model.map as PublishedMapConfigDto;
   }
 }
@@ -213,8 +209,8 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     } = layer;
     const transformedLayer = {
       ...restOfLayer,
-      source: source.name || layer.source,
-      style: style.name || layer.style,
+      source: source.name,
+      style: style.name,
     };
     if (clusterStyle) {
       transformedLayer.clusterStyle = clusterStyle.name;
