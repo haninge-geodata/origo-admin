@@ -11,7 +11,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = process.env.AUTH_ENABLED ? await getServerSession(authOptions) : null;
 
   return (
     <ReactQueryClientProvider>
