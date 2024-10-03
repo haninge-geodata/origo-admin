@@ -95,10 +95,8 @@ export class publishedMapMapper
     throw new Error("Method not implemented, not needed");
   }
   toDto(model: DBPublishedMap, ...contexts: any[]): PublishedMapConfigDto {
-    const [sources = [], transformLayerIds = false] = contexts;
-    if (transformLayerIds) {
-      model.map.layers = transformLayers(model.map.layers as LayerDto[], false);
-    }
+    const [publish = false] = contexts;
+    model.map.layers = transformLayers(model.map.layers as LayerDto[], publish);
     return model.map as PublishedMapConfigDto;
   }
 }
@@ -201,7 +199,8 @@ function createDistinctStyles(layers: any[]): any {
 }
 
 function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
-  const proxyUrlSet = process.env.PROXY_UPDATE_URL || "";
+  const proxyUrlSet = process.env.PROXY_UPDATE_URL && process.env.PROXY_UPDATE_URL !== "";
+  const authEnabled = process.env.AUTH;
   let layers = layerDtos.map((layer) => {
     const {
       style,
@@ -219,12 +218,12 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     if (clusterStyle) {
       transformedLayer.clusterStyle = clusterStyle.name;
     }
-    if (!publish || proxyUrlSet === "") {
+    if (publish || (proxyUrlSet && authEnabled)) {
+      transformedLayer.layer_id = layer_id;
+    } else {
       if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
         transformedLayer.id = layer_id;
       }
-    } else {
-      transformedLayer.layer_id = layer_id;
     }
 
     let extendedProps: any = {};
