@@ -11,6 +11,7 @@ interface props {
 }
 
 const ClientWrapper: React.FC<props> = ({ children, session }: props) => {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH;
   const isDrawerOpen = true;
   const divStyles = {
     marginLeft: isDrawerOpen ? "240px" : "40px",
@@ -19,7 +20,7 @@ const ClientWrapper: React.FC<props> = ({ children, session }: props) => {
   };
   return (
     <>
-      <SessionProvider session={session}>
+      <SessionProvider session={session} basePath={`${basePath}/api/auth`}>
         <CssBaseline />
         <Navigation />
         <div style={divStyles}>
