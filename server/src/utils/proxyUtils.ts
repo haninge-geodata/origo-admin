@@ -6,12 +6,7 @@ export async function updateProxyCache(): Promise<void> {
   }
 
   try {
-    const response = await fetch(proxyUpdateUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const response = await fetch(proxyUpdateUrl);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { RoleDto } from "@/shared/interfaces/dtos";
 import FormDialog from "@/components/Dialogs/FormDialog";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page() {
     const queryKey = 'permissions';
@@ -23,6 +24,7 @@ export default function Page() {
     const [isLoadingOpen, setIsLoadingOpen] = useState(false);
     const [isConfirmDuplicateDialogOpen, setConfirmDuplicateDialogOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<any>();
+    const { showToast } = useApp();
 
     const [open, setOpen] = useState(false);
     const handleClose = () => {
@@ -64,8 +66,10 @@ export default function Page() {
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             setAlertDialogOpen(false);
+            showToast('Rollen har raderats', 'success');
         } catch (error) {
-            console.error('Error deleting WMS Layer:', error);
+            showToast('Kunde inte radera rollen.', 'error');
+            console.error('Error deleting role:', error);
         }
     }
     const handleDuplicate = async (id: string) => {
@@ -74,9 +78,15 @@ export default function Page() {
         setConfirmDuplicateDialogOpen(true);
     };
     const confirmDuplicate = async () => {
-        await service.duplicate(selectedRole!.id);
-        queryClient.invalidateQueries({ queryKey: [queryKey] });
-        handleDuplicateDialogClose();
+        try {
+            await service.duplicate(selectedRole!.id);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            handleDuplicateDialogClose();
+            showToast('Rollen duplicerades', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade, rollen kunde inte dupliceras', 'error');
+            console.error('Error duplicating role:', error);
+        }
     }
 
     const handleDuplicateDialogClose = () => {
@@ -105,6 +115,7 @@ export default function Page() {
             }).catch((error) => {
                 const message = error.message || "Ett okänt fel inträffade.";
                 setErrorMessage(message);
+                showToast('Ett fel inträffade.', 'error');
                 setIsLoadingOpen(false);
 
             });

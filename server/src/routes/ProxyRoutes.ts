@@ -7,9 +7,11 @@ const router = createSecureRouter(route);
 /**
  * @route GET /${route}/resources
  * @description Get all proxy resources
- * @returns {ProxyLayerDto[]}
+ * @returns {ProxyResourceDto[]}
  */
-router.get(`/${route}/resources`, (req, res) => controller.getAllResources(req, res));
+router.get(`/${route}/resources`, (req, res) =>
+  controller.getAllResources(req, res)
+);
 
 /**
  * @route GET /${route}/roles

@@ -10,17 +10,17 @@ const router = createSecureRouter(route);
  * @param {string} id - The map instance ID
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/:id/preview`, (req, res) =>
+router.get(`/${route}/:id/preview(\.json)?`, (req, res) =>
   controller.getPreview(req, res)
 );
 
 /**
- * @route GET /${route}/:name/published/latest(.json)?
+ * @route GET /${route}/:name/published/latest
  * @description Get the latest published version of a map instance by name
  * @param {string} name - The map instance name
  * @returns {PublishedMapConfigDto}
  */
-router.get(`/${route}/:name/published/latest(.json)?`, (req, res) => {
+router.get(`/${route}/:name/published/latest(\.json)?`, (req, res) => {
   controller.getLatestPublished(req, res);
 });
 
@@ -50,7 +50,7 @@ router.get(`/${route}/:id/published/list`, (req, res) =>
  * @param {string} id - The map instance ID
  * @returns {MapInstanceDto}
  */
-router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}
@@ -91,9 +91,11 @@ router.post(`/${route}/:id/republish/:instanceId`, (req, res) =>
 
 /**
  * @route PUT /${route}/layer/:type/:id/sync
- * @description Synchronize a specific layer in map instances
- * @param {MapInstanceDto} type - The layer type
- * @param {MapInstanceDto} id - The layer ID
+ * @description Synchronize a specific layer in map instances.
+ * The "actions" array can contain any combination of "source", "style" and "details", where "details" refers to all layer properties except source and style.
+ * @param {string} type - The layer type
+ * @param {string} id - The layer ID
+ * @request {SyncLayerRequestDto} requestBody - An array of map instances to update, the layer type and id to sync with and an array of actions (`source`, `style` and/or `details`).
  * @returns {response}
  */
 router.put(`/${route}/layer/:type/:id/sync`, (req, res) =>
@@ -115,7 +117,7 @@ router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The map instance ID
  * @returns {MapInstanceDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 

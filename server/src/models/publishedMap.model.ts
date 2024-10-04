@@ -1,5 +1,6 @@
 import mongoose, { Document } from "mongoose";
 import mongodb from "mongodb";
+import { PublishedMapConfigDto } from "@/shared/interfaces/dtos";
 
 interface DBPublishedMap extends Document {
   _id: mongodb.ObjectId;
@@ -8,7 +9,7 @@ interface DBPublishedMap extends Document {
   name: string;
   abstract: string;
   publishedDate: Date;
-  map: Object;
+  map: PublishedMapConfigDto;
 }
 
 const publishedMapSchema = new mongoose.Schema<DBPublishedMap>({

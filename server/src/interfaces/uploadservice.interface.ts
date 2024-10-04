@@ -4,5 +4,5 @@ export interface IUploadService {
   getAllFiles(): Promise<MediaDto[]>;
   getMulterConfig(): any;
   saveFiles(files: Express.Multer.File[]): Promise<MediaDto[]>;
-  deleteFile(id: string): Promise<MediaDto>;
+  deleteFile(id: string): Promise<void>;
 }

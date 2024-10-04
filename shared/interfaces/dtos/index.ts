@@ -18,3 +18,4 @@ export * from "./AccessTokenDto";
 export * from "./RouteDto";
 export * from "./KeyValuePairDto";
 export * from "./DashboardDto";
+export * from "./SyncLayerRequestDto";

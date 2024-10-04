@@ -4,20 +4,23 @@ import ThemeProvider from "@/themes/theme";
 import ClientWrapper from "@/components/ClientWrapper";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth";
+import { AppProvider } from '../contexts/AppContext';
 
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = process.env.AUTH_ENABLED ? await getServerSession(authOptions) : null;
 
   return (
     <ReactQueryClientProvider>
       <html lang="en">
         <body>
           <ThemeProvider>
-            <ClientWrapper session={session} children={children}></ClientWrapper>
+            <AppProvider>
+              <ClientWrapper session={session} children={children}></ClientWrapper>
+            </AppProvider>
           </ThemeProvider>
         </body>
       </html>

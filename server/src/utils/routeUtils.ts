@@ -11,10 +11,12 @@ export function createSecureRouter(baseRoute: string): Router {
 
   methods.forEach((method: HttpMethod) => {
     const originalMethod = router[method].bind(router) as IRouterMatcher<any>;
-    (router[method] as any) = function (path: string, ...handlers: RequestHandler[]) {
+    (router[method] as any) = function (
+      path: string,
+      ...handlers: RequestHandler[]
+    ) {
       const fullPath = `/${baseRoute}${path}`;
       const permission = `${method.toUpperCase()}:${fullPath}`;
-
       if (process.env.AUTH_ENABLED !== "false") {
         return originalMethod(path, checkPermission(permission), ...handlers);
       } else {
@@ -70,7 +72,9 @@ export class RouteRegistry {
   }
 
   static getRoutesByBaseRoute(baseRoute: string): RouteInfo[] {
-    return this.routes.filter((route) => route.path.startsWith(`/${baseRoute}`));
+    return this.routes.filter((route) =>
+      route.path.startsWith(`/${baseRoute}`)
+    );
   }
 
   static clearRoutes() {
@@ -82,18 +86,31 @@ export class RouteRegistry {
   }
 
   static removeRoute(path: string, method: string) {
-    this.routes = this.routes.filter((route) => !(route.path === path && route.method === method.toUpperCase()));
+    this.routes = this.routes.filter(
+      (route) => !(route.path === path && route.method === method.toUpperCase())
+    );
   }
 
-  static updateRoutePermission(path: string, method: string, newPermission: string) {
-    const route = this.routes.find((r) => r.path === path && r.method === method.toUpperCase());
+  static updateRoutePermission(
+    path: string,
+    method: string,
+    newPermission: string
+  ) {
+    const route = this.routes.find(
+      (r) => r.path === path && r.method === method.toUpperCase()
+    );
     if (route) {
       route.permission = newPermission;
     }
   }
 
-  static getPermissionsForRoute(path: string, method: string): string | undefined {
-    const route = this.routes.find((r) => r.path === path && r.method === method.toUpperCase());
+  static getPermissionsForRoute(
+    path: string,
+    method: string
+  ): string | undefined {
+    const route = this.routes.find(
+      (r) => r.path === path && r.method === method.toUpperCase()
+    );
     return route?.permission;
   }
 }

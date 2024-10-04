@@ -12,6 +12,7 @@ import FormDialog from "@/components/Dialogs/FormDialog";
 import { useState } from "react";
 import { MapInstanceDto } from "@/shared/interfaces/dtos";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page() {
     const queryKey = 'maps';
@@ -21,6 +22,7 @@ export default function Page() {
     const [toBeDeteledId, setToBeDeletedId] = useState<string | null>(null);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const { showToast } = useApp();
 
     const router = useRouter();
     const pathname = usePathname()
@@ -51,7 +53,10 @@ export default function Page() {
             await service.delete(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
             setAlertDialogOpen(false);
+            showToast('Kartinstansen raderades', 'success');
+
         } catch (error) {
+            showToast('Ett fel inträffade, kunde inte radera kartinstansen.', 'error');
             console.error('Error deleting WMS Layer:', error);
         }
     }
@@ -137,8 +142,7 @@ export default function Page() {
                             variant="standard"
                         />} />
                     <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av kartinstansen!"
-                        onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
-                    </AlertDialog>
+                        onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning" />
                 </Grid>
             </Grid>
         </main >

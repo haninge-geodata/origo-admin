@@ -10,7 +10,7 @@ const router = createSecureRouter(route);
  * @param {string} id - The map control ID
  * @returns {MapControlDto}
  */
-router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}
@@ -42,7 +42,7 @@ router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The map control ID
  * @returns {MapControlDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 

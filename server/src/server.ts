@@ -3,6 +3,7 @@ import path from "path";
 
 console.info("Initializing environment...");
 const environment = process.env.NODE_ENV || "local";
+
 console.info(`Environment set to: ${environment}`);
 
 let envPath = "";
@@ -17,9 +18,9 @@ if (
 }
 
 dotenv.config({ path: envPath });
+const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER!;
 
 import express from "express";
-
 import * as bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
@@ -61,9 +62,8 @@ const BASE_PATH = process.env.BASE_PATH || "";
 if (BASE_PATH) {
   console.info(`Using BASE_PATH=${BASE_PATH}`);
 }
-
-app.use(express.json());
 app.use(bodyParser.json({ limit: "500mb" }));
+app.use(express.json());
 app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
 
 app.use(cors());
@@ -88,9 +88,9 @@ if (!process.env.DATABASE) {
 initializeDatabase(process.env.DATABASE as string);
 console.info("Database initialized...");
 
-app.use(`${BASE_PATH}/api`, FavouritesRoutes);
-app.use(`${BASE_PATH}/api`, LayerRoutes);
-app.use(`${BASE_PATH}/api`, MapInstanceRoutes);
+app.use(`${BASE_PATH}`, FavouritesRoutes);
+app.use(`${BASE_PATH}`, LayerRoutes);
+app.use(`${BASE_PATH}`, MapInstanceRoutes);
 app.use(
   `${BASE_PATH}/uploads`,
   function (req, res, next) {
@@ -99,18 +99,18 @@ app.use(
   },
   express.static(path.join(__dirname, "uploads"))
 );
-
-app.use(`${BASE_PATH}/api`, LinkResourceRoutes);
-app.use(`${BASE_PATH}/api`, MapControlRoutes);
-app.use(`${BASE_PATH}/api`, MapSettingRoutes);
-app.use(`${BASE_PATH}/api`, MediaRoutes);
-app.use(`${BASE_PATH}/api`, StyleSchemaRoutes);
-app.use(`${BASE_PATH}/api`, RelationRoutes);
-app.use(`${BASE_PATH}/api`, PermissionRoutes);
-app.use(`${BASE_PATH}/api`, ProxyRoutes);
-app.use(`${BASE_PATH}/api`, AccessTokenRoutes);
-app.use(`${BASE_PATH}/api`, RouteRoutes);
-app.use(`${BASE_PATH}/api`, DashboardRoutes);
+app.use(`${BASE_PATH}`, LinkResourceRoutes);
+app.use(`${BASE_PATH}`, MapControlRoutes);
+app.use(`${BASE_PATH}`, MapSettingRoutes);
+app.use(`${BASE_PATH}`, MediaRoutes);
+app.use(`${BASE_PATH}`, StyleSchemaRoutes);
+app.use(`${BASE_PATH}`, RelationRoutes);
+app.use(`${BASE_PATH}`, PermissionRoutes);
+app.use(`${BASE_PATH}`, ProxyRoutes);
+app.use(`${BASE_PATH}`, AccessTokenRoutes);
+app.use(`${BASE_PATH}`, RouteRoutes);
+app.use(`${BASE_PATH}`, DashboardRoutes);
+app.use(`${BASE_PATH}/uploads`, express.static(path.resolve(UPLOAD_FOLDER)));
 
 interface NodeError extends Error {
   code?: string;

@@ -12,11 +12,10 @@ class MediaService extends BaseApiService<MediaDto> {
       formData.append("files", file);
     });
 
-    const response = (await this.getRestClient()).post<MediaDto[]>(
-      `${this.resourcePath}`,
-      formData
-    );
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}`, formData);
+      return response;
+    });
   }
 }
 

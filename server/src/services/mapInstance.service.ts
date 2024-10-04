@@ -16,7 +16,7 @@ import {
   InstanceToPublishedMapMapper,
   PreviewMapMapper,
   publishedMapListItemMapper,
-  publishedMapMapper,
+  publishedMapMapper
 } from "@/mappers/publishedMapMapper";
 import { instanceListItemMapper, instanceMapper } from "@/mappers/InstanceMapper";
 import { linkResourceMapper } from "@/mappers/";
@@ -81,7 +81,7 @@ class MapInstanceService {
     let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, sources);
 
     let response = await this.publishedRepository.create(publishedMap);
-    return this.publishedMapMapper.toDto(response);
+    return this.publishedMapMapper.toDto(response, { publish: true });
   }
 
   async republish(id: string, instanceId: string): Promise<PublishedMapConfigDto> {
@@ -95,7 +95,7 @@ class MapInstanceService {
     republishedMap._id = new mongoose.Types.ObjectId();
 
     let response = await this.publishedRepository.create(republishedMap);
-    return this.publishedMapMapper.toDto(response);
+    return this.publishedMapMapper.toDto(response, { publish: true });
   }
 
   async getPublishedList(id: string): Promise<PublishedMapListItemDto[]> {
@@ -108,7 +108,7 @@ class MapInstanceService {
     return this.publishedMapMapper.toDto(response[0]);
   }
   async getPublished(id: string): Promise<PublishedMapConfigDto> {
-    let response = await this.publishedRepository.find(id);
+    let response = await this.publishedRepository.find(id.replace(/\.json$/ig, ""));
     return this.publishedMapMapper.toDto(response);
   }
 

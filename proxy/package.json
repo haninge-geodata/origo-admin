@@ -6,21 +6,32 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "build:windows": "tsc && (if exist \".env\" echo F| xcopy .env dist\\.env /Y) && (xcopy installation\\tasks dist\\tasks /E /I /Y)"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.9",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-session": "^1.18.0",
     "jsonwebtoken": "^9.0.2",
+    "openid-client": "^5.6.2",
     "typescript": "^5.5.2"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express-session": "^1.18.0",
     "nodemon": "^3.1.4"
+  },
+  "optionalDependencies": {
+    "node-windows": "^0.1.14"
   }
 }

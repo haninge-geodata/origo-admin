@@ -6,8 +6,10 @@ class LinkResourceService extends BaseApiService<LinkResourceDto> {
     super("link-resources");
   }
   async fetchByType(type: string): Promise<LinkResourceDto[]> {
-    const response = (await this.getRestClient()).get<LinkResourceDto[]>(`${this.resourcePath}/type/${type}`);
-    return response;
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).get<LinkResourceDto[]>(`${this.resourcePath}/type/${type}`);
+      return response;
+    });
   }
 }
 

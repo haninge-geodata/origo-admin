@@ -24,13 +24,19 @@ import { DataRow, TableData } from "@/interfaces";
 import sourcesSpec from "@/assets/specifications/tables/linkResourceTableSpecification.json";
 import { LinkResourceService as sourcesService } from '@/api';
 
+//Controls
+import controlsSpec from "@/assets/specifications/tables/mapControlTableSpecification.json";
+import { MapControlService as controlsService } from '@/api';
+
 //Map instances
 import mapInstanceSpec from "@/assets/specifications/tables/mapInstanceTableSpecification.json";
 import { MapInstanceService as mapInstanceService } from '@/api';
+import { useApp } from "@/contexts/AppContext";
 
 export default function Page({ params: { id } }: any) {
     const key = "permissions";
     const { data, } = useQuery({ queryKey: [key, id], queryFn: () => service.fetch(id) });
+    const { showToast, showToastAfterNavigation } = useApp();
 
     const [actorData, setActorData] = useState<Array<Record<string, any>>>();
 
@@ -51,6 +57,12 @@ export default function Page({ params: { id } }: any) {
     const [selectedSourcesRows, setSelectedSourcesRows] = useState<DataRow[]>([]);
     const [sourcesTableData, setSourcesTableData] = useState<TableData>();
 
+    //Controls
+    const controlsKey = "controls";
+    const { data: controlsData } = useQuery({ queryKey: [controlsKey], queryFn: () => controlsService.fetchAll() });
+    const [selectedControlsRows, setSelectedControlsRows] = useState<DataRow[]>([]);
+    const [controlsTableData, setControlsTableData] = useState<TableData>();
+
     //Map instances
     const mapInstanceKey = "mapInstances";
     const { data: mapInstanceData } = useQuery({ queryKey: [mapInstanceKey], queryFn: () => mapInstanceService.fetchAll() });
@@ -64,10 +76,9 @@ export default function Page({ params: { id } }: any) {
     };
 
     const items: Item[] = [
-        { id: 0, label: 'Kartinstanser' },
-        { id: 1, label: 'Källor' },
-        { id: 2, label: 'Lager' },
-        { id: 3, label: 'Kontroller' }
+        { id: 0, label: 'Källor' },
+        { id: 1, label: 'Lager' },
+        { id: 2, label: 'Kontroller' }
     ];
     interface Item {
         id: number;
@@ -84,6 +95,10 @@ export default function Page({ params: { id } }: any) {
             const selectedSourcesPermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'linkresources') || [];
             const selectedSourcesRows = selectedSourcesPermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
             setSelectedSourcesRows(selectedSourcesRows);
+
+            const selectedControlsPermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'controls') || [];
+            const selectedControlsRows = selectedControlsPermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
+            setSelectedControlsRows(selectedControlsRows);
 
             const selectedMapInstancePermissions = data.permissions?.filter((perm: PermissionDto) => perm.type === 'mapinstances') || [];
             const selectedMapInstanceRows = selectedMapInstancePermissions.map((perm: PermissionDto) => ({ id: perm.id! }));
@@ -109,6 +124,12 @@ export default function Page({ params: { id } }: any) {
     }, [sourcesData])
 
     useEffect(() => {
+        if (controlsData) {
+            setControlsTableData(mapDataToTableFormat(controlsData!, controlsSpec.specification));
+        }
+    }, [controlsData])
+
+    useEffect(() => {
         if (mapInstanceData) {
             setMapInstanceTableData(mapDataToTableFormat(mapInstanceData!, mapInstanceSpec.specification));
         }
@@ -124,33 +145,45 @@ export default function Page({ params: { id } }: any) {
     }, [layerTableData, layerData, selectedSourcesRows]);
 
     const handleUpdateClick = async () => {
-        const updatedLayerPermissions: PermissionDto[] = selectedLayerRows.map(row => ({
-            id: row.id,
-            type: 'layers'
-        }));
+        try {
+            const updatedLayerPermissions: PermissionDto[] = selectedLayerRows.map(row => ({
+                id: row.id,
+                type: 'layers'
+            }));
 
-        const updatedSourcesPermissions: PermissionDto[] = selectedSourcesRows.map(row => ({
-            id: row.id,
-            type: 'linkresources'
-        }));
+            const updatedSourcesPermissions: PermissionDto[] = selectedSourcesRows.map(row => ({
+                id: row.id,
+                type: 'linkresources'
+            }));
 
-        const updatedMapInstancePermissions: PermissionDto[] = selectedMapInstanceRows.map(row => ({
-            id: row.id,
-            type: 'mapinstances'
-        }));
+            const updatedControlsPermissions: PermissionDto[] = selectedControlsRows.map(row => ({
+                id: row.id,
+                type: 'controls'
+            }));
 
-        const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedMapInstancePermissions];
+            const updatedMapInstancePermissions: PermissionDto[] = selectedMapInstanceRows.map(row => ({
+                id: row.id,
+                type: 'mapinstances'
+            }));
 
-        const updatedData: RoleDto = {
-            id: data?.id,
-            role: data?.role ?? '',
-            actors: actorData as ActorDto[],
-            permissions: updatedPermissions
-        };
+            const updatedPermissions = [...updatedLayerPermissions, ...updatedSourcesPermissions, ...updatedControlsPermissions, ...updatedMapInstancePermissions];
 
-        await service.update(id, updatedData);
-        queryClient.invalidateQueries({ queryKey: [key] });
-        router.back();
+            const updatedData: RoleDto = {
+                id: data?.id,
+                role: data?.role ?? '',
+                actors: actorData as ActorDto[],
+                permissions: updatedPermissions
+            };
+
+            await service.update(id, updatedData);
+            queryClient.invalidateQueries({ queryKey: [key] });
+            showToastAfterNavigation('Rollen har uppdaterats', 'success');
+
+            router.back();
+        } catch (error) {
+            showToast('Kunde inte uppdatera rollen.', 'error');
+            console.error(error);
+        }
     };
 
     const onLayerRowSelectionChanged = (ids: string[]) => {
@@ -188,6 +221,18 @@ export default function Page({ params: { id } }: any) {
             return updatedRows;
         });
     };
+
+    const onControlsRowSelectionChanged = (ids: string[]) => {
+        setSelectedControlsRows((prevRows) => {
+            const newSelectedIds = new Set(ids);
+            const remainingRows = prevRows.filter(row => newSelectedIds.has(row.id));
+            const newRows = ids
+                .filter(id => !prevRows.some(row => row.id === id))
+                .map(id => controlsTableData?.rows.find(row => row.id.toString() === id))
+                .filter((row): row is DataRow => row !== undefined);
+            return [...remainingRows, ...newRows];
+        });
+    }
 
     const onMapInstanceRowSelectionChanged = (ids: string[]) => {
         setSelectedMapInstanceRows((prevRows) => {
@@ -253,18 +298,6 @@ export default function Page({ params: { id } }: any) {
                             <Box component='div' sx={{ width: '100%', borderBottom: '1px solid #ccc', my: 4 }} />
                             <Grid item xs={12}>
                                 <TabContainer items={items}>
-                                    {
-                                        data && mapInstanceTableData && selectedMapInstanceRows && <DetailedDataTable
-                                            data={mapInstanceTableData}
-                                            isSearchable={true}
-                                            expandable={false}
-                                            pagination={true}
-                                            rowsPerPage={10}
-                                            selectedRows={selectedMapInstanceRows}
-                                            sortingEnabled={true}
-                                            onSelectionChanged={onMapInstanceRowSelectionChanged}
-                                        />
-                                    }
                                     {data && sourcesTableData && selectedSourcesRows && <DetailedDataTable
                                         data={sourcesTableData}
                                         isSearchable={true}
@@ -288,7 +321,16 @@ export default function Page({ params: { id } }: any) {
                                         sortingEnabled={true}
                                         onSelectionChanged={onLayerRowSelectionChanged}
                                     />}
-                                    <>Kontroller - Vänta på refaktorering av kontroller menyn från att vara ikoner till lista istället.</>
+                                    {data && controlsTableData && selectedControlsRows && <DetailedDataTable
+                                        data={controlsTableData}
+                                        isSearchable={true}
+                                        expandable={false}
+                                        pagination={true}
+                                        rowsPerPage={10}
+                                        selectedRows={selectedControlsRows}
+                                        sortingEnabled={true}
+                                        onSelectionChanged={onControlsRowSelectionChanged}
+                                    />}
                                 </TabContainer>
                             </Grid>
                         </Grid>

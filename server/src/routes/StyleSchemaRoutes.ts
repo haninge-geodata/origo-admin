@@ -10,7 +10,7 @@ const router = createSecureRouter(route);
  * @param {string} id - The style schema ID
  * @returns {StyleSchemaDto}
  */
-router.get(`/${route}/:id`, (req, res) => controller.get(req, res));
+router.get(`/${route}/:id`, (req, res) => controller.getById(req, res));
 
 /**
  * @route GET /${route}/name/{name}
@@ -52,7 +52,7 @@ router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
  * @param {string} id - The style schema ID
  * @returns {StyleSchemaDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 

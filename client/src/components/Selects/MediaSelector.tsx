@@ -6,6 +6,8 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { MediaService as service } from '@/api';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useApp } from "@/contexts/AppContext";
+import AlertDialog from "../Dialogs/AlertDialog";
 
 interface MediaSelectorProps {
     showSelectedMediaInfo?: boolean;
@@ -22,7 +24,9 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const [mediaData, setmediaData] = useState<MediaDto[]>([]);
     const [filterText, setFilterText] = useState('');
     const [filteredData, setFilteredData] = useState<MediaDto[]>([]);
+    const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
     const queryClient = useQueryClient();
+    const { showToast } = useApp();
     const VisuallyHiddenInput = styled('input')({
         clip: 'rect(0 0 0 0)',
         clipPath: 'inset(50%)',
@@ -68,21 +72,32 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             try {
                 await service.upload(Array.from(files));
                 queryClient.invalidateQueries({ queryKey: [queryKey] });
+                showToast('Ikonen har laddats upp', 'success');
 
             } catch (error) {
+                showToast('Ikonen kunde inte laddas upp', 'error');
                 console.error('Fel vid uppladdning av filer:', error);
             }
         }
     };
 
     const handleDeleteMedia = async () => {
+        console.log('id');
+        setAlertDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
         if (selectedMedia) {
             try {
                 await service.delete(selectedMedia.id!);
                 queryClient.invalidateQueries({ queryKey: [queryKey] });
                 setselectedMedia(null as unknown as MediaDto);
+                showToast('Ikonen har raderats', 'success');
+                setAlertDialogOpen(false);
             } catch (error) {
+                showToast('Kunde inte radera ikonen.', 'error');
                 console.error('Error deleting the icon:', error);
+                setAlertDialogOpen(false);
             }
         }
     };
@@ -190,26 +205,24 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                 <>
                                     <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="h6">{formatName(selectedMedia.name, 45)}</Typography>
-                                        <Box component="div" onClick={handleDeleteMedia}
+                                        <Box component="div" onClick={() => handleDeleteMedia()}
                                             sx={{ opacity: 0.7, '&:hover': { opacity: 1, transform: 'scale(1.1)', cursor: 'pointer' } }}>
                                             <DeleteIcon />
                                         </Box>
                                     </Box>
                                     <Box component="div">
                                         <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.mimetype}</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Laddades upp: 2024-02-16</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Uppladdad av: Administratör</Typography>
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Används i följande lager:</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
-                                        <Typography variant="subtitle2" sx={{ mt: 1 }}>Lorem ipsum</Typography>
                                     </Box>
                                 </>
                             ) : <Typography sx={{ p: 2 }}>Välj en ikon för att visa information.</Typography>}
                         </Box>
                     </Grid>
                 )}
+                <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av ikonen!"
+                    onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
+                </AlertDialog>
             </Grid>
         </Grid>
+
     );
 }

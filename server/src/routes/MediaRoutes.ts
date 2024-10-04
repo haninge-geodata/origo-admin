@@ -29,7 +29,7 @@ router.post(`/${route}/`, upload.any(), (req, res) => {
  * @param {string} id - The media file ID
  * @returns {MediaDto}
  */
-router.delete(`/${route}/:id`, (req, res) => controller.delete(req, res));
+router.delete(`/${route}/:id`, (req, res) => controller.deleteById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 export default router;
