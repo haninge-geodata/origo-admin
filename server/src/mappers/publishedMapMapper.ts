@@ -200,7 +200,7 @@ function createDistinctStyles(layers: any[]): any {
 
 function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
   const proxyUrlSet = process.env.PROXY_UPDATE_URL && process.env.PROXY_UPDATE_URL !== "";
-  const authEnabled = process.env.AUTH;
+  const authEnabled = process.env.AUTH_ENABLED;
   let layers = layerDtos.map((layer) => {
     const {
       style,
