@@ -1,8 +1,10 @@
+import { Router } from "express";
 import { favouritesController as controller } from "../controllers";
 import { createSecureRouter, RouteRegistry } from "@/utils/routeUtils";
 
 const route = "favourites";
-const router = createSecureRouter(route);
+const router = process.env.SECURE_FAVOURITES ?
+  createSecureRouter(route) :  Router();
 
 /**
  * @route GET /${route}/list/{user}
