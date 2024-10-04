@@ -5,10 +5,10 @@
   "private": true,
   "scripts": {
     "prebuild": "tsc --noEmit",
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "dev_express": "ts-node ./src/server.ts",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3000",
     "lint": "next lint",
     "dev:custom": "ts-node src/server.ts",
     "build:custom": "next build && tsc -p tsconfig.server.json",
@@ -16,7 +16,8 @@
     "build:mac:windows": "npm run build && npm run prepare:mac:windows",
     "prepare:mac:windows": "rm -rf dist && mkdir dist && cp -R .next/standalone/ dist/ && cp -R .next/static dist/.next/static && cp -R public/ dist/public && cp package.json dist/package.json && cp next.config.mjs dist/next.config.mjs && cp .env.template dist/.env.template  && rm -rf dist/.next/cache && rm -rf dist/node_modules && rm -rf dist/.env",
     "build:windows": "next build && npm run prepare:windows",
-    "prepare:windows": "if exist dist rmdir /s /q dist && mkdir dist && xcopy .next\\standalone dist\\.next\\standalone /E /I && xcopy .next\\static dist\\.next\\static /E /I && xcopy public dist\\public /E /I && xcopy package.json dist\\package.json /I && xcopy next.config.mjs dist\\next.config.mjs /I && xcopy .env.template dist\\.env.template /I && xcopy ../installation/tasks dist\\tasks /E /I && if exist dist\\.next\\cache rmdir /s /q dist\\.next\\cache && if exist dist\\node_modules rmdir /s /q dist\\node_modules && if exist dist\\.env del dist\\.env"
+    "prepare:windows": "if exist dist rmdir /s /q dist && mkdir dist && xcopy .next\\standalone dist\\.next\\standalone /E /I && xcopy .next\\static dist\\.next\\static /E /I && xcopy public dist\\public /E /I && xcopy package.json dist\\package.json /I && xcopy next.config.mjs dist\\next.config.mjs /I && xcopy .env.template dist\\.env.template /I && xcopy ../installation/tasks dist\\tasks /E /I && if exist dist\\.next\\cache rmdir /s /q dist\\.next\\cache && if exist dist\\node_modules rmdir /s /q dist\\node_modules && if exist dist\\.env del dist\\.env",
+    "start:windows": "set PORT=3000 && node .next/standalone/server.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
