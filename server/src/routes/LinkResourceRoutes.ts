@@ -38,7 +38,7 @@ router.get(`/${route}`, (req, res) => controller.getAll(req, res));
 /**
  * @route POST /${route}
  * @description Create a new link resource
- * @param {LinkResourceDto} requestBody - The link resource data to create
+ * @request {LinkResourceDto} requestBody - The link resource data to create
  * @returns {LinkResourceDto}
  */
 router.post(`/${route}`, (req, res) => controller.create(req, res));
