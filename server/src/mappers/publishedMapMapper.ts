@@ -223,6 +223,8 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     } else {
       if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
         transformedLayer.id = layer_id;
+      } else {
+        delete transformedLayer.id;
       }
     }
 
