@@ -218,7 +218,7 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     if (clusterStyle) {
       transformedLayer.clusterStyle = clusterStyle.name;
     }
-    if (publish || (proxyUrlSet && authEnabled)) {
+    if (publish ?? (proxyUrlSet && authEnabled)) {
       transformedLayer.layer_id = layer_id;
     } else {
       if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
