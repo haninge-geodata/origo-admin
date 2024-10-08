@@ -83,4 +83,8 @@ export const authOptions: NextAuthOptions = {
       };
     },
   },
+  session: {
+    strategy: 'jwt',
+    maxAge: parseInt(process.env.PROTECTED_IDP_SESSION_MAXAGE || "") || 600 // 10 minutes
+  },
 };
