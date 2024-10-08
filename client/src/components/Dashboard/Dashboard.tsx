@@ -11,7 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { DashboardDto } from "@/shared/interfaces/dtos";
 
 export default function Dashboard() {
-    const queryKey = 'maps';
+    const queryKey = 'dashboard';
     const { data } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchAll() as any as DashboardDto });
 
     return (
