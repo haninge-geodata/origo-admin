@@ -35,7 +35,7 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async redirect({ url, baseUrl }) {
-      return baseUrl;
+      return baseUrl + process.env.NEXT_PUBLIC_BASE_PATH || "";
     },
     async session({ session, token }) {
       if (token) {
