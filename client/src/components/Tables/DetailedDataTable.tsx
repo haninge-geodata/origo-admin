@@ -225,7 +225,7 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {data && Array.isArray(data) && data.length > 0 ? (
+                            {data?.rows?.length ?? 0 > 0 ? (
                                 sortedAndPaginatedRows.map((row) => (
                                     <RowContent
                                         key={row.id}
