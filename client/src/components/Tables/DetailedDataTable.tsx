@@ -148,7 +148,6 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
 
     const isFiltered = searchTerm !== '';
 
-
     return (
         <Grid>
             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: '20px', height: '40px' }}>
@@ -226,20 +225,30 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {sortedAndPaginatedRows.map((row) => (
+                            {data && Array.isArray(data) && data.length > 0 ? (
+                                sortedAndPaginatedRows.map((row) => (
+                                    <RowContent
+                                        key={row.id}
+                                        row={row}
+                                        isSelected={selected.includes(row.id)}
+                                        columns={data!.columns}
+                                        expandable={expandable}
+                                        onEdit={onEdit}
+                                        onDelete={onDelete}
+                                        onSelectionChanged={onSelectionChanged ? (() => handleClick(row.id)) : undefined}
+                                        customEvents={customEvents}
+                                        selectAll={selectAll}
+                                    />
+                                ))
+                            ) : (
                                 <RowContent
-                                    key={row.id}
-                                    row={row}
-                                    isSelected={selected.includes(row.id)}
-                                    columns={data!.columns}
-                                    expandable={expandable}
-                                    onEdit={onEdit}
-                                    onDelete={onDelete}
-                                    onSelectionChanged={onSelectionChanged ? (() => handleClick(row.id)) : undefined}
-                                    customEvents={customEvents}
-                                    selectAll={selectAll}
+                                    row={{ id: "-1", title: "No data available"}}
+                                    columns={[]}
+                                    isSelected={false}
+                                    expandable={false}
+                                    selectAll={false}
                                 />
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>

@@ -5,6 +5,12 @@ export type Specification = {
 };
 
 export function mapDataToTableFormat(incomingData: any[], specification: Specification): TableData {
+  if (!incomingData || incomingData.length === 0) {
+    return {
+      columns: specification.columns,
+      rows: [],
+    };
+  }
   const rows: DataRow[] = incomingData.map((item) => mapRowToTableFormat(item, specification));
 
   return {
