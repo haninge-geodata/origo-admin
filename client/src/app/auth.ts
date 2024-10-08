@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile, trigger }) {
       // Initial sign in
       if (account && user) {
-        const expiresIn = account.expires_in ? (account.expires_in as number) * 1000 : 3600 * 1000;
+        const expiresIn = account.expires_in ? (account.expires_in as number) * 1000 : 600 * 1000;
 
         return {
           access_token: account.access_token,
