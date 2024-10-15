@@ -82,7 +82,7 @@ export class FilterJsonService {
       json.layers = json.layers.map((layer: any) => {
         const { id, layer_id, ...rest } = layer;
         if (layer_id !== null && layer_id !== undefined && layer_id !== "") {
-          return { ...rest, Id: layer_id };
+          return { ...rest, id: layer_id };
         } else {
           return rest;
         }
