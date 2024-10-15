@@ -18,7 +18,7 @@ class proxyLayerMapper implements IMapper<DBLayerBase, ProxyResourceDto> {
     return {
       type: "layer",
       id: model._id.toString(),
-      name: model.name,
+      name: model.layer_id || model.name,
       sourceId: src.id!,
       source: src.name,
       sourceUrl: src.url,
