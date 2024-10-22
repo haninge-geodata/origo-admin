@@ -9,7 +9,13 @@ import {
 } from "ts-morph";
 import * as fs from "fs";
 import * as path from "path";
-import * as ts from "typescript";
+//import * as ts from "typescript";
+import * as dotenv from "dotenv";
+
+// Read environment variables
+const envPath = path.resolve(__dirname, "..", `.env`)
+console.info(`Initializing environment (${envPath})...`);
+dotenv.config({ path: envPath });
 
 const project = new Project();
 
@@ -195,6 +201,13 @@ function extractRouteInfo(node: Node, routeName: string) {
                   }
                 }
             };
+          }
+          // If the favourites routes are unsecured, add an optional anonymous security alternative.
+          if (path.startsWith("/favourites") && process.env.SECURE_FAVOURITES === 'false') {
+            swaggerDocs.paths[path][method].security = [
+              {},
+              { "bearerAuth": [] }
+            ];
           }
         }
       }
