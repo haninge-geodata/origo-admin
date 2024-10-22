@@ -3,7 +3,7 @@ import { favouritesController as controller } from "../controllers";
 import { createSecureRouter, RouteRegistry } from "@/utils/routeUtils";
 
 const route = "favourites";
-const router = process.env.SECURE_FAVOURITES ?
+const router = process.env.SECURE_FAVOURITES === 'true' ?
   createSecureRouter(route) :  Router();
 
 /**
