@@ -47,7 +47,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route PUT /${route}/:id
  * @description Update a link resource
  * @param {string} id - The link resource ID
- * @param {LinkResourceDto} requestBody - The updated link resource data
+ * @request {LinkResourceDto} requestBody - The updated link resource data
  * @returns {LinkResourceDto}
  */
 router.put(`/${route}/:id`, (req, res) => controller.update(req, res));
