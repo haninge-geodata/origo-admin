@@ -1,4 +1,5 @@
 import { KeyValuePair } from "./KeyValuePairDto";
+import { LinkResourceAuthDto } from "./LinkResourceAuthDto";
 
 export interface LinkResourceDto {
   id?: string;
@@ -6,5 +7,6 @@ export interface LinkResourceDto {
   title: string;
   url: string;
   type: string;
+  auth?: LinkResourceAuthDto;
   extendedAttributes?: KeyValuePair[];
 }

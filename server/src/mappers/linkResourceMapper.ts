@@ -12,6 +12,7 @@ export class linkResourceMapper
       title: model.title,
       url: model.url,
       type: model.type,
+      auth: model.auth,
       extendedAttributes: [],
     } as LinkResourceDto;
 
@@ -30,6 +31,7 @@ export class linkResourceMapper
       title: dto.title,
       url: dto.url,
       type: dto.type,
+      auth: dto.auth,
       extendedAttributes: [],
     } as DBLinkResource;
 
