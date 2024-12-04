@@ -26,6 +26,13 @@
                 "headerName": "Typ",
                 "field": "type",
                 "inputType": "textfield"
+            },
+            {
+                "headerName": "Autentisering",
+                "field": "auth",
+                "hide": true,
+                "inputType": "json",
+                "placeholder": "{\n  \"type\": \"basic\",\n  \"username\": \"user1\",\n  \"password\": \"mycomplexpassword\"\n}"
             }
         ]
     }

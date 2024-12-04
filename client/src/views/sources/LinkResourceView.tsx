@@ -5,6 +5,8 @@ import styles from "@/app/page.module.css";
 import { LINK_RESOURCE_TYPES } from '@/constants/';
 import { LinkResourceDto } from "@/shared/interfaces/dtos";
 import KeyValuePairEditor from '@/components/Editors/KeyValuePairEditor';
+import JSONEditor from "@/components/Editors/JSONEditor";
+import { LinkResourceAuthDto } from '@/shared/interfaces/dtos/LinkResourceAuthDto';
 
 interface LinkResourceViewProps {
     existingData?: LinkResourceDto[];
@@ -21,6 +23,7 @@ export default function LinkResourceView({ existingData = [], initialData, onSub
     const [url, setUrl] = useState(initialData?.url || '');
     const [formTitle, setFormTitle] = useState(initialData?.title || '');
     const [type, setType] = useState(initialData?.type || '');
+    const [auth, setAuth] = useState<LinkResourceAuthDto>(initialData?.auth || {});
     const [isUrlValid, setIsUrlValid] = useState(true);
     const [nameError, setNameError] = useState('');
     const [titleError, setTitleError] = useState('');
@@ -33,9 +36,14 @@ export default function LinkResourceView({ existingData = [], initialData, onSub
             setUrl(initialData.url || '');
             setFormTitle(initialData.title || '');
             setType(initialData.type || '');
+            setAuth(initialData.auth || {});
             setExtendedAttributes(initialData.extendedAttributes || []);
         }
     }, [initialData]);
+
+    const handleAuthChange = (newValue: object) => {
+        setAuth(newValue as LinkResourceAuthDto);
+    };
 
     const handleExtendedAttributesChange = (newPairs: { key: string; value: string }[]) => {
         setExtendedAttributes(newPairs);
@@ -86,7 +94,7 @@ export default function LinkResourceView({ existingData = [], initialData, onSub
 
     const handleSubmit = () => {
         if (!nameError && !titleError) {
-            onSubmit({ id: initialData?.id, name, url, title: formTitle, type, extendedAttributes });
+            onSubmit({ id: initialData?.id, name, url, title: formTitle, type, auth, extendedAttributes });
         }
     };
 
@@ -167,6 +175,12 @@ export default function LinkResourceView({ existingData = [], initialData, onSub
                                             <MenuItem key={typeOption} value={typeOption}>{typeOption}</MenuItem>
                                         ))}
                                     </TextField>
+                                </FormControl>
+                            </Grid>
+                            <Grid item xs={12}>
+                                <InputLabel>Autentisering</InputLabel>
+                                <FormControl fullWidth>
+                                    <JSONEditor value={auth} onChange={handleAuthChange} />
                                 </FormControl>
                             </Grid>
                         </Grid>
