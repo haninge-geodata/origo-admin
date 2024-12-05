@@ -32,9 +32,9 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
       let targetUrlString;
       if (sourceUrl.includes("?")) {
         const [sourceBase, sourceQuery] = sourceUrl.split("?");
-        targetUrlString = `${sourceBase}/${path}?${sourceQuery}${query ? `&${query}` : ""}`;
+        targetUrlString = `${sourceBase}${path ? '/' + path : ''}?${sourceQuery}${query ? `&${query}` : ""}`;
       } else {
-        targetUrlString = `${sourceUrl}/${path}${query ? `?${query}` : ""}`;
+        targetUrlString = `${sourceUrl}${path ? '/' + path : ''}${query ? `?${query}` : ""}`;
       }
 
       targetUrlString = targetUrlString.replace(/([^:]\/)\/+/g, "$1");
