@@ -1,2 +1,2 @@
-export * from "./ProxyLayerDto";
+export * from "./ProxyResourceDto";
 export * from "./ProxyRoleDto";
