@@ -17,10 +17,11 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
       const proxyPath = req.url!.replace(new RegExp(`^${proxyBasePath}gis/`), "");
 
       const [sourcePath, query] = proxyPath.split("?");
-      const [source, ...pathParts] = sourcePath.split("/");
+      const [sourceName, ...pathParts] = sourcePath.split("/");
       const path = pathParts.join("/");
 
-      const sourceUrl = cacheManager.getSourceUrlByName(source);
+      const source = cacheManager.getResourcesByName(sourceName)[0];
+      const sourceUrl = cacheManager.getSourceUrlByName(sourceName);
 
       if (!sourceUrl) {
         res.writeHead(404, { "Content-Type": "text/plain" });
@@ -62,11 +63,11 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
 
       let hasPermission = false;
       if (layers && layers.length > 0) {
-        hasPermission = layers.every((layer) => cacheManager.hasLayerPermission(source, layer, permissions));
+        hasPermission = layers.every((layer) => cacheManager.hasLayerPermission(sourceName, layer, permissions));
       } else if (layerName) {
-        hasPermission = cacheManager.hasLayerPermission(source, layerName, permissions);
-      } else if (source) {
-        hasPermission = cacheManager.hasSourcePermission(source, permissions);
+        hasPermission = cacheManager.hasLayerPermission(sourceName, layerName, permissions);
+      } else if (sourceName) {
+        hasPermission = cacheManager.hasSourcePermission(sourceName, permissions);
       }
 
       if (!hasPermission) {
@@ -80,9 +81,11 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
         port: targetUrl.port || (targetUrl.protocol === "https:" ? 443 : 80),
         path: targetUrl.pathname + targetUrl.search,
         method: req.method,
+        ...source.sourceAuth?.type === 'basic' && { auth: `${source.sourceAuth!.username}:${source.sourceAuth!.password}`},
         headers: {
           ...req.headers,
           host: targetUrl.host,
+          ...source.sourceAuth?.type === 'token' && { 'Authorization': `${source.sourceAuth!.tokenPrefix}${source.sourceAuth!.tokenString}`},
         },
       };
 

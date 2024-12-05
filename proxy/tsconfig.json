@@ -3,18 +3,16 @@
       "target": "es6",
       "module": "commonjs",
       "outDir": "./dist",
-      "rootDir": "./src",
       "strict": true,
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "typeRoots": ["./node_modules/@types", "./types"]
-
+      "typeRoots": ["./node_modules/@types", "./types"],
+      "paths": {
+        "@/*": ["./src/*"],
+        "@/shared/*": ["../shared/*"]
+      }
     },
     "include": ["src/**/*", "types"],
-    "exclude": ["node_modules"],
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/shared/*": ["../shared/*"]
-    }
+    "exclude": ["node_modules"]
   }

@@ -1,5 +1,6 @@
 export * from "./WMSLayerDto";
 export * from "./LinkResourceDto";
+export * from "./LinkResourceAuthDto";
 export * from "./WFSLayerDto";
 export * from "./WMTSLayerDto";
 export * from "./MapControlDto";

@@ -21,7 +21,7 @@ class proxyLayerMapper implements IMapper<DBLayerBase, ProxyResourceDto> {
       name: model.layer_id || model.name,
       sourceId: src.id!,
       source: src.name,
-      sourceUrl: src.url,
+      sourceUrl: src.url
     };
   }
   toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBLayerBase {
@@ -37,6 +37,7 @@ class proxySourceMapper implements IMapper<DBLinkResource, ProxyResourceDto> {
       type: "source",
       id: model._id.toString(),
       name: model.name,
+      sourceAuth: model.auth
     };
   }
   toDBModel(

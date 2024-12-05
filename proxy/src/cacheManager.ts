@@ -1,3 +1,5 @@
+import { LinkResourceAuthDto } from "@/shared/interfaces/dtos";
+
 interface Permission {
   id: string;
   type: string;
@@ -10,6 +12,7 @@ interface Resource {
   sourceId: string;
   source: string;
   sourceUrl: string;
+  sourceAuth: LinkResourceAuthDto;
 }
 class OptimizedPermissionCache {
   private layerPermissions: Map<string, Set<string>> = new Map();
