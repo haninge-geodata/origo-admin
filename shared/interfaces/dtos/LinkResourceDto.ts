@@ -7,6 +7,6 @@ export interface LinkResourceDto {
   title: string;
   url: string;
   type: string;
-  auth?: LinkResourceAuthDto;
+  auth?: LinkResourceAuthDto | {};
   extendedAttributes?: KeyValuePair[];
 }

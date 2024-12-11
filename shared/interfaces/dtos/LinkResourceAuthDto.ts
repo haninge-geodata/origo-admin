@@ -7,7 +7,7 @@ export type LinkResourceAuthDto = {
   tokenString?: string;
   clientKey?: string;
   clientSecret?: string;
-  type: LinkResourceAuthTypes;
+  type?: LinkResourceAuthTypes;
 } & (
   // Enforce that either (username and password) or (tokenPrefix and tokenString) or (client_key and client_secret) are present
   ({}
@@ -18,7 +18,7 @@ export type LinkResourceAuthDto = {
     tokenPrefix?: never;
     tokenString?: never;
     clientKey?: never;
-    clientSecret?: never
+    clientSecret?: never;
   }
   | {
     type: 'token';
@@ -27,7 +27,7 @@ export type LinkResourceAuthDto = {
     username?: never;
     password?: never;
     clientKey?: never;
-    clientSecret?: never
+    clientSecret?: never;
   }
   | {
     type: 'oauth-credentials';

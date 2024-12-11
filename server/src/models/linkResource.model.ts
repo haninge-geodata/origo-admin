@@ -25,7 +25,7 @@ const linkResourceAuthSchema = new mongoose.Schema<LinkResourceAuthDto>(
   {
     type: {
       type: String,
-      required: true,
+      required: false,
       enum: {
         values: ['basic', 'token', 'oauth-credentials'],
         message: '{VALUE} is not supported'
@@ -50,14 +50,15 @@ const linkResourceSchema = new mongoose.Schema<DBLinkResource>({
     type: linkResourceAuthSchema,
     validate: {
       validator: function (value: any) {
-        if (value === null) return true;
+        if (value === null || JSON.stringify(value) === '{}')
+          return true;
 
         const hasUsernameAndPassword = value.type === 'basic' && value.username !== undefined && value.password !== undefined;
         const hasPrefixAndToken = value.type === 'token' && value.tokenPrefix !== undefined && value.tokenString !== undefined;
         const hasKeyAndSecret = value.type === 'oauth-credentials' && value.clientKey !== undefined && value.clientSecret !== undefined;
         return (hasUsernameAndPassword || hasPrefixAndToken || hasKeyAndSecret);
       },
-      message: "Must be null or have either type 'basic' with username and password or type 'token' with tokenPrefix and tokenString or type 'oauth-credentials' with client_key and client_secret."
+      message: "Must be null, {} or have either type 'basic' with username and password or type 'token' with tokenPrefix and tokenString or type 'oauth-credentials' with client_key and client_secret."
     }
   },
   extendedAttributes: {
