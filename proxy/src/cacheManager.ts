@@ -44,15 +44,23 @@ class OptimizedPermissionCache {
     });
 
     resources.forEach((resource) => {
-      const key = `${resource.source}:${resource.name}`;
+      let keys: string[];
+      if (resource.type === 'layer') {
+        keys = resource.name.split(",").map((layerId: string) => `${resource.sourceId}:${layerId}`);
+      } else {
+        keys = [resource.id];
+      }
+
       const resourcePermissionActors = permissionToActors.get(resource.id);
 
       if (resourcePermissionActors) {
-        if (!this.layerPermissions.has(key)) {
-          this.layerPermissions.set(key, new Set());
-        }
-        resourcePermissionActors.forEach((actorName) => {
-          this.layerPermissions.get(key)!.add(actorName);
+        keys.forEach((key) => {
+          if (!this.layerPermissions.has(key)) {
+            this.layerPermissions.set(key, new Set());
+          }
+          resourcePermissionActors.forEach((actorName) => {
+            this.layerPermissions.get(key)!.add(actorName);
+          });
         });
       }
     });
