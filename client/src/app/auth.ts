@@ -13,11 +13,15 @@ export const authOptions: NextAuthOptions = {
       issuer: process.env.PROTECTED_IDP_ISSUER,
       checks: ["pkce", "state"],
       authorization: {
+        url: process.env.PROTECTED_IDP_AUTH_URL,
         params: {
           scope: process.env.PROTECTED_IDP_SCOPE,
           redirect_uri: process.env.PROTECTED_IDP_REDIRECT_URI,
         },
       },
+      token: process.env.PROTECTED_IDP_TOKEN_URL,
+      userinfo: process.env.PROTECTED_IDP_USERINFO_URL,
+      jwks_endpoint: process.env.PROTECTED_IDP_JWKS_URL,
       async profile(profile: any, tokens: any) {
         return {
           id: profile.sub,
