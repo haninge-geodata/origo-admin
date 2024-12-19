@@ -1,19 +1,19 @@
 import { IMapper } from "@/interfaces";
 import { DBLinkResource, DBMapControl } from "@/models";
-import { DBLayerBase } from "@/models/layer.model";
+import { DBLayerOWS } from "@/models/layer.model";
 import { ProxyResourceDto, ProxyRoleDto } from "@/shared/interfaces/proxy";
 import { DBRole } from "@/models/permission.model";
 import { linkResourceMapper } from "@/mappers/linkResourceMapper";
 import { LinkResourceDto } from "@/shared/interfaces/dtos";
 import { DBPublishedMap } from "@/models/publishedMap.model";
 
-class proxyLayerMapper implements IMapper<DBLayerBase, ProxyResourceDto> {
+class proxyLayerMapper implements IMapper<DBLayerOWS, ProxyResourceDto> {
   private _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
 
   constructor() {
     this._linkResourceMapper = new linkResourceMapper();
   }
-  toDto(model: DBLayerBase): ProxyResourceDto {
+  toDto(model: DBLayerOWS): ProxyResourceDto {
     const src = this._linkResourceMapper.toDto(model.source as DBLinkResource);
     return {
       type: "layer",
@@ -24,7 +24,7 @@ class proxyLayerMapper implements IMapper<DBLayerBase, ProxyResourceDto> {
       sourceUrl: src.url,
     };
   }
-  toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBLayerBase {
+  toDBModel(dto: ProxyResourceDto, create?: boolean | undefined): DBLayerOWS {
     throw new Error(
       "Method not implemented since it is not needed for this mapper"
     );

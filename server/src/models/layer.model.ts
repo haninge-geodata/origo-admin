@@ -10,9 +10,7 @@ interface KeyValuePair {
 
 interface DBLayerBase extends mongoose.Document {
   _id: mongodb.ObjectId;
-  layer_id?: string;
   name: string;
-  source: mongodb.ObjectId | DBLinkResource;
   title: string;
   abstract?: string;
   queryable: boolean;
@@ -23,7 +21,12 @@ interface DBLayerBase extends mongoose.Document {
   extendedAttributes?: KeyValuePair[] | null;
 }
 
-const keyValuePairSchema = new mongoose.Schema<KeyValuePair>(
+interface DBLayerOWS extends DBLayerBase {
+  layer_id?: string;
+  source: mongodb.ObjectId | DBLinkResource;
+}
+
+const keyValuePairSchema = new Schema<KeyValuePair>(
   {
     key: { type: String, required: true },
     value: { type: String, required: true },
@@ -31,11 +34,9 @@ const keyValuePairSchema = new mongoose.Schema<KeyValuePair>(
   { _id: false }
 );
 
-const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
+const layerBaseSchema = new Schema<DBLayerBase>(
   {
     name: { type: String, required: true },
-    layer_id: { type: String, required: false },
-    source: { type: Schema.Types.ObjectId, ref: "LinkResource" },
     title: { type: String, required: true },
     abstract: { type: String },
     queryable: { type: Boolean, required: true },
@@ -67,18 +68,16 @@ const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
 );
 
 layerBaseSchema.pre("findOne", function () {
-  this.populate("source");
   this.populate("style");
 });
 
 layerBaseSchema.pre("find", function () {
-  this.populate("source");
   this.populate("style");
 });
 
 const layerModel = mongoose.model<DBLayerBase>("Layers", layerBaseSchema);
 
-interface DBWFSLayer extends DBLayerBase {
+interface DBWFSLayer extends DBLayerOWS {
   geometryName: string;
   attributes?: any;
   opacity?: number;
@@ -87,6 +86,8 @@ interface DBWFSLayer extends DBLayerBase {
 }
 
 const wfsLayerSchema = new Schema({
+  layer_id: { type: String, required: false },
+  source: { type: Schema.Types.ObjectId, ref: "LinkResource" },
   geometryName: { type: String, required: true },
   attributes: { type: Schema.Types.Mixed },
   opacity: { type: Number },
@@ -95,10 +96,12 @@ const wfsLayerSchema = new Schema({
 });
 
 wfsLayerSchema.pre("findOne", function () {
+  this.populate("source");
   this.populate("clusterStyle");
 });
 
 wfsLayerSchema.pre("find", function () {
+  this.populate("source");
   this.populate("clusterStyle");
 });
 
@@ -107,7 +110,7 @@ const WFSLayerModel = layerModel.discriminator<DBWFSLayer>(
   wfsLayerSchema
 );
 
-interface DBWMSLayer extends DBLayerBase {
+interface DBWMSLayer extends DBLayerOWS {
   geometryName: string;
   featureinfoLayer?: string;
   attributes?: Object;
@@ -116,6 +119,8 @@ interface DBWMSLayer extends DBLayerBase {
 }
 
 const wmsLayerSchema = new Schema({
+  layer_id: { type: String, required: false },
+  source: { type: Schema.Types.ObjectId, ref: "LinkResource" },
   geometryName: { type: String, required: true },
   attributes: { type: Object, required: false },
   format: { type: String, required: true },
@@ -123,21 +128,39 @@ const wmsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
+wmsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+});
+
+wmsLayerSchema.pre("find", function () {
+  this.populate("source");
+});
+
 const WMSLayerModel = layerModel.discriminator<DBWMSLayer>(
   "WMS",
   wmsLayerSchema
 );
 
-interface DBWMTSLayer extends DBLayerBase {
+interface DBWMTSLayer extends DBLayerOWS {
   format: string;
   maxScale?: number;
   featureinfoLayer?: string;
 }
 
 const wmtsLayerSchema = new Schema({
+  layer_id: { type: String, required: false },
+  source: { type: Schema.Types.ObjectId, ref: "LinkResource" },
   format: { type: String, required: true },
   maxScale: { type: Number, required: false },
   featureinfoLayer: { type: String, required: false },
+});
+
+wmtsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+});
+
+wmtsLayerSchema.pre("find", function () {
+  this.populate("source");
 });
 
 const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
@@ -145,8 +168,28 @@ const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
   wmtsLayerSchema
 );
 
+type DBLayer = DBWFSLayer | DBWMSLayer | DBWMTSLayer | DBGroupLayer;
+
+interface DBGroupLayer extends DBLayerBase {
+  layers: DBLayer[];
+}
+
+const groupLayerSchema = new Schema({
+  layers: { type: [Schema.Types.ObjectId], required: true, ref: "Layers" }
+});
+
+groupLayerSchema.pre("find", function () {
+  this.populate("layers");
+});
+
+const GroupLayerModel = layerModel.discriminator<DBGroupLayer>(
+  "GROUP",
+  groupLayerSchema
+);
+
 export {
   DBLayerBase,
+  DBLayerOWS,
   layerModel,
   DBWFSLayer,
   WFSLayerModel,
@@ -154,4 +197,6 @@ export {
   WMSLayerModel,
   DBWMTSLayer,
   WMTSLayerModel,
+  DBGroupLayer,
+  GroupLayerModel
 };

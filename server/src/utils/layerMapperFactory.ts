@@ -1,5 +1,5 @@
 import { IMapper } from "@/interfaces";
-import { LayerMapper, WFSLayerMapper, WMSLayerMapper, WMTSLayerMapper } from "@/mappers/layerMapper";
+import { LayerMapper, WFSLayerMapper, WMSLayerMapper, WMTSLayerMapper, GroupLayerMapper } from "@/mappers/layerMapper";
 
 function createLayerMapper(type: string): IMapper<any, any> {
   switch (type.toUpperCase()) {
@@ -9,6 +9,8 @@ function createLayerMapper(type: string): IMapper<any, any> {
       return new WMSLayerMapper();
     case "WMTS":
       return new WMTSLayerMapper();
+    case "GROUP":
+      return new GroupLayerMapper();
     case "ALL":
       return new LayerMapper();
     default:

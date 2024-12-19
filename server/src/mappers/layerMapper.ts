@@ -5,7 +5,8 @@ import {
   DBWFSLayer,
   DBWMSLayer,
   DBWMTSLayer,
-  layerModel,
+  DBGroupLayer,
+  layerModel
 } from "@/models/layer.model";
 import {
   BaseLayerDto,
@@ -14,6 +15,7 @@ import {
   WFSLayerDto,
   WMSLayerDto,
   WMTSLayerDto,
+  GroupLayerDto
 } from "@/shared/interfaces/dtos";
 import mongoose from "mongoose";
 
@@ -32,9 +34,7 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   toDto(model: DBLayerBase): BaseLayerDto {
     return {
       id: model._id.toString(),
-      layer_id: model.layer_id,
       name: model.name,
-      source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
       title: model.title,
       abstract: model.abstract ?? "",
       queryable: model.queryable,
@@ -51,8 +51,6 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   toDBModel(dto: BaseLayerDto, create: boolean = false): DBLayerBase {
     const dbModel = new layerModel({
       name: dto.name,
-      layer_id: dto.layer_id,
-      source: this._linkResourceMapper.toDBModel(dto.source),
       title: dto.title,
       abstract: dto.abstract,
       queryable: dto.queryable,
@@ -82,6 +80,8 @@ export class WFSLayerMapper
     const baseDto = super.toDto(model) as WFSLayerDto;
     return {
       ...baseDto,
+      layer_id: model.layer_id,
+      source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
       geometryName: model.geometryName,
       attributes: model.attributes ?? null,
       ...(model.opacity != null && { opacity: model.opacity }),
@@ -94,6 +94,8 @@ export class WFSLayerMapper
 
   toDBModel(dto: WFSLayerDto, create: boolean): DBWFSLayer {
     const model = super.toDBModel(dto, create) as DBWFSLayer;
+    model.layer_id = dto.layer_id;
+    model.source = this._linkResourceMapper.toDBModel(dto.source);
     model.geometryName = dto.geometryName;
     model.attributes = dto.attributes ?? {};
     if (dto.opacity != null) model.opacity = dto.opacity;
@@ -118,6 +120,8 @@ export class WMSLayerMapper
       const baseDto = super.toDto(model) as WMSLayerDto;
       return {
         ...baseDto,
+        layer_id: model.layer_id,
+        source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
         geometryName: model.geometryName,
         ...(model.featureinfoLayer != null && {
           opacity: model.featureinfoLayer,
@@ -134,6 +138,8 @@ export class WMSLayerMapper
 
   toDBModel(dto: WMSLayerDto, create: boolean): DBWMSLayer {
     const model = super.toDBModel(dto, create) as DBWMSLayer;
+    model.layer_id = dto.layer_id;
+    model.source = this._linkResourceMapper.toDBModel(dto.source);
     model.geometryName = dto.geometryName;
     if (dto.featureinfoLayer != null)
       model.featureinfoLayer = dto.featureinfoLayer;
@@ -155,6 +161,8 @@ export class WMTSLayerMapper
     const baseDto = super.toDto(model) as WMTSLayerDto;
     return {
       ...baseDto,
+      layer_id: model.layer_id,
+      source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
       format: model.format,
       maxScale: model.maxScale ? model.maxScale : undefined,
       ...(model.featureinfoLayer != null && {
@@ -165,10 +173,32 @@ export class WMTSLayerMapper
 
   toDBModel(dto: WMTSLayerDto, create: boolean): DBWMTSLayer {
     const model = super.toDBModel(dto, create) as DBWMTSLayer;
+    model.layer_id = dto.layer_id;
+    model.source = this._linkResourceMapper.toDBModel(dto.source);
     model.format = dto.format;
     model.maxScale = dto.maxScale ? dto.maxScale : undefined;
     if (dto.featureinfoLayer != null)
       model.featureinfoLayer = dto.featureinfoLayer;
+    return model;
+  }
+}
+
+export class GroupLayerMapper
+  extends BaseLayerMapper
+  implements IMapper<DBGroupLayer, GroupLayerDto>
+{
+  constructor() {
+    super();
+  }
+  toDto(model: DBGroupLayer): GroupLayerDto {
+    const baseDto = super.toDto(model) as GroupLayerDto;
+    return {
+      ...baseDto
+    };
+  }
+
+  toDBModel(dto: GroupLayerDto, create: boolean): DBGroupLayer {
+    const model = super.toDBModel(dto, create) as DBGroupLayer;
     return model;
   }
 }
