@@ -2,6 +2,7 @@ export * from "./WMSLayerDto";
 export * from "./LinkResourceDto";
 export * from "./WFSLayerDto";
 export * from "./WMTSLayerDto";
+export * from "./GroupLayerDto";
 export * from "./MapControlDto";
 export * from "./MapSettingDto";
 export * from "./MediaDto";
