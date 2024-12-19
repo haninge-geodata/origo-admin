@@ -1,6 +1,6 @@
-import { BaseLayerDto, StyleSchemaDto } from ".";
+import { OWSLayerDto, StyleSchemaDto } from ".";
 
-export interface WFSLayerDto extends BaseLayerDto {
+export interface WFSLayerDto extends OWSLayerDto {
   geometryName: string;
   attributes?: Record<string, any> | null;
   opacity?: number;

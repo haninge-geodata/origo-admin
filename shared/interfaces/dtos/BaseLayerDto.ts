@@ -1,10 +1,8 @@
-import { KeyValuePair, LinkResourceDto, StyleSchemaDto } from ".";
+import { KeyValuePair, StyleSchemaDto } from ".";
 
 export interface BaseLayerDto {
   id: string;
-  layer_id?: string;
   name: string;
-  source: LinkResourceDto;
   title: string;
   abstract: string;
   group?: string;

@@ -12,6 +12,7 @@ export * from "./MapInstanceDto";
 export * from "./FavouritesDto";
 export * from "./RelationDto";
 export * from "./BaseLayerDto";
+export * from "./OWSLayerDto";
 export * from "./LayerDto";
 export * from "./RoleDto";
 export * from "./AccessTokenDto";
