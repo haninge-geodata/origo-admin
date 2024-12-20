@@ -1,5 +1,5 @@
-import { BaseLayerDto } from ".";
+import { BaseLayerDto, LayerDto } from ".";
 
 export interface GroupLayerDto extends BaseLayerDto {
-  layers: string[];
+  layers: LayerDto[];
 }

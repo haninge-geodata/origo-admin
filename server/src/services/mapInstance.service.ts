@@ -1,4 +1,9 @@
-import { DBLinkResource, DBMapInstance, LinkResourceModel, MapInstanceModel } from "@/models";
+import {
+  DBLinkResource,
+  DBMapInstance,
+  LinkResourceModel,
+  MapInstanceModel,
+} from "@/models";
 import "@/mappers/";
 import { Repository } from "@/repositories/Repository";
 import {
@@ -16,9 +21,12 @@ import {
   InstanceToPublishedMapMapper,
   PreviewMapMapper,
   publishedMapListItemMapper,
-  publishedMapMapper
+  publishedMapMapper,
 } from "@/mappers/publishedMapMapper";
-import { instanceListItemMapper, instanceMapper } from "@/mappers/InstanceMapper";
+import {
+  instanceListItemMapper,
+  instanceMapper,
+} from "@/mappers/InstanceMapper";
 import { linkResourceMapper } from "@/mappers/";
 
 class MapInstanceService {
@@ -33,12 +41,19 @@ class MapInstanceService {
   private _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
 
   private publishedMapMapper: IMapper<DBPublishedMap, PublishedMapConfigDto>;
-  private publishedMapListItemMapper: IMapper<DBPublishedMap, PublishedMapListItemDto>;
+  private publishedMapListItemMapper: IMapper<
+    DBPublishedMap,
+    PublishedMapListItemDto
+  >;
 
   constructor() {
     this.repository = new Repository<DBMapInstance>(MapInstanceModel);
-    this.publishedRepository = new Repository<DBPublishedMap>(PublishedMapModel);
-    this.linkResourceRepository = new Repository<DBLinkResource>(LinkResourceModel);
+    this.publishedRepository = new Repository<DBPublishedMap>(
+      PublishedMapModel
+    );
+    this.linkResourceRepository = new Repository<DBLinkResource>(
+      LinkResourceModel
+    );
     this.listItemMapper = new instanceListItemMapper();
     this.instanceMapper = new instanceMapper();
     this._linkResourceMapper = new linkResourceMapper();
@@ -54,7 +69,9 @@ class MapInstanceService {
   async findAll(): Promise<MapInstanceListItemDto[]> {
     let response = await this.repository.findAll();
     let allPublished = await this.publishedRepository.findAll();
-    const publishedIds = new Set(allPublished.map((p) => p.mapInstanceId.toString()));
+    const publishedIds = new Set(
+      allPublished.map((p) => p.mapInstanceId.toString())
+    );
     return response.map((item) => ({
       ...this.listItemMapper.toDto(item),
       isPublished: publishedIds.has(item._id.toString()),
@@ -78,16 +95,23 @@ class MapInstanceService {
 
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
-    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, sources);
+    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(
+      mapInstance,
+      sources
+    );
 
     let response = await this.publishedRepository.create(publishedMap);
     return this.publishedMapMapper.toDto(response, { publish: true });
   }
 
-  async republish(id: string, instanceId: string): Promise<PublishedMapConfigDto> {
+  async republish(
+    id: string,
+    instanceId: string
+  ): Promise<PublishedMapConfigDto> {
     let publishedMap = await this.publishedRepository.find(instanceId);
     if (!publishedMap) throw new Error("Map instance not found");
-    if (publishedMap.mapInstanceId.toString() !== id) throw new Error("Map instance id does not match!");
+    if (publishedMap.mapInstanceId.toString() !== id)
+      throw new Error("Map instance id does not match!");
 
     let republishedMap = publishedMap.toObject();
     republishedMap.publishedDate = new Date();
@@ -99,16 +123,25 @@ class MapInstanceService {
   }
 
   async getPublishedList(id: string): Promise<PublishedMapListItemDto[]> {
-    let response = await this.publishedRepository.query({ mapInstanceId: id }, { publishedDate: "desc" });
+    let response = await this.publishedRepository.query(
+      { mapInstanceId: id },
+      { publishedDate: "desc" }
+    );
     return response.map((item) => this.publishedMapListItemMapper.toDto(item));
   }
 
   async getLatestPublished(name: string): Promise<PublishedMapConfigDto> {
-    let response = await this.publishedRepository.query({ name: name }, { publishedDate: "desc" }, 1);
+    let response = await this.publishedRepository.query(
+      { name: name },
+      { publishedDate: "desc" },
+      1
+    );
     return this.publishedMapMapper.toDto(response[0]);
   }
   async getPublished(id: string): Promise<PublishedMapConfigDto> {
-    let response = await this.publishedRepository.find(id.replace(/\.json$/ig, ""));
+    let response = await this.publishedRepository.find(
+      id.replace(/\.json$/gi, "")
+    );
     return this.publishedMapMapper.toDto(response);
   }
 
@@ -118,13 +151,20 @@ class MapInstanceService {
     return this.instanceMapper.toDto(response);
   }
 
-  async syncLayer(mapInstanceIds: string[], type: string, layerId: string, actions: string[]): Promise<void> {
+  async syncLayer(
+    mapInstanceIds: string[],
+    type: string,
+    layerId: string,
+    actions: string[]
+  ): Promise<void> {
     if (actions.length === 0) throw new Error("No actions provided");
     const layerService = createLayerService(type);
     const layer = await layerService.find(layerId);
     if (!layer) throw new Error("Layer not found");
 
-    const instances = await this.repository.query({ _id: { $in: mapInstanceIds } });
+    const instances = await this.repository.query({
+      _id: { $in: mapInstanceIds },
+    });
     if (!instances.length) throw new Error("Instances not found");
 
     for (let instance of instances) {
@@ -142,7 +182,7 @@ class MapInstanceService {
 
           let updatedLayer = { ...existing };
 
-          if (actions.includes("source")) {
+          if ("source" in layer && actions.includes("source")) {
             updatedLayer.source = layer.source;
           }
 
@@ -150,10 +190,14 @@ class MapInstanceService {
             updatedLayer.style = layer.style;
           }
 
-          if (actions.includes("details")) {
+          if ("source" in layer && actions.includes("details")) {
             updatedLayer = { ...layer };
-            updatedLayer.source = actions.includes("source") ? layer.source : existingSource;
-            updatedLayer.style = actions.includes("style") ? layer.style : existingStyle;
+            updatedLayer.source = actions.includes("source")
+              ? layer.source
+              : existingSource;
+            updatedLayer.style = actions.includes("style")
+              ? layer.style
+              : existingStyle;
           }
 
           updatedLayer.group = existingGroup;
@@ -170,8 +214,12 @@ class MapInstanceService {
     }
   }
 
-  async update(id: string, mapInstance: MapInstanceDto): Promise<MapInstanceDto> {
-    if (id !== mapInstance.id) throw new Error("Id in body does not match id in url");
+  async update(
+    id: string,
+    mapInstance: MapInstanceDto
+  ): Promise<MapInstanceDto> {
+    if (id !== mapInstance.id)
+      throw new Error("Id in body does not match id in url");
     let dbInstance = this.instanceMapper.toDBModel(mapInstance, false);
     let response = await this.repository.update(id, dbInstance);
     if (!response) throw new Error("Instance not found");

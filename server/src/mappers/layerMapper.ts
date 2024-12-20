@@ -6,7 +6,7 @@ import {
   DBWMSLayer,
   DBWMTSLayer,
   DBGroupLayer,
-  layerModel
+  layerModel,
 } from "@/models/layer.model";
 import {
   BaseLayerDto,
@@ -15,12 +15,13 @@ import {
   WFSLayerDto,
   WMSLayerDto,
   WMTSLayerDto,
-  GroupLayerDto
+  GroupLayerDto,
 } from "@/shared/interfaces/dtos";
 import mongoose from "mongoose";
 
 import { linkResourceMapper } from "@/mappers/linkResourceMapper";
 import StyleSchemaMapper from "./styleSchemaMapper";
+import { createLayerMapper } from "@/utils/layerMapperFactory";
 
 class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
   protected _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
@@ -193,12 +194,24 @@ export class GroupLayerMapper
   toDto(model: DBGroupLayer): GroupLayerDto {
     const baseDto = super.toDto(model) as GroupLayerDto;
     return {
-      ...baseDto
+      ...baseDto,
+      layers: model.layers.map((layer) => {
+        if (!layer || typeof layer === "string" || !("type" in layer)) {
+          throw new Error("Layer not populated correctly");
+        }
+
+        const layerMapper = createLayerMapper(layer.type);
+        return layerMapper.toDto(layer as DBLayerBase);
+      }),
     };
   }
 
   toDBModel(dto: GroupLayerDto, create: boolean): DBGroupLayer {
     const model = super.toDBModel(dto, create) as DBGroupLayer;
+    console.log(dto.layers);
+    model.layers = dto.layers.map((layer) => {
+      return new mongoose.Types.ObjectId(layer.id);
+    });
     return model;
   }
 }

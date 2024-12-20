@@ -1,16 +1,22 @@
-import { WFSLayerMapper, WMSLayerMapper, WMTSLayerMapper } from "@/mappers/layerMapper";
 import {
+  DBGroupLayer,
   DBLayerBase,
   DBWFSLayer,
   DBWMSLayer,
   DBWMTSLayer,
+  GroupLayerModel,
   WFSLayerModel,
   WMSLayerModel,
   WMTSLayerModel,
   layerModel,
 } from "@/models/layer.model";
 import { LayerService } from "@/services/layer.service";
-import { WFSLayerDto, WMSLayerDto, WMTSLayerDto } from "@/shared/interfaces/dtos";
+import {
+  GroupLayerDto,
+  WFSLayerDto,
+  WMSLayerDto,
+  WMTSLayerDto,
+} from "@/shared/interfaces/dtos";
 import { createLayerMapper } from "./layerMapperFactory";
 
 function createLayerService(type: string) {
@@ -19,13 +25,35 @@ function createLayerService(type: string) {
   const toDBModelMethod = mapper.toDBModel.bind(mapper);
   switch (type.toUpperCase()) {
     case "WFS":
-      return new LayerService<DBWFSLayer, WFSLayerDto>(WFSLayerModel, toDtoMethod, toDBModelMethod);
+      return new LayerService<DBWFSLayer, WFSLayerDto>(
+        WFSLayerModel,
+        toDtoMethod,
+        toDBModelMethod
+      );
     case "WMS":
-      return new LayerService<DBWMSLayer, WMSLayerDto>(WMSLayerModel, toDtoMethod, toDBModelMethod);
+      return new LayerService<DBWMSLayer, WMSLayerDto>(
+        WMSLayerModel,
+        toDtoMethod,
+        toDBModelMethod
+      );
     case "WMTS":
-      return new LayerService<DBWMTSLayer, WMTSLayerDto>(WMTSLayerModel, toDtoMethod, toDBModelMethod);
+      return new LayerService<DBWMTSLayer, WMTSLayerDto>(
+        WMTSLayerModel,
+        toDtoMethod,
+        toDBModelMethod
+      );
+    case "GROUP":
+      return new LayerService<DBGroupLayer, GroupLayerDto>(
+        GroupLayerModel,
+        toDtoMethod,
+        toDBModelMethod
+      );
     case "ALL":
-      return new LayerService<DBLayerBase, WMTSLayerDto>(layerModel, toDtoMethod, toDBModelMethod);
+      return new LayerService<DBLayerBase, WMTSLayerDto>(
+        layerModel,
+        toDtoMethod,
+        toDBModelMethod
+      );
     default:
       throw new Error("Unsupported layer type");
   }

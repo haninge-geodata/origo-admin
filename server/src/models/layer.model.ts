@@ -171,21 +171,50 @@ const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
 type DBLayer = DBWFSLayer | DBWMSLayer | DBWMTSLayer | DBGroupLayer;
 
 interface DBGroupLayer extends DBLayerBase {
-  layers: DBLayer[];
+  layers: (mongodb.ObjectId | DBLayer)[];
 }
 
 const groupLayerSchema = new Schema({
-  layers: { type: [Schema.Types.ObjectId], required: true, ref: "Layers" }
+  layers: [{ type: Schema.Types.ObjectId, required: true, ref: "Layers" }],
+});
+
+groupLayerSchema.pre("findOne", function () {
+  console.log("pre findOne");
+
+  const populateOptions = {
+    path: "layers",
+    populate: [{ path: "style" }, { path: "source" }, { path: "clusterStyle" }],
+  };
+
+  this.populate(populateOptions);
 });
 
 groupLayerSchema.pre("find", function () {
-  this.populate("layers");
+  console.log("pre find");
+  const populateOptions = {
+    path: "layers",
+    populate: [{ path: "style" }, { path: "source" }, { path: "clusterStyle" }],
+  };
+
+  this.populate(populateOptions);
 });
 
 const GroupLayerModel = layerModel.discriminator<DBGroupLayer>(
   "GROUP",
   groupLayerSchema
 );
+
+export interface Layer {
+  id: string;
+  name: string;
+  description?: string;
+  visible: boolean;
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
+  // ... other existing properties
+}
 
 export {
   DBLayerBase,
@@ -198,5 +227,5 @@ export {
   DBWMTSLayer,
   WMTSLayerModel,
   DBGroupLayer,
-  GroupLayerModel
+  GroupLayerModel,
 };
