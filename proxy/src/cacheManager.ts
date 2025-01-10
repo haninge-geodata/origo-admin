@@ -82,8 +82,10 @@ class ResourcesCache {
         this.resourcesBySourceId.set(resource.sourceId, []);
       }
       this.resourcesBySourceId.get(resource.sourceId)!.push(resource);
-      this.sourceUrlByName.set(resource.source, resource.sourceUrl);
-      this.sourceNameByUrl.set(resource.sourceUrl, resource.source);
+      if (resource?.type === "source") {
+        this.sourceUrlByName.set(resource.name, resource.sourceUrl);
+        this.sourceNameByUrl.set(resource.sourceUrl, resource.name);
+      }
     });
   }
 
