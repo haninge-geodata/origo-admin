@@ -37,6 +37,7 @@ class proxySourceMapper implements IMapper<DBLinkResource, ProxyResourceDto> {
       type: "source",
       id: model._id.toString(),
       name: model.name,
+      sourceUrl: model.url
     };
   }
   toDBModel(

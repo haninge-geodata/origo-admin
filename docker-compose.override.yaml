@@ -1,0 +1,120 @@
+services:
+  mongodb:
+    ports:
+      - "27017:27017"
+  client:
+    environment:
+      AUTH_ENABLED: "true" # Toggles AUTH on and off
+      SIGN_OUT_URL: 'http://localhost:3050/application/o/origo-admin/end-session/' # The URL to sign out from the OIDC provider
+      NEXTAUTH_URL: 'http://localhost:3000'
+      PROTECTED_ADMIN_ROLE: "Administratör"
+
+      # OIDC Settings
+      PROTECTED_IDP_NAME: "Authentik"
+      PROTECTED_IDP_ISSUER: "http://idp:9000/application/o/origo-admin/"
+      PROTECTED_IDP_WELL_KNOWN: ""
+      PROTECTED_IDP_TOKEN_URL: "${IDP_TOKEN_URL:-http://idp:9000/application/o/token/}"
+      PROTECTED_IDP_AUTH_URL: "${IDP_AUTH_URL:-http://localhost:3050/application/o/authorize/}"
+      PROTECTED_IDP_USERINFO_URL: "${IDP_USERINFO_URL:-http://idp:9000/application/o/userinfo/}"
+      PROTECTED_IDP_JWKS_URL: "${IDP_JWKS_URL:-http://idp:9000/application/o/origo-admin/jwks/}"
+      PROTECTED_IDP_CLIENT_ID: "${IDP_CLIENT_ID}"
+      PROTECTED_IDP_CLIENT_SECRET: "${IDP_CLIENT_SECRET}"
+      PROTECTED_IDP_SCOPE: "${IDP_SCOPE:-openid email profile}"
+      PROTECTED_IDP_REDIRECT_URI: "${IDP_REDIRECT_URI:-http://localhost:3000/api/auth/callback/oidc}"
+      PROTECTED_IDP_SESSION_MAXAGE: 600 # Used to trigger a refresh of the client's session. Set to the IDP's token lifetime.
+  proxy:
+    environment:
+      WELL_KNOWN: "${IDP_WELLKNOWN_URL:-http://idp:9000/application/o/origo-admin/.well-known/openid-configuration}" # This is the OIDC well known endpoint for the OIDC provider
+      TOKEN_URL: "${IDP_TOKEN_URL:-http://idp:9000/application/o/token/}" # This is the OIDC token endpoint for the OIDC provider
+      CLIENT_ID: "${IDP_CLIENT_ID}" # This is the OIDC client id for the OIDC provider
+      CLIENT_SECRET: "${IDP_CLIENT_SECRET}" # This is the OIDC client secret for the OIDC provider
+      SCOPE: "${IDP_SCOPE:-openid email profile}" # This is the OIDC scope for the OIDC provider e.g. openid groups
+      AUTH_CLIENT_DOMAIN: "localhost" # The domain to set the cookie on
+      DISPLAY_NAME: "" # The claim to use as display name
+      REDIRECT_URI: ""  # Also the client redirect uri used for CORS.
+  server:
+    environment:
+      AUTH_ENABLED: "true"
+
+  idp-db:
+    image: docker.io/library/postgres:16-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - idp-db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+  idp-redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    volumes:
+      - idp-redis:/data
+  idp:
+    image: ghcr.io/goauthentik/server:2024.10.5
+    restart: unless-stopped
+    command: server
+    environment:
+      AUTHENTIK_REDIS__HOST: idp-redis
+      AUTHENTIK_POSTGRESQL__HOST: idp-db
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+      AUTHENTIK_SECRET_KEY: "40d955edcf2a45378b98b0a470d343ba"
+      AUTHENTIK_WEB__PATH: "https://localhost:3050/"
+    volumes:
+      - idp-media:/media
+      - idp-templates:/templates
+    env_file:
+      - .env
+    ports:
+      - "3050:9000"
+    depends_on:
+      idp-db:
+        condition: service_healthy
+      idp-redis:
+        condition: service_healthy
+  idp-worker:
+    image: ghcr.io/goauthentik/server:2024.10.5
+    restart: unless-stopped
+    command: worker
+    environment:
+      AUTHENTIK_REDIS__HOST: idp-redis
+      AUTHENTIK_POSTGRESQL__HOST: idp-db
+      AUTHENTIK_POSTGRESQL__USER: postgres
+      AUTHENTIK_POSTGRESQL__NAME: postgres
+      AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+      AUTHENTIK_SECRET_KEY: "40d955edcf2a45378b98b0a470d343ba"
+    user: root
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - idp-media:/media
+      - idp-certs:/certs
+      - idp-templates:/templates
+    env_file:
+      - .env
+    depends_on:
+      idp-db:
+        condition: service_healthy
+      idp-redis:
+        condition: service_healthy
+
+volumes:
+  idp-db:
+  idp-redis:
+  idp-media:
+  idp-templates:
+  idp-certs:

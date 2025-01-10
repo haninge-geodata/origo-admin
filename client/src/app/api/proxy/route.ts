@@ -23,7 +23,7 @@ async function handler(req: NextRequest) {
     headers[key] = value;
   });
 
-  if (AUTH_ENABLED && ADMIN_ROLE !== null) {
+  if (AUTH_ENABLED && ADMIN_ROLE) {
     if (!jwtPayload || (jwtPayload.access_token === null && jwtPayload.access_token !== undefined)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
