@@ -20,7 +20,14 @@ app.use(
 );
 
 app.use(cookieParser());
-app.use(bodyParser.json());
+app.use((req, res, next) => {
+  // Exclude the /gis path when using the body-parser middleware, so that the body will not
+  // already be consumed before passing it on to the target.
+  if (!req.url.startsWith(`${PROXY_BASE_PATH}/gis`)) {
+    bodyParser.json();
+  }
+  return next();
+});
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const port = process.env.PORT || 3020;
