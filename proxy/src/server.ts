@@ -10,6 +10,12 @@ import cookieParser from "cookie-parser";
 
 dotenv.config();
 
+const port = process.env.PORT || 3020;
+const resourcesEndpoint = process.env.RESOURCES_ENDPOINT_URL!;
+const rolesEndpoint = process.env.ROLES_ENDPOINT_URL!;
+const PROXY_BASE_PATH = process.env.PROXY_BASE_PATH || "/proxy";
+const API_ACCESS_TOKEN = process.env.API_ACCESS_TOKEN!;
+
 const app = express();
 
 app.use(
@@ -20,21 +26,12 @@ app.use(
 );
 
 app.use(cookieParser());
-app.use((req, res, next) => {
-  // Exclude the /gis path when using the body-parser middleware, so that the body will not
-  // already be consumed before passing it on to the target.
-  if (!req.url.startsWith(`${PROXY_BASE_PATH}/gis`)) {
-    bodyParser.json();
-  }
-  return next();
-});
+// Exclude the /gis path when using the body-parser middleware, so that the body will not
+// already be consumed before passing it on to the target.
+// IMPORTANT! If the regex used for exclusion is changed, it must be checked to be safe from ReDoS attacks.
+app.use(new RegExp(`^(?!${PROXY_BASE_PATH}/gis)`, "g"), bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const port = process.env.PORT || 3020;
-const resourcesEndpoint = process.env.RESOURCES_ENDPOINT_URL!;
-const rolesEndpoint = process.env.ROLES_ENDPOINT_URL!;
-const PROXY_BASE_PATH = process.env.PROXY_BASE_PATH || "/proxy";
-const API_ACCESS_TOKEN = process.env.API_ACCESS_TOKEN!;
 const cacheManager = new CacheManager(rolesEndpoint, resourcesEndpoint, API_ACCESS_TOKEN);
 const proxyManager = new ProxyManager(cacheManager, API_ACCESS_TOKEN, PROXY_BASE_PATH);
 
