@@ -137,7 +137,7 @@ export default function Page({ params: { id } }: any) {
         <main className={styles.main}>
             <MainCard style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
                 <Box component='div' sx={{ width: '100%' }}>
-                    <Box component='div' sx={{ width: '100%', height: '90vh' }}>
+                    <Box component='div' sx={{ width: '100%', height: 'fit-content' }}>
                         {mapInstanceData && <TabContainer items={items}>
                             <Settings
                                 key={key}
