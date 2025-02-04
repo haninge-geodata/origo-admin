@@ -18,8 +18,8 @@
     "postbuild": "npm run generate-swagger && xcopy .\\src\\swagger_output.json .\\dist\\server\\src\\ /I /Y"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Haninge kommun",
+  "license": "BSD-2-Clause",
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^8.2.0",

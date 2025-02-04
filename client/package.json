@@ -19,6 +19,9 @@
     "prepare:windows": "if exist dist rmdir /s /q dist && mkdir dist && xcopy .next\\standalone dist\\.next\\standalone /E /I && xcopy .next\\static dist\\.next\\static /E /I && xcopy public dist\\public /E /I && xcopy package.json dist\\package.json /I && xcopy next.config.mjs dist\\next.config.mjs /I && xcopy .env.template dist\\.env.template /I && xcopy ../installation/tasks dist\\tasks /E /I && if exist dist\\.next\\cache rmdir /s /q dist\\.next\\cache && if exist dist\\node_modules rmdir /s /q dist\\node_modules && if exist dist\\.env del dist\\.env",
     "start:windows": "set PORT=3000 && node .next/standalone/server.js"
   },
+  "keywords": [],
+  "author": "Haninge kommun",
+  "license": "BSD-2-Clause",
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
