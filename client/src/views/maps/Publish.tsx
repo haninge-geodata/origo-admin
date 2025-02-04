@@ -17,9 +17,9 @@ interface PublishProps {
 
 const Publish = ({ id }: PublishProps) => {
     const queryClient = useQueryClient();
-    const [openModal, setOpenModal] = useState(false);
     const queryKey = "list";
     const { data } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchPublishedList(id) });
+    const [isConfirmPublishDialogOpen, setConfirmPublishDialogOpen] = useState(false);
     const [isConfirmRepublishDialogOpen, setConfirmRepublishDialogOpen] = useState(false);
     const [selectedInstance, setSelectedInstance] = useState<any>();
     const [origoUrl, setOrigoUrl] = useState('');
@@ -33,23 +33,15 @@ const Publish = ({ id }: PublishProps) => {
         fetchBaseUrl();
     }, []);
 
-    const onModalConfirm = () => {
-        setOpenModal(false);
-        handleSave();
-    }
-
-    const onModalCancel = () => {
-        setOpenModal(false);
-    }
-
+    // Handle the publish mapinstance dialog
     const handlePublish = () => {
-        setOpenModal(true);
-    }
-
-    const handleSave = async () => {
+        setConfirmPublishDialogOpen(true);
+    };
+    const confirmPublish = async () => {
         try {
-            const resp = await service.publish(id);
+            await service.publish(id);
             queryClient.invalidateQueries({ queryKey: [queryKey] });
+            setConfirmPublishDialogOpen(false);
             showToast('Kartinstansen publicerades!', 'success');
         } catch (error) {
             showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
@@ -57,10 +49,15 @@ const Publish = ({ id }: PublishProps) => {
         }
     };
 
+    // Handle the republish previously published map dialog
     const handleRepublish = async (id: string) => {
         const selectedInstance = data!.find((instance: any) => instance.id === id);
         setSelectedInstance(selectedInstance);
         setConfirmRepublishDialogOpen(true);
+    };
+    const handleRepublishDialogClose = () => {
+        setConfirmRepublishDialogOpen(false);
+        setSelectedInstance(undefined);
     };
     const confirmRepublish = async () => {
         try {
@@ -73,20 +70,17 @@ const Publish = ({ id }: PublishProps) => {
             showToast('Ett fel inträffade, kunde inte ompublicera kartinstansen', 'error');
             console.error(error);
         }
-    }
+    };
 
-    const handleRepublishDialogClose = () => {
-        setConfirmRepublishDialogOpen(false);
-        setSelectedInstance(undefined);
-    }
-
+    // Handle the preview published map action
     const handlePreview = (instanceId: string) => {
         window.open(`${origoUrl}/${instanceId}/preview`, '_blank');
-    }
+    };
 
+    // Handle the preview mapinstance button
     const handleGlobalPreview = () => {
         window.open(`${origoUrl}/${id}/preview`, '_blank');
-    }
+    };
 
     return (
         <Box component='div'>
@@ -125,9 +119,9 @@ const Publish = ({ id }: PublishProps) => {
                 </MainCard>
             </Grid>
             <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
-                open={openModal} onClose={onModalCancel} onConfirm={onModalConfirm}></AlertDialog>
-            <AlertDialog open={isConfirmRepublishDialogOpen} onClose={() => setConfirmRepublishDialogOpen(false)} title="Ompublicera kartinstans" contentText={`Är du säker på att du vill ompublicera kartinstansen "${selectedInstance?.title}"?`}
-                onConfirm={confirmRepublish} />
+                open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish} />
+            <AlertDialog title="Ompublicera kartinstans" contentText={`Är du säker på att du vill ompublicera kartinstansen "${selectedInstance?.title}"?`}
+                open={isConfirmRepublishDialogOpen} onClose={() => setConfirmRepublishDialogOpen(false)} onConfirm={confirmRepublish} />
         </Box>
     );
 };
