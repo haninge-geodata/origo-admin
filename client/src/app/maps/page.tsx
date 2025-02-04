@@ -9,10 +9,11 @@ import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import mapSpec from "@/assets/specifications/tables/mapInstanceTableSpecification.json";
 import DetailedDataTable from "@/components/Tables/DetailedDataTable";
 import FormDialog from "@/components/Dialogs/FormDialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MapInstanceDto } from "@/shared/interfaces/dtos";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
 import { useApp } from "@/contexts/AppContext";
+import envStore from "@/stores/Environment";
 
 export default function Page() {
     const queryKey = 'maps';
@@ -23,9 +24,18 @@ export default function Page() {
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { showToast } = useApp();
+    const [origoUrl, setOrigoUrl] = useState('');
 
     const router = useRouter();
     const pathname = usePathname()
+
+    useEffect(() => {
+        const fetchBaseUrl = async () => {
+            const origoUrl = await envStore("ORIGO_URL");
+            setOrigoUrl(origoUrl);
+        };
+        fetchBaseUrl();
+    }, []);
 
     const handleDialogOpen = () => {
         setErrorMessage(null);
@@ -64,6 +74,10 @@ export default function Page() {
         setToBeDeletedId(id);
         setAlertDialogOpen(true);
     };
+    
+    const handlePreview = (id: string) => {
+        window.open(`${origoUrl}/${id}/preview`, '_blank');
+    }
 
     const onSubmit = async (formData: FormData) => {
         const entries = Object.fromEntries(formData.entries());
@@ -119,6 +133,9 @@ export default function Page() {
                             isSearchable={true}
                             pagination={true}
                             rowsPerPage={10}
+                            customEvents={[
+                                { label: "Förhandsgranska", action: (id) => handlePreview(id) }
+                            ]}
                             onAdd={handleAddClick}
                             onEdit={handleEdit}
                             onDelete={handleDelete}
