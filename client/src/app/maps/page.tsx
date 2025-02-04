@@ -185,7 +185,7 @@ export default function Page() {
                     <AlertDialog title="Bekräfta borttagning" contentText="Vänligen bekräfta borttagning av kartinstansen!"
                         open={isAlertDialogOpen} onClose={() => setAlertDialogOpen(false)} onConfirm={confirmDelete} />
                     <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
-                        open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish}></AlertDialog>
+                        open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish} />
                 </Grid>
             </Grid>
         </main >
