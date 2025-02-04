@@ -42,12 +42,6 @@
                 "field": "isPublished",
                 "inputType": "checkbox",
                 "defaultValue": "false"
-            },
-            {
-                "headerName": "Publicerad Länk",
-                "field": "publishedUrl",
-                "inputType": "url",
-                "defaultValue": "false"
             }
         ]
     }
