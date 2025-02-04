@@ -21,6 +21,8 @@ export default function Page() {
     const { data = [], isLoading, error } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchList() });
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [toBeDeteledId, setToBeDeletedId] = useState<string | null>(null);
+    const [toBePublishedId, setToBePublishedId] = useState<string | null>(null);
+    const [isConfirmPublishDialogOpen, setConfirmPublishDialogOpen] = useState(false);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { showToast } = useApp();
@@ -57,6 +59,12 @@ export default function Page() {
         if (setErrorMessage) setErrorMessage(null);
     }
 
+    
+    // Handle the delete mapinstance dialog
+    const handleDelete = async (id: string) => {
+        setToBeDeletedId(id);
+        setAlertDialogOpen(true);
+    };
     const confirmDelete = async () => {
         try {
             let id = toBeDeteledId!;
@@ -69,15 +77,30 @@ export default function Page() {
             showToast('Ett fel inträffade, kunde inte radera kartinstansen.', 'error');
             console.error('Error deleting WMS Layer:', error);
         }
-    }
-    const handleDelete = async (id: string) => {
-        setToBeDeletedId(id);
-        setAlertDialogOpen(true);
     };
     
+    // Handle the preview mapinstance action
     const handlePreview = (id: string) => {
         window.open(`${origoUrl}/${id}/preview`, '_blank');
-    }
+    };
+
+    // Handle the publish mapinstance dialog
+    const handlePublish = (id: string) => {
+        setToBePublishedId(id);
+        setConfirmPublishDialogOpen(true);
+    };
+    const confirmPublish = async () => {
+        try {
+            let id = toBePublishedId!;
+            await service.publish(id);
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            setConfirmPublishDialogOpen(false);
+            showToast('Kartinstansen publicerades!', 'success');
+        } catch (error) {
+            showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
+            console.error(error);
+        }
+    };
 
     const onSubmit = async (formData: FormData) => {
         const entries = Object.fromEntries(formData.entries());
@@ -134,7 +157,8 @@ export default function Page() {
                             pagination={true}
                             rowsPerPage={10}
                             customEvents={[
-                                { label: "Förhandsgranska", action: (id) => handlePreview(id) }
+                                { label: "Förhandsgranska", action: (id) => handlePreview(id) },
+                                { label: "Publicera", action: (id) => handlePublish(id) }
                             ]}
                             onAdd={handleAddClick}
                             onEdit={handleEdit}
@@ -158,8 +182,10 @@ export default function Page() {
                             fullWidth
                             variant="standard"
                         />} />
-                    <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av kartinstansen!"
-                        onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning" />
+                    <AlertDialog title="Bekräfta borttagning" contentText="Vänligen bekräfta borttagning av kartinstansen!"
+                        open={isAlertDialogOpen} onClose={() => setAlertDialogOpen(false)} onConfirm={confirmDelete} />
+                    <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
+                        open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish}></AlertDialog>
                 </Grid>
             </Grid>
         </main >
