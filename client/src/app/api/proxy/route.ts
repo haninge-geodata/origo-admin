@@ -23,6 +23,10 @@ async function handler(req: NextRequest) {
     headers[key] = value;
   });
 
+  if (API_ACCESS_TOKEN) {
+    headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
+  }
+
   if (AUTH_ENABLED && ADMIN_ROLE) {
     if (!jwtPayload || (jwtPayload.access_token === null && jwtPayload.access_token !== undefined)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -33,7 +37,6 @@ async function handler(req: NextRequest) {
       const userGroups = userInfo.claims.split(",").map((dn: string) => dn.trim());
       const roleInfo = await getRoleInfo(ADMIN_ROLE!);
 
-      headers["Authorization"] = `Bearer ${API_ACCESS_TOKEN}`;
       headers["X-User-Info"] = JSON.stringify(userInfo.username);
 
       if (!roleInfo || !roleInfo.actors || roleInfo.actors.length === 0) {
