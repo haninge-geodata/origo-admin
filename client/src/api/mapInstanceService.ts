@@ -30,10 +30,10 @@ class MapInstanceService extends BaseApiService<MapInstanceDto> {
     });
   }
 
-  async publish(id: string): Promise<PublishedMapDto> {
+  async publish(id: string, comment: string | undefined): Promise<PublishedMapDto> {
     const restClient = await this.getRestClient();
     return this.executeWithEvents(async () => {
-      const response = await restClient.post<PublishedMapDto>(`${this.resourcePath}/${id}/publish`, {});
+      const response = await restClient.post<PublishedMapDto>(`${this.resourcePath}/${id}/publish`, { comment });
       return response;
     });
   }
