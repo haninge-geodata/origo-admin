@@ -36,6 +36,7 @@ export interface PublishedMapDto extends PublishedMapBaseDto {
 
 export interface PublishedMapBaseDto {
   id: string;
+  comment?: string;
   title: string;
   name: string;
   abstract: string;
@@ -46,9 +47,9 @@ export interface PublishedMapBaseDto {
 
 export interface PublishedMapListItemDto {
   id: string;
+  comment?: string;
   title: string;
   name: string;
-  abstract: string;
   publishedDate: string;
   url: string;
 }

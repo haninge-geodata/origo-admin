@@ -20,9 +20,9 @@ export class publishedMapListItemMapper
   toDto(model: DBPublishedMap): PublishedMapListItemDto {
     return {
       id: model.id,
+      comment: model.comment,
       title: model.title,
       name: model.name,
-      abstract: model.abstract,
       publishedDate: convertDateToSwedishTime(model.publishedDate),
       url: `${process.env.MAPINSTANCE_ROUTE_PATH}/published/${model.id}`,
     };
@@ -44,9 +44,10 @@ export class InstanceToPublishedMapMapper
   toDto(model: DBPublishedMap): DBMapInstance {
     throw new Error("Method not implemented, not needed");
   }
-  toDBModel(model: DBMapInstance, ...contexts: any[]): DBPublishedMap {
+  toDBModel(model: DBMapInstance, comment: string, ...contexts: any[]): DBPublishedMap {
     const [sources = []] = contexts;
     const publishedModel: Partial<DBPublishedMap> = {
+      comment,
       mapInstanceId: model._id,
       title: model.title,
       name: model.name,

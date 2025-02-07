@@ -6,7 +6,7 @@ import {
   MapInstanceDto,
   MapInstanceListItemDto,
   PublishedMapConfigDto,
-  PublishedMapListItemDto,
+  PublishedMapListItemDto
 } from "@/shared/interfaces/dtos";
 import { DBPublishedMap, PublishedMapModel } from "@/models/publishedMap.model";
 import mongoose from "mongoose";
@@ -72,13 +72,13 @@ class MapInstanceService {
     return this.previewMapMapper.toDto(response, sources);
   }
 
-  async publish(id: string): Promise<PublishedMapListItemDto> {
+  async publish(id: string, comment: string): Promise<PublishedMapListItemDto> {
     let mapInstance = await this.repository.find(id);
     if (!mapInstance) throw new Error("Map instance not found");
 
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
-    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, sources);
+    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources);
 
     let response = await this.publishedRepository.create(publishedMap);
     return this.publishedMapListItemMapper.toDto(response);

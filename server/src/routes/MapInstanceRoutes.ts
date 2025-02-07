@@ -71,6 +71,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @route POST /${route}/:id/publish
  * @description Publish a specific map instance
  * @param {string} id - The map instance ID
+ * @request {} requestBody - Set the comment in the body: { comment: "My comment string." }
  * @returns {PublishedMapListItemDto}
  */
 router.post(`/${route}/:id/publish`, (req, res) =>
