@@ -51,7 +51,8 @@ class ExtendedMapInstanceController extends BaseController<MapInstanceService> {
   async publish(req: Request, res: Response): Promise<void> {
     try {
       const id = req.params.id;
-      const publishedMap = (await (this.service as any).publish(id)) as PublishedMapDto;
+      const comment: string = req.body.comment;
+      const publishedMap = (await (this.service as any).publish(id, comment)) as PublishedMapDto;
       res.json(publishedMap);
     } catch (error) {
       this.handleError(res, error);

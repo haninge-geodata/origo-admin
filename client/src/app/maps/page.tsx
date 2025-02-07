@@ -1,5 +1,5 @@
 'use client';
-import { Grid, Typography, Button, TextField } from "@mui/material";
+import { Grid, Typography, TextField } from "@mui/material";
 import MainCard from "@/components/Cards/MainCard/MainCard";
 import styles from "@/app/page.module.css";
 import { useRouter, usePathname } from "next/navigation";
@@ -9,6 +9,7 @@ import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import mapSpec from "@/assets/specifications/tables/mapInstanceTableSpecification.json";
 import DetailedDataTable from "@/components/Tables/DetailedDataTable";
 import FormDialog from "@/components/Dialogs/FormDialog";
+import PublishMapFormDialog from "@/components/Dialogs/PublishMapFormDialog";
 import { useEffect, useState } from "react";
 import { MapInstanceDto } from "@/shared/interfaces/dtos";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
@@ -22,8 +23,8 @@ export default function Page() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [toBeDeteledId, setToBeDeletedId] = useState<string | null>(null);
     const [toBePublishedId, setToBePublishedId] = useState<string | null>(null);
-    const [isConfirmPublishDialogOpen, setConfirmPublishDialogOpen] = useState(false);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
+    const [isPublishDialogOpen, setPublishDialogOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { showToast } = useApp();
     const [origoUrl, setOrigoUrl] = useState('');
@@ -87,19 +88,10 @@ export default function Page() {
     // Handle the publish mapinstance dialog
     const handlePublish = (id: string) => {
         setToBePublishedId(id);
-        setConfirmPublishDialogOpen(true);
+        setPublishDialogOpen(true);
     };
     const confirmPublish = async () => {
-        try {
-            let id = toBePublishedId!;
-            await service.publish(id);
-            queryClient.invalidateQueries({ queryKey: [queryKey] });
-            setConfirmPublishDialogOpen(false);
-            showToast('Kartinstansen publicerades!', 'success');
-        } catch (error) {
-            showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
-            console.error(error);
-        }
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
     };
 
     const onSubmit = async (formData: FormData) => {
@@ -182,10 +174,12 @@ export default function Page() {
                             fullWidth
                             variant="standard"
                         />} />
+                    <PublishMapFormDialog
+                        open={isPublishDialogOpen} onClose={() => setPublishDialogOpen(false)} onConfirm={confirmPublish}
+                        id={toBePublishedId}
+                    />
                     <AlertDialog title="Bekräfta borttagning" contentText="Vänligen bekräfta borttagning av kartinstansen!"
                         open={isAlertDialogOpen} onClose={() => setAlertDialogOpen(false)} onConfirm={confirmDelete} />
-                    <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
-                        open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish} />
                 </Grid>
             </Grid>
         </main >

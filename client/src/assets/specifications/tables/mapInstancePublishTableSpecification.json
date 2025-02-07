@@ -16,8 +16,8 @@
                 "inputType": "textfield"
             },
             {
-                "headerName": "Beskrivning",
-                "field": "abstract",
+                "headerName": "Kommentar",
+                "field": "comment",
                 "inputType": "textfield"
             },
             {

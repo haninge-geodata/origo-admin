@@ -27,9 +27,7 @@ export default function AlertDialog({ open, title, contentText, onClose, onConfi
         {title}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description"
-          dangerouslySetInnerHTML={{ __html: contentText }}>
-        </DialogContentText>
+        <DialogContentText id="alert-dialog-description">{contentText}</DialogContentText>
       </DialogContent>
       {onConfirm &&
         <DialogActions>

@@ -4,6 +4,7 @@ import { PublishedMapConfigDto } from "@/shared/interfaces/dtos";
 
 interface DBPublishedMap extends Document {
   _id: mongodb.ObjectId;
+  comment?: string;
   mapInstanceId: mongodb.ObjectId;
   title: string;
   name: string;
@@ -14,6 +15,7 @@ interface DBPublishedMap extends Document {
 
 const publishedMapSchema = new mongoose.Schema<DBPublishedMap>({
   title: { type: String, required: true },
+  comment: { type: String, required: false },
   mapInstanceId: { type: mongoose.Schema.Types.ObjectId, required: true },
   publishedDate: { type: Date, required: true },
   name: { type: String, required: true },

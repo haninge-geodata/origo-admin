@@ -6,7 +6,7 @@ import {
   MapInstanceDto,
   MapInstanceListItemDto,
   PublishedMapConfigDto,
-  PublishedMapListItemDto,
+  PublishedMapListItemDto
 } from "@/shared/interfaces/dtos";
 import { DBPublishedMap, PublishedMapModel } from "@/models/publishedMap.model";
 import mongoose from "mongoose";
@@ -72,19 +72,19 @@ class MapInstanceService {
     return this.previewMapMapper.toDto(response, sources);
   }
 
-  async publish(id: string): Promise<PublishedMapConfigDto> {
+  async publish(id: string, comment: string): Promise<PublishedMapListItemDto> {
     let mapInstance = await this.repository.find(id);
     if (!mapInstance) throw new Error("Map instance not found");
 
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
-    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, sources);
+    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources);
 
     let response = await this.publishedRepository.create(publishedMap);
-    return this.publishedMapMapper.toDto(response, { publish: true });
+    return this.publishedMapListItemMapper.toDto(response);
   }
 
-  async republish(id: string, instanceId: string): Promise<PublishedMapConfigDto> {
+  async republish(id: string, instanceId: string): Promise<PublishedMapListItemDto> {
     let publishedMap = await this.publishedRepository.find(instanceId);
     if (!publishedMap) throw new Error("Map instance not found");
     if (publishedMap.mapInstanceId.toString() !== id) throw new Error("Map instance id does not match!");
@@ -95,7 +95,7 @@ class MapInstanceService {
     republishedMap._id = new mongoose.Types.ObjectId();
 
     let response = await this.publishedRepository.create(republishedMap);
-    return this.publishedMapMapper.toDto(response, { publish: true });
+    return this.publishedMapListItemMapper.toDto(response);
   }
 
   async getPublishedList(id: string): Promise<PublishedMapListItemDto[]> {

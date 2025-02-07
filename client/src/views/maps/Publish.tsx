@@ -5,6 +5,7 @@ import { MapInstanceService as service } from '@/api';
 import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import spec from "@/assets/specifications/tables/mapInstancePublishTableSpecification.json";
 import AlertDialog from "@/components/Dialogs/AlertDialog";
+import PublishMapFormDialog from "@/components/Dialogs/PublishMapFormDialog";
 import { useEffect, useState } from "react";
 import MainCard from "@/components/Cards/MainCard/MainCard";
 import envStore from "@/stores/Environment";
@@ -19,7 +20,7 @@ const Publish = ({ id }: PublishProps) => {
     const queryClient = useQueryClient();
     const queryKey = "list";
     const { data } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchPublishedList(id) });
-    const [isConfirmPublishDialogOpen, setConfirmPublishDialogOpen] = useState(false);
+    const [isPublishDialogOpen, setPublishDialogOpen] = useState(false);
     const [isConfirmRepublishDialogOpen, setConfirmRepublishDialogOpen] = useState(false);
     const [selectedInstance, setSelectedInstance] = useState<any>();
     const [origoUrl, setOrigoUrl] = useState('');
@@ -35,18 +36,10 @@ const Publish = ({ id }: PublishProps) => {
 
     // Handle the publish mapinstance dialog
     const handlePublish = () => {
-        setConfirmPublishDialogOpen(true);
+        setPublishDialogOpen(true);
     };
     const confirmPublish = async () => {
-        try {
-            await service.publish(id);
-            queryClient.invalidateQueries({ queryKey: [queryKey] });
-            setConfirmPublishDialogOpen(false);
-            showToast('Kartinstansen publicerades!', 'success');
-        } catch (error) {
-            showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
-            console.error(error);
-        }
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
     };
 
     // Handle the republish previously published map dialog
@@ -118,8 +111,10 @@ const Publish = ({ id }: PublishProps) => {
                     </>}
                 </MainCard>
             </Grid>
-            <AlertDialog title={`Publicera kartinstans?`} contentText={'Bekräfta publicering av kartinstans, detta kommer ersätta eventuellt existerande kartinstans!'}
-                open={isConfirmPublishDialogOpen} onClose={() => setConfirmPublishDialogOpen(false)} onConfirm={confirmPublish} />
+            <PublishMapFormDialog
+                open={isPublishDialogOpen} onClose={() => setPublishDialogOpen(false)} onConfirm={confirmPublish}
+                id={id}
+            />
             <AlertDialog title="Ompublicera kartinstans" contentText={`Är du säker på att du vill ompublicera kartinstansen "${selectedInstance?.title}"?`}
                 open={isConfirmRepublishDialogOpen} onClose={() => setConfirmRepublishDialogOpen(false)} onConfirm={confirmRepublish} />
         </Box>
