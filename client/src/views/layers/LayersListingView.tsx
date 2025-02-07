@@ -159,7 +159,7 @@ export default function LayersListingView({ type, service, specification }: Laye
             {selectedLayer && <AlertDialog
                 open={isAlertDialogOpen}
                 onConfirm={confirmDelete}
-                contentText={`Vänligen bekräfta borttagning av ${selectedLayer.title} lagret!`}
+                contentText={`Vänligen bekräfta borttagning av lagret ${selectedLayer.title}!`}
                 onClose={() => setAlertDialogOpen(false)}
                 title="Bekräfta borttagning"
             />}
