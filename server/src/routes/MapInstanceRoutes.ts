@@ -72,7 +72,7 @@ router.post(`/${route}`, (req, res) => controller.create(req, res));
  * @description Publish a specific map instance
  * @param {string} id - The map instance ID
  * @request {MapInstanceDto} requestBody - The map instance data to publish
- * @returns {MapInstanceDto}
+ * @returns {PublishedMapListItemDto}
  */
 router.post(`/${route}/:id/publish`, (req, res) =>
   controller.publish(req, res)
@@ -83,7 +83,7 @@ router.post(`/${route}/:id/publish`, (req, res) =>
  * @description Republish a specific version of a map instance
  * @param {string} id - The map instance ID
  * @param {string} instanceId - The specific instance ID to republish
- * @returns {PublishedMapConfigDto}
+ * @returns {PublishedMapListItemDto}
  */
 router.post(`/${route}/:id/republish/:instanceId`, (req, res) =>
   controller.republish(req, res)
