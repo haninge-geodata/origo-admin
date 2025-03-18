@@ -65,11 +65,11 @@ class ResourcesCache {
   constructor(resources: any[]) {
     this.resources = resources;
     this.buildCache(resources);
-    console.info("Resources cache initialized");
+    console.info(`[${Date.now()}] Resources cache initialized`);
   }
 
   private buildCache(resources: Resource[]) {
-    console.info("Building resources cache");
+    console.info(`[${Date.now()}] Building resources cache`);
     resources.forEach((resource) => {
       this.resourcesById.set(resource.id, resource);
 
@@ -178,7 +178,7 @@ export class CacheManager {
 
   async refreshCache(): Promise<void> {
     try {
-      console.info("Refreshing cache");
+      console.info(`[${Date.now()}] Refreshing cache`);
 
       const headers = {
         Authorization: `Bearer ${this.apiAccessToken}`,
@@ -200,10 +200,10 @@ export class CacheManager {
       this.optimizedPermissionCache = new OptimizedPermissionCache(resources, roles);
       this.lastUpdated = new Date();
 
-      console.info("Cache refresh completed");
+      console.info(`[${Date.now()}] Cache refresh completed`);
     } catch (error) {
-      console.error("Error refreshing cache:", error);
-      console.error("Cache will not be updated, please check access token and urls for roles and resources i .env");
+      console.error(`[${Date.now()}] Error refreshing cache:`, error);
+      console.error(`[${Date.now()}] Cache will not be updated, please check access token and urls for roles and resources i .env`);
     }
   }
 

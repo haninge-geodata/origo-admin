@@ -22,7 +22,7 @@ export class GISRequestAnalyzer {
       const servicePath = pathSegments.slice(0, -1).join("/");
       return `${parsedUrl.protocol}//${parsedUrl.hostname}${servicePath}`;
     } catch (error) {
-      console.error("Error parsing URL:", error);
+      console.error(`[${Date.now()}] Error parsing URL:`, error);
       return "unknown";
     }
   }
