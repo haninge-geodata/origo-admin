@@ -20,6 +20,7 @@ export default function FormDialog({ open, onClose, onSubmit, title, fieldToVali
         const form = (event.target as HTMLButtonElement).closest('form');
         if (form) {
             const formData = new FormData(form);
+            console.log(`[${Date.now()}] Submitting form data:\n${JSON.stringify(formData, null, 2)}`);
             const name = formData.get(fieldToValidate)?.toString().trim();
 
             if (!name) {

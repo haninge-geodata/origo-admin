@@ -30,7 +30,7 @@ export default function PublishMapFormDialog({ open, onClose, onConfirm, id }: P
             setPublishComment(undefined);
         } catch (error) {
             showToast('Ett fel inträffade, kunde inte publicera kartinstans', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
         onConfirm();
         setConfirmPublishDialogOpen(false);

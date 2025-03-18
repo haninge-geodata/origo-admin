@@ -76,13 +76,12 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
 
             } catch (error) {
                 showToast('Ikonen kunde inte laddas upp', 'error');
-                console.error('Fel vid uppladdning av filer:', error);
+                console.error(`[${Date.now()}] Fel vid uppladdning av filer: ${error}`);
             }
         }
     };
 
     const handleDeleteMedia = async () => {
-        console.log('id');
         setAlertDialogOpen(true);
     };
 
@@ -96,7 +95,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                 setAlertDialogOpen(false);
             } catch (error) {
                 showToast('Kunde inte radera ikonen.', 'error');
-                console.error('Error deleting the icon:', error);
+                console.error(`[${Date.now()}] Error deleting the icon: ${error}`);
                 setAlertDialogOpen(false);
             }
         }

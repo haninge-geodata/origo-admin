@@ -182,7 +182,7 @@ export default function Page({ params: { id } }: any) {
             router.back();
         } catch (error) {
             showToast('Kunde inte uppdatera rollen.', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
     };
 

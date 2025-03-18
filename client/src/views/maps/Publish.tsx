@@ -61,7 +61,7 @@ const Publish = ({ id }: PublishProps) => {
 
         } catch (error) {
             showToast('Ett fel inträffade, kunde inte ompublicera kartinstansen', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
     };
 

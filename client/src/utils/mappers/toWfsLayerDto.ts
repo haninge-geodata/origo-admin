@@ -42,7 +42,7 @@ function parseJson<T>(jsonString: string | undefined, defaultValue: T): T {
   try {
     return JSON.parse(jsonString);
   } catch (error) {
-    console.error("Error parsing JSON:", error);
+    console.error(`[${Date.now()}] Error parsing JSON: ${error}`);
     return defaultValue;
   }
 }

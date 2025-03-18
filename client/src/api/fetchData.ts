@@ -11,7 +11,7 @@ export const fetchXmlDataAsJson = async (url: string): Promise<any> => {
     const json = await parseXmlToJson(xml);
     return json;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.error(`[${Date.now()}] Error fetching data: ${error}`);
     throw error;
   }
 };

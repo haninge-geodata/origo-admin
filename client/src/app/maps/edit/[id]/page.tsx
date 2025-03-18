@@ -78,7 +78,7 @@ export default function Page({ params: { id } }: any) {
 
         } catch (error) {
             showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
     }
 
@@ -103,7 +103,7 @@ export default function Page({ params: { id } }: any) {
             showToast('Ändringarna har sparats', 'success');
         } catch (error) {
             showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
     }
 
@@ -128,7 +128,7 @@ export default function Page({ params: { id } }: any) {
             showToast('Ändringarna har sparats', 'success');
         } catch (error) {
             showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
 
         }
     }

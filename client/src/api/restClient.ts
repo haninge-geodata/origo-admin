@@ -42,10 +42,10 @@ class RestClient {
     }
     const response = await fetch(proxyUrl.toString(), options);
     if (!response.ok) {
-      console.error("Error Response not ok");
-      console.error("Error Response:", response);
+      console.error(`[${Date.now()}] Response not ok`);
+      console.error(`[${Date.now()}] Error Response: ${response}`);
       const errorText = await response.text();
-      console.error("Error Details:", errorText);
+      console.error(`[${Date.now()}] Error Details: ${errorText}`);
       throw new Error(
         `Network response was not ok: ${response.status} ${response.statusText}`
       );

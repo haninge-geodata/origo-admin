@@ -28,7 +28,7 @@ export default function EditPage({ params: { id } }: any) {
             router.back();
         } catch (error) {
             showToast('Ett fel uppstod vid sparande av länkresurs', 'error');
-            console.error('Error updating link resource:', error);
+            console.error(`[${Date.now()}] Error updating link resource: ${error}`);
         }
     };
 

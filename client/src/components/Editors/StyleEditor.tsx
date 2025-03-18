@@ -141,7 +141,7 @@ export const StyleEditor = ({ onRouterBackClick, id }: StyleEditorProps) => {
             showToast('Ändringarna har sparats', 'success');
         } catch (error) {
             showToast('Ändringarna kunde inte sparas!', 'error');
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
         }
     }
     const handleCancelClick = () => {
@@ -221,7 +221,7 @@ export const StyleEditor = ({ onRouterBackClick, id }: StyleEditorProps) => {
             showToast('Ikonregeln har raderats', 'success');
 
         } catch (error) {
-            console.error(error);
+            console.error(`[${Date.now()}] ${error}`);
             showToast('Kunde inte radera ikonregeln.', 'error');
         }
     }

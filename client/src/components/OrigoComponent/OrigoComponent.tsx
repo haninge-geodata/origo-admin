@@ -25,14 +25,14 @@ function OrigoComponent({ json }: OrigoComponentProps) {
                     baseUrl: `${basePath}/origo/`
                 });
             } else {
-                console.error('Failed to initialize Origo.');
+                console.error(`[${Date.now()}] Failed to initialize Origo.`);
             }
         };
 
         if (document.getElementById('app-wrapper')) {
             loadOrigoScript();
         } else {
-            console.error('app-wrapper not found');
+            console.error(`[${Date.now()}] app-wrapper not found`);
         }
     }, [json]);
 
