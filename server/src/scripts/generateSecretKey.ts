@@ -5,7 +5,7 @@ function generateSecretKey() {
   // Generate a random 256-bit key
   const secretKey = crypto.randomBytes(32).toString("hex");
 
-  console.info("Generated SECRET_KEY:");
+  console.info(`[${Date.now()}] Generated SECRET_KEY:`);
   console.info(secretKey);
   console.info("\nPlease add the following line to your .env file:");
   console.info(`TOKEN_SECRET=${secretKey}`);

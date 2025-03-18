@@ -14,7 +14,7 @@ import * as dotenv from "dotenv";
 
 // Read environment variables
 const envPath = path.resolve(__dirname, "..", `.env`)
-console.info(`Initializing environment (${envPath})...`);
+console.info(`[${Date.now()}] Initializing environment (${envPath})...`);
 dotenv.config({ path: envPath });
 
 const project = new Project();
@@ -380,7 +380,7 @@ Object.values(swaggerDocs.paths).forEach((pathItem: any) => {
 // Add tags to swaggerDocs
 swaggerDocs.tags = Array.from(uniqueTags).map((tag) => ({ name: tag }));
 
-console.info("Writing swagger.json");
+console.info(`[${Date.now()}] Writing swagger.json`);
 const swaggerFile = path.join(__dirname, "swagger_output.json");
 fs.writeFileSync(swaggerFile, JSON.stringify(swaggerDocs, null, 2));
-console.info("Swagger generation complete");
+console.info(`[${Date.now()}] Swagger generation complete`);

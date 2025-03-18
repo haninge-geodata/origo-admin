@@ -56,7 +56,7 @@ class PermissionService {
     try {
       await updateProxyCache();
     } catch (error) {
-      console.error("Failed to update proxy cache:", error);
+      console.error(`[${Date.now()}] Failed to update proxy cache: ${error}`);
     }
 
     return this.mapper.toDto(response);

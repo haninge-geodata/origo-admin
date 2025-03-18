@@ -127,7 +127,7 @@ export class WMSLayerMapper
         renderMode: model.renderMode,
       };
     } catch (error) {
-      console.error(error);
+      console.error(`[${Date.now()}] ${error}`);
       return {} as WMSLayerDto;
     }
   }

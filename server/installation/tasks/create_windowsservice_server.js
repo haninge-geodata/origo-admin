@@ -16,7 +16,7 @@ svc.on("install", function () {
 // Listen for the "start" event, which is fired
 // when the new service is started.
 svc.on("start", function () {
-  console.info("Service was started.");
+  console.info(`[${Date.now()}] Service was started.`);
 });
 
 svc.install();

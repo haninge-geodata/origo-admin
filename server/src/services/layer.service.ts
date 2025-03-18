@@ -42,7 +42,7 @@ class LayerService<T extends DBLayerBase, TDto> {
         );
         created.push(fetchedObject);
       } catch (error) {
-        console.error(error);
+        console.error(`[${Date.now()}] ${error}`);
       }
     }
     return created.map((item) => this.toDtoMapper(item));

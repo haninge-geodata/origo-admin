@@ -12,13 +12,13 @@ const HOST = process.env.HOST || "localhost";
 
 // Read the generated swagger.json file
 const swaggerFile = path.join(__dirname, "swagger_output.json");
-console.log("Reading swagger.json from", swaggerFile);
+console.log(`[${Date.now()}] Reading swagger.json from ${swaggerFile}`);
 let swaggerSpec: any;
 try {
   const swaggerJson = fs.readFileSync(swaggerFile, "utf8");
   swaggerSpec = JSON.parse(swaggerJson);
 } catch (err) {
-  console.error("Error reading swagger.json:", err);
+  console.error(`[${Date.now()}] Error reading swagger.json: ${err}`);
   swaggerSpec = {
     openapi: "3.0.0",
     info: {
@@ -74,7 +74,7 @@ function swaggerDocs(app: Express) {
     swaggerUrl = `${protocol}://${HOST}:${PORT}${swaggerPath}`;
   }
 
-  console.info(`Swagger docs available at ${swaggerUrl}`);
+  console.info(`[${Date.now()}] Swagger docs available at ${swaggerUrl}`);
 }
 
 export default swaggerDocs;

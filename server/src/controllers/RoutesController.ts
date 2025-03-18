@@ -12,7 +12,7 @@ class RoutesController {
   }
   protected handleError(res: Response, error: any) {
     if (error instanceof Error) {
-      console.error(error);
+      console.error(`[${Date.now()}] ${error}`);
       res.status(500).json({ error: error.message });
     } else {
       res.status(500).json({ error: "Ett oväntat fel inträffade" });

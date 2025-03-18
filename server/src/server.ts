@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
 import path from "path";
 
-console.info("Initializing environment...");
+console.info(`[${Date.now()}] Initializing environment...`);
 const environment = process.env.NODE_ENV || "local";
 
-console.info(`Environment set to: ${environment}`);
+console.info(`[${Date.now()}] Environment set to: ${environment}`);
 
 let envPath = "";
 if (
@@ -45,22 +45,22 @@ import {
 
 import initializeDatabase from "./database";
 
-console.info("Starting server...");
+console.info(`[${Date.now()}] Starting server...`);
 
 if (!process.env.PORT) {
-  console.info(`No port value specified...`);
+  console.info(`[${Date.now()}] No port value specified...`);
 }
 
 const PORT = parseInt(process.env.PORT as string, 10) || 8080;
 
-console.info("Listening on port: ", PORT);
+console.info(`[${Date.now()}] Listening on port: ${PORT}`);
 const app = express();
 
-console.info("Initializing authentication...");
+console.info(`[${Date.now()}] Initializing authentication...`);
 
 const BASE_PATH = process.env.BASE_PATH || "";
 if (BASE_PATH) {
-  console.info(`Using BASE_PATH=${BASE_PATH}`);
+  console.info(`[${Date.now()}] Using BASE_PATH=${BASE_PATH}`);
 }
 app.use(bodyParser.json({ limit: "500mb" }));
 app.use(express.json());
@@ -79,14 +79,14 @@ app.use((req, res, next) => {
   next();
 });
 
-console.info("Initializing database...");
+console.info(`[${Date.now()}] Initializing database...`);
 
 if (!process.env.DATABASE) {
-  console.info(`No database value specified...`);
+  console.info(`[${Date.now()}] No database value specified...`);
 }
 
 initializeDatabase(process.env.DATABASE as string);
-console.info("Database initialized...");
+console.info(`[${Date.now()}] Database initialized...`);
 
 app.use(`${BASE_PATH}`, FavouritesRoutes);
 app.use(`${BASE_PATH}`, LayerRoutes);
@@ -116,16 +116,16 @@ interface NodeError extends Error {
   code?: string;
 }
 
-console.info("Server started...");
+console.info(`[${Date.now()}] Server started...`);
 app
   .listen(PORT, () => {
-    console.info(`Server is listening on port ${PORT}`);
+    console.info(`[${Date.now()}] Server is listening on port ${PORT}`);
     swaggerDocs(app);
   })
   .on("error", (err: NodeError) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`Port ${PORT} is already in use.`);
+      console.error(`[${Date.now()}] Port ${PORT} is already in use.`);
     } else {
-      console.error(err);
+      console.error(`[${Date.now()}] ${err}`);
     }
   });
