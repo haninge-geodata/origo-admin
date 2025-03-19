@@ -16,7 +16,7 @@ export class FilterJsonService {
     }
 
     if (process.env.RESTRICT_MAPCONTROLS === "true") {
-      console.log(`[${Date.now()}] RESTRICT_MAPCONTROLS is enabled`);
+      console.log(`[${new Date().toISOString()}] RESTRICT_MAPCONTROLS is enabled`);
       if (json.controls) {
         json.controls = json.controls.filter((control: any) => {
           return permissions.some((p: any) => cacheManager.hasControlPermission(p, control.name));

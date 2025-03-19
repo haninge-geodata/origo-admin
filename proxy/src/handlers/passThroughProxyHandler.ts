@@ -51,7 +51,7 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
       try {
         userInfo = await userInfoService.getUserInfo(token.value, token.expiresIn);
       } catch (error) {
-        console.error(`[${Date.now()}] Error retrieving user info:`, error);
+        console.error(`[${new Date().toISOString()}] Error retrieving user info:`, error);
         res.writeHead(401, { "Content-Type": "text/plain" });
         res.end("Unauthorized");
         return;
@@ -92,14 +92,14 @@ export function createPassthroughProxyHandler(proxyBasePath: string, cacheManage
       });
 
       proxyReq.on("error", (error) => {
-        console.error(`[${Date.now()}] Proxy error:`, error);
+        console.error(`[${new Date().toISOString()}] Proxy error:`, error);
         res.writeHead(500, { "Content-Type": "text/plain" });
         res.end("Internal Server Error");
       });
 
       req.pipe(proxyReq);
     } catch (error) {
-      console.error(`[${Date.now()}] Error in proxy handler:`, error);
+      console.error(`[${new Date().toISOString()}] Error in proxy handler:`, error);
       res.writeHead(500, { "Content-Type": "text/plain" });
       res.end("Internal Server Error");
     }

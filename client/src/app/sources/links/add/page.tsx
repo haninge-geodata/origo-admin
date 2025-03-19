@@ -19,7 +19,7 @@ export default function AddPage() {
             router.back();
         } catch (error) {
             showToast('Ett fel uppstod vid sparande av länkresurs', 'error');
-            console.error(`[${Date.now()}] Error adding link resource: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error adding link resource: ${error}`);
         }
     };
 

@@ -74,7 +74,7 @@ export default function GenericListView({
 
         } catch (error) {
             showToast('Kunde inte radera objektet.', 'error');
-            console.error(`[${Date.now()}] ${errorMessage} ${error}`);
+            console.error(`[${new Date().toISOString()}] ${errorMessage} ${error}`);
         }
     };
 

@@ -11,7 +11,7 @@ export const authorize = async (req: Request, res: Response): Promise<void> => {
     });
     res.redirect(authorizationUrl);
   } catch (error) {
-    console.error(`[${Date.now()}] Authorization error:`, error);
+    console.error(`[${new Date().toISOString()}] Authorization error:`, error);
     res.status(500).send("Authorization error");
   }
 };

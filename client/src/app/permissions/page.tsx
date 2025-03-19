@@ -69,7 +69,7 @@ export default function Page() {
             showToast('Rollen har raderats', 'success');
         } catch (error) {
             showToast('Kunde inte radera rollen.', 'error');
-            console.error(`[${Date.now()}] Error deleting role: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error deleting role: ${error}`);
         }
     }
     const handleDuplicate = async (id: string) => {
@@ -85,7 +85,7 @@ export default function Page() {
             showToast('Rollen duplicerades', 'success');
         } catch (error) {
             showToast('Ett fel inträffade, rollen kunde inte dupliceras', 'error');
-            console.error(`[${Date.now()}] Error duplicating role: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error duplicating role: ${error}`);
         }
     }
 

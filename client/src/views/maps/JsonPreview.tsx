@@ -29,7 +29,7 @@ const JsonPreview = ({ id, updateKey }: JsonPreviewProps) => {
 
     const onChange = () => {
         showToast('Ändringar direkt i JSON:en kommer inte sparas.', 'info');
-        console.info(`[${Date.now()}] Pointless to change, it will not be saved anyway :)`)
+        console.info(`[${new Date().toISOString()}] Pointless to change, it will not be saved anyway :)`)
     }
 
     const handleRefresh = async () => {

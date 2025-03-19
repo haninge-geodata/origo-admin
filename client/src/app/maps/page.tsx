@@ -76,7 +76,7 @@ export default function Page() {
 
         } catch (error) {
             showToast('Ett fel inträffade, kunde inte radera kartinstansen.', 'error');
-            console.error(`[${Date.now()}] Error deleting WMS Layer: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error deleting WMS Layer: ${error}`);
         }
     };
     

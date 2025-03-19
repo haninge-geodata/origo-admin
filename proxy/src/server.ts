@@ -38,9 +38,9 @@ const proxyManager = new ProxyManager(cacheManager, API_ACCESS_TOKEN, PROXY_BASE
 async function initializeServer() {
   try {
     await cacheManager.initializeCache();
-    console.info(`[${Date.now()}] Cache initialized successfully`);
+    console.info(`[${new Date().toISOString()}] Cache initialized successfully`);
   } catch (error) {
-    console.error(`[${Date.now()}] Failed to initialize cache:`, error);
+    console.error(`[${new Date().toISOString()}] Failed to initialize cache:`, error);
     process.exit(1);
   }
 }
@@ -50,7 +50,7 @@ app.get(`${PROXY_BASE_PATH}/refresh-cache`, async (req, res) => {
     await cacheManager.refreshCache();
     res.send("Cache refreshed successfully");
   } catch (error) {
-    console.error(`[${Date.now()}] Error refreshing sources:`, error);
+    console.error(`[${new Date().toISOString()}] Error refreshing sources:`, error);
     res.status(500).send("Error refreshing sources");
   }
 });
@@ -114,6 +114,6 @@ app.use(proxyManager.getProxyMiddleware());
 
 initializeServer().then(() => {
   app.listen(port, () => {
-    console.info(`[${Date.now()}] Proxy server running on port ${port}`);
+    console.info(`[${new Date().toISOString()}] Proxy server running on port ${port}`);
   });
 });

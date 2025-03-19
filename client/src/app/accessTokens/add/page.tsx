@@ -44,9 +44,9 @@ export default function Page() {
     const getTokenDialogText = () => {
         const copyToClipboard = () => {
             navigator.clipboard.writeText(createdToken).then(() => {
-                console.info(`[${Date.now()}] Token copied to clipboard`);
+                console.info(`[${new Date().toISOString()}] Token copied to clipboard`);
             }).catch(err => {
-                console.error(`[${Date.now()}] Failed to copy text: ${err}`);
+                console.error(`[${new Date().toISOString()}] Failed to copy text: ${err}`);
             });
         };
 
@@ -111,7 +111,7 @@ export default function Page() {
             setCreatedToken(response.token);
             setConfirmTokenDialogOpen(true);
         } catch (error) {
-            console.error(`[${Date.now()}] Error adding access token: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error adding access token: ${error}`);
         }
     };
 

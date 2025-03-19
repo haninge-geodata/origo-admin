@@ -9,7 +9,7 @@ export function decodeToken(token: string): any {
   try {
     return jwt.decode(token);
   } catch (error) {
-    console.error(`[${Date.now()}] Error decoding token:`, error);
+    console.error(`[${new Date().toISOString()}] Error decoding token:`, error);
     return null;
   }
 }
@@ -33,7 +33,7 @@ export function extractGroups(token: string): string[] {
       return groups;
     }
   }
-  console.warn(`[${Date.now()}] No groups found in token or unexpected format`);
+  console.warn(`[${new Date().toISOString()}] No groups found in token or unexpected format`);
   return [];
 }
 
@@ -59,7 +59,7 @@ export function extractTokenFromRequest(req: any): accessToken | null {
       expiresIn: (req.session as any).expires_in ? Date.now() + (req.session as any).expires_in * 1000 : 0,
     };
   } else {
-    console.log(`[${Date.now()}] No token found in session`);
+    console.log(`[${new Date().toISOString()}] No token found in session`);
   }
 
   return null;

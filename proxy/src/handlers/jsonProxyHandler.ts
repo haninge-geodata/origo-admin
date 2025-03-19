@@ -68,7 +68,7 @@ export function createJsonProxyHandler(
             try {
               userInfo = await userInfoService.getUserInfo(token.value, token.expiresIn);
             } catch (error) {
-              console.error(`[${Date.now()}] Error retrieving user info:`, error);
+              console.error(`[${new Date().toISOString()}] Error retrieving user info:`, error);
               res.writeHead(401, { "Content-Type": "text/plain" });
               res.end("Unauthorized");
               return;
@@ -78,7 +78,7 @@ export function createJsonProxyHandler(
             try {
               json = JSON.parse(body);
             } catch (e) {
-              console.error(`[${Date.now()}] Error parsing JSON:`, e);
+              console.error(`[${new Date().toISOString()}] Error parsing JSON:`, e);
               res.writeHead(500, { "Content-Type": "text/plain" });
               res.end("Internal Server Error");
               return;
@@ -97,7 +97,7 @@ export function createJsonProxyHandler(
             res.writeHead(proxyRes.statusCode || 200, headers);
             res.end(modifiedBody);
           } catch (e) {
-            console.error(`[${Date.now()}] Error processing response:`, e);
+            console.error(`[${new Date().toISOString()}] Error processing response:`, e);
             res.writeHead(500, { "Content-Type": "text/plain" });
             res.end("Internal Server Error");
           }
@@ -105,14 +105,14 @@ export function createJsonProxyHandler(
       });
 
       proxyReq.on("error", (error) => {
-        console.error(`[${Date.now()}] Proxy error:`, error);
+        console.error(`[${new Date().toISOString()}] Proxy error:`, error);
         res.writeHead(500, { "Content-Type": "text/plain" });
         res.end("Internal Server Error");
       });
 
       req.pipe(proxyReq);
     } catch (error) {
-      console.error(`[${Date.now()}] Error in proxy handler:`, error);
+      console.error(`[${new Date().toISOString()}] Error in proxy handler:`, error);
       res.writeHead(500, { "Content-Type": "text/plain" });
       res.end("Internal Server Error");
     }

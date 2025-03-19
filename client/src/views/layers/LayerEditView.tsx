@@ -102,7 +102,7 @@ export default function LayerEditView({
             router.back();
             showToastAfterNavigation('Ändringarna har sparats', 'success');
         } catch (error) {
-            console.error(`[${Date.now()}] Error updating link resource: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error updating link resource: ${error}`);
             showToast('Ett fel inträffade. Ändringarna kunde inte sparas', 'error');
         }
     };

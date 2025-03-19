@@ -23,10 +23,10 @@ async function generateInitialToken() {
     permissions,
   });
 
-  console.info(`[${Date.now()}] Initial Super Admin Token created`);
-  console.info(`[${Date.now()}] API_ACCESS_TOKEN=${token}`);
+  console.info(`[${new Date().toISOString()}] Initial Super Admin Token created`);
+  console.info(`[${new Date().toISOString()}] API_ACCESS_TOKEN=${token}`);
 
-  console.info(`[${Date.now()}] Please store this token securely. It will not be shown again.`);
+  console.info(`[${new Date().toISOString()}] Please store this token securely. It will not be shown again.`);
 
   await mongoose.disconnect();
 }

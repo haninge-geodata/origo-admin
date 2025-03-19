@@ -40,21 +40,21 @@ async function handler(req: NextRequest) {
       headers["X-User-Info"] = JSON.stringify(userInfo.username);
 
       if (!roleInfo || !roleInfo.actors || roleInfo.actors.length === 0) {
-        console.warn(`[${Date.now()}] Warning: Empty role info, granting access, make sure to add the ADMIN Role to permissions!`);
+        console.warn(`[${new Date().toISOString()}] Warning: Empty role info, granting access, make sure to add the ADMIN Role to permissions!`);
       } else {
         const hasAccess = roleInfo.actors.some(
           (actor: ActorDto) => (actor.type === "Group" && userGroups.includes(actor.name)) || (actor.type === "User" && actor.name === userInfo.username)
         );
 
         if (!hasAccess) {
-          console.error(`[${Date.now()}] Error in authentication process: User not authorized`);
+          console.error(`[${new Date().toISOString()}] Error in authentication process: User not authorized`);
           const url = req.nextUrl.clone();
           url.pathname = "/api/auth/signin";
           return NextResponse.redirect(url);
         }
       }
     } catch (error) {
-      console.error(`[${Date.now()}] Error in authentication process: User not authorized`);
+      console.error(`[${new Date().toISOString()}] Error in authentication process: User not authorized`);
       const url = req.nextUrl.clone();
       url.pathname = "/api/auth/signin";
       return NextResponse.redirect(url);
@@ -103,7 +103,7 @@ async function handler(req: NextRequest) {
       return new NextResponse(text, { status: response.status });
     }
   } catch (error) {
-    console.error(`[${Date.now()}] Proxy error: ${error}`);
+    console.error(`[${new Date().toISOString()}] Proxy error: ${error}`);
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

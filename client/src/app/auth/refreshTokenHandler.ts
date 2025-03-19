@@ -31,7 +31,7 @@ export async function refreshAccessToken(token: JWT, scope: string, access_token
       expires_in: data.expires_in,
     };
   } catch (error: any) {
-    console.error(`[${Date.now()}] Error refreshing OAuth token: ${error}`);
+    console.error(`[${new Date().toISOString()}] Error refreshing OAuth token: ${error}`);
     let errorMessage = "An unknown error occurred";
     if (axios.isAxiosError(error)) {
       if (error.response && error.response.data) {

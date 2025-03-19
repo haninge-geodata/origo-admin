@@ -51,7 +51,7 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 dotevnv.config();
 if (!process.env.PORT) {
-  console.log(`[${Date.now()}] No port value specified...`);
+  console.log(`[${new Date().toISOString()}] No port value specified...`);
 }
 const PORT = parseInt(process.env.PORT, 10);
 const app = (0, express_1.default)();
@@ -60,5 +60,5 @@ app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)());
 app.use((0, helmet_1.default)());
 app.listen(PORT, () => {
-  console.log(`[${Date.now()}] Server is listening on port ${PORT}`);
+  console.log(`[${new Date().toISOString()}] Server is listening on port ${PORT}`);
 });

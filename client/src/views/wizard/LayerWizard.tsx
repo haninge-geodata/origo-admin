@@ -115,7 +115,7 @@ export default function LayerWizard({
             }
         } catch (error) {
             showToast("Ett fel inträffade, kunde inte hämta lager", "error");
-            console.error(`[${Date.now()}] Error fetching capabilities: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error fetching capabilities: ${error}`);
             setTableData(undefined);
         }
     };
@@ -155,7 +155,7 @@ export default function LayerWizard({
             showToastAfterNavigation("Lagren har lagts till", "success");
             router.back();
         } catch (error) {
-            console.error(`[${Date.now()}] Error adding layer: ${error}`);
+            console.error(`[${new Date().toISOString()}] Error adding layer: ${error}`);
             showToast("Ett fel inträffade, kunde inte lägga till lager", "error");
         }
     };

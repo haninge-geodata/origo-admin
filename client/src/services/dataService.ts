@@ -7,7 +7,7 @@ export const getWmsData = async (url: string): Promise<GetWMSCapabilitiesRespons
     const response = await fetchXmlDataAsJson(url);
     return formatWMSResponse(response);
   } catch (error) {
-    console.error(`[${Date.now()}] Error fetching data: ${error}`);
+    console.error(`[${new Date().toISOString()}] Error fetching data: ${error}`);
     throw error;
   }
 };
@@ -58,7 +58,7 @@ export const getWfsData = async (url: string): Promise<GetWFSCapabilitiesRespons
     const response = await fetchXmlDataAsJson(url);
     return formatWFSResponse(response);
   } catch (error) {
-    console.error(`[${Date.now()}] Error fetching data: ${error}`);
+    console.error(`[${new Date().toISOString()}] Error fetching data: ${error}`);
     throw error;
   }
 };
@@ -94,7 +94,7 @@ export const getDescribeFeatureTypes = async (url: string): Promise<Record<strin
     const response = await fetchXmlDataAsJson(url);
     return mapElementsToRecord(response);
   } catch (error) {
-    console.error(`[${Date.now()}] Error fetching data: ${error}`);
+    console.error(`[${new Date().toISOString()}] Error fetching data: ${error}`);
     throw error;
   }
 };
@@ -163,7 +163,7 @@ export const getWmtsData = async (url: string): Promise<GetWMTSCapabilitiesRespo
     const response = await fetchXmlDataAsJson(url);
     return formatWMTSResponse(response);
   } catch (error) {
-    console.error(`[${Date.now()}] Error fetching data: ${error}`);
+    console.error(`[${new Date().toISOString()}] Error fetching data: ${error}`);
     throw error;
   }
 };
