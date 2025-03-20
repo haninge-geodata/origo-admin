@@ -45,7 +45,7 @@ export const access_token = async (req: Request, res: Response, next: NextFuncti
     // Call next to pass control back to server.ts
     next();
   } catch (error) {
-    console.error("Access token error:", error);
+    console.error(`[${new Date().toISOString()}] Access token error:`, error);
     res.status(500).json({
       error: "Access token error",
       details: error instanceof Error ? error.message : "Unknown error",

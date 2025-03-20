@@ -25,7 +25,7 @@ class LocalUploadService implements IUploadService {
       const files = await this.repository.findAll();
       return files.map((file) => mapDBMediaToMediaDto(file, this.uploadUrl));
     } catch (error) {
-      console.error(error);
+      console.error(`[${new Date().toISOString()}] ${error}`);
       throw new Error("Det gick inte att hämta filerna");
     }
   }
@@ -38,7 +38,7 @@ class LocalUploadService implements IUploadService {
         const createdObject = await this.repository.create(fileToSave);
         created.push(createdObject);
       } catch (error) {
-        console.error(error);
+        console.error(`[${new Date().toISOString()}] ${error}`);
       }
     }
     return created.map((item) => mapDBMediaToMediaDto(item, this.uploadUrl));

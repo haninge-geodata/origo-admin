@@ -29,7 +29,7 @@ const customOnSearchClick = async (
             const describeResponse = await describeHook.loadCapabilities(selectedSource!.url);
             mappedData = updateRowsWithDescribeResponse(mappedData, describeResponse);
         } catch (error) {
-            console.error("Error fetching DescribeFeatureTypes:", error);
+            console.error(`[${new Date().toISOString()}] Error fetching DescribeFeatureTypes: ${error}`);
         }
 
         return mappedData;

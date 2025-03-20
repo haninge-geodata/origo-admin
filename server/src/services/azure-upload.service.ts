@@ -27,7 +27,7 @@ class AzureUploadService implements IUploadService {
       const files = await this.repository.findAll();
       return files.map((file) => mapDBMediaToMediaDto(file, this.uploadPath));
     } catch (error) {
-      console.error(error);
+      console.error(`[${new Date().toISOString()}] ${error}`);
       throw new Error("Det gick inte att hämta filerna");
     }
   }

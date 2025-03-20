@@ -52,7 +52,7 @@ export default function Page() {
             setAlertDialogOpen(false);
         } catch (error) {
             showToast('API-Nyckeln kunde inte raderas', 'error');
-            console.error(errorMessage, error);
+            console.error(`[${new Date().toISOString()}] ${errorMessage} ${error}`);
         }
     }
     return (

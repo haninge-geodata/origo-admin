@@ -110,7 +110,7 @@ export default function Page() {
 
         } catch (error) {
             showToast('Stilschemat kunde inte raderas', 'error');
-            console.error('Error deleting style Layer:', error);
+            console.error(`[${new Date().toISOString()}] Error deleting style Layer: ${error}`);
         }
     }
 

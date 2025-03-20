@@ -10,8 +10,8 @@ var svc = new Service({
 // Listen for the "install" event, which indicates the
 // process is available as a service.
 svc.on("uninstall", function () {
-  console.info("Uninstall complete.");
-  console.info("The service exists: ", svc.exists);
+  console.info(`[${Date.now()}] Uninstall complete.`);
+  console.info(`[${Date.now()}] The service exists: `, svc.exists);
 });
 
 // Uninstall the service.

@@ -70,7 +70,7 @@ export default function GenericJsonForm({
             router.back();
         } catch (error) {
             showToast('Ett fel inträffade. Försök igen senare.', 'error');
-            console.error(`Error ${id ? 'updating' : 'adding'} item:`, error);
+            console.error(`[${new Date().toISOString()}] Error ${id ? 'updating' : 'adding'} item:`, error);
         }
     };
 

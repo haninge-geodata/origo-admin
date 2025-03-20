@@ -38,9 +38,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, [pathname]);
 
     useEffect(() => {
-        console.log('AppProvider mounted');
+        console.log(`[${new Date().toISOString()}] AppProvider mounted`);
         const loadingListener = (isLoading: boolean) => {
-            console.log('Received loading event:', isLoading);
+            console.log(`[${new Date().toISOString()}] Received loading event: ${isLoading}`);
             if (isLoading) {
                 setLoading(true);
             } else {
@@ -54,12 +54,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         };
 
         const errorListener = (message: string) => {
-            console.log('Received error event:', message);
+            console.log(`[${new Date().toISOString()}] Received error event: ${message}`);
             showToast(message, 'error');
         };
 
         const successListener = (message: string) => {
-            console.log('Received success event:', message);
+            console.log(`[${new Date().toISOString()}] Received success event: ${message}`);
             showToast(message, 'success');
         };
 

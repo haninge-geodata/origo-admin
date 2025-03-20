@@ -62,7 +62,7 @@ export default function LayersListingView({ type, service, specification }: Laye
             showToast('Lagret duplicerades', 'success');
         } catch (error) {
             showToast('Ett fel inträffade, lagret kunde inte dupliceras.', 'error');
-            console.error('Error duplicating layer:', error);
+            console.error(`[${new Date().toISOString()}] Error duplicating layer: ${error}`);
         }
     }
 
@@ -96,7 +96,7 @@ export default function LayersListingView({ type, service, specification }: Laye
             showToast('Källan har uppdaterats', 'success');
         } catch (error) {
             showToast('Ett fel inträffade, källan kunde inte uppdateras.', 'error');
-            console.error('Error updating source:', error);
+            console.error(`[${new Date().toISOString()}] Error updating source: ${error}`);
         }
     }
 
@@ -115,7 +115,7 @@ export default function LayersListingView({ type, service, specification }: Laye
             showToast('Lagret har raderats', 'success');
         } catch (error) {
             showToast('Ett fel inträffade när lagret skulle raderas.', 'error');
-            console.error(`Error deleting ${type} Layer:`, error);
+            console.error(`[${new Date().toISOString()}] Error deleting ${type} Layer: ${error}`);
         }
     };
 
