@@ -6,8 +6,8 @@ const router = createSecureRouter(route);
 
 /**
  * @route GET /${route}/:id/preview
- * @description Get a preview of a specific map instance
- * @param {string} id - The map instance ID
+ * @description Get a preview of a specific map instance by its id or name.
+ * @param {string} id - The map instance ID or name
  * @returns {PublishedMapConfigDto}
  */
 router.get(`/${route}/:id/preview(\.json)?`, (req, res) =>

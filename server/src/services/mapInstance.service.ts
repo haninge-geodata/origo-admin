@@ -65,7 +65,12 @@ class MapInstanceService {
   }
 
   async getPreview(id: string): Promise<PublishedMapConfigDto> {
-    let response = await this.repository.find(id);
+    let response;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      response = await this.repository.find(id);
+    } else {
+      response = (await this.repository.findByCriteria({ name: id }))[0];
+    }
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
 
