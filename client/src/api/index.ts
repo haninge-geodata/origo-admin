@@ -3,6 +3,7 @@ export * from "./wfsLayerService";
 export * from "./wmsLayerService";
 export * from "./wmtsLayerService";
 export * from "./layerService";
+export * from "./genericLayerService";
 export * from "./fetchData";
 export * from "./mapControlService";
 export * from "./mapSettingService";

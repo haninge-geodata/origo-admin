@@ -37,6 +37,7 @@
     "@types/lodash": "^4.14.202",
     "axios": "^1.7.7",
     "dayjs": "^1.11.11",
+    "json-schema-to-zod": "^2.6.1",
     "jsonwebtoken": "^9.0.2",
     "lodash": "^4.17.21",
     "lossless-json": "^4.0.1",

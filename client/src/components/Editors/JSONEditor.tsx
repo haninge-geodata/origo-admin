@@ -37,7 +37,18 @@ const JSONEditorInternalComponent: React.FC<JSONEditorPropsOptional> = (props) =
         }
     }, [props]);
 
-    return <div ref={refContainer} style={{ height: '80vh', overflow: 'auto' }} />;
+    return (
+        <div
+            ref={refContainer}
+            style={{
+                height: 'clamp(200px, 30vh, 400px)',
+                minHeight: '200px',
+                maxHeight: '400px',
+                overflow: 'auto',
+                resize: 'vertical'
+            }}
+        />
+    );
 };
 
 const JSONEditorInternal = dynamic(() => Promise.resolve(JSONEditorInternalComponent), { ssr: false });
