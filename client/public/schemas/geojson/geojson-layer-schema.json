@@ -4,7 +4,7 @@
   "title": "Skapa GeoJSON-lager",
   "description": "Configuration schema for GeoJSON layers in Origo mapping applications",
   "type": "object",
-  "required": ["name", "title", "type", "source"],
+  "required": ["name", "title", "type", "source", "abstract"],
   "properties": {
     "name": {
       "type": "string",
@@ -24,7 +24,8 @@
         }
       },
       "x-table": {
-        "headerName": "Namn"
+        "headerName": "Namn",
+        "visible": true
       }
     },
     "title": {
@@ -43,13 +44,15 @@
         }
       },
       "x-table": {
-        "headerName": "Titel"
+        "headerName": "Titel",
+        "visible": true
       }
     },
     "abstract": {
       "type": "string",
       "title": "Abstract",
       "description": "Short description shown in layer info (optional)",
+      "minLength": 1,
       "maxLength": 1000,
       "x-ui": {
         "component": "textarea",
@@ -70,7 +73,8 @@
         "readOnly": true
       },
       "x-table": {
-        "headerName": "Typ"
+        "headerName": "Typ",
+        "visible": true
       }
     },
     "source": {
@@ -83,6 +87,10 @@
         "component": "text",
         "section": "main",
         "placeholder": "https://example.com/data.geojson"
+      },
+      "x-table": {
+        "headerName": "Källa",
+        "visible": true
       }
     },
     "projection": {
@@ -110,7 +118,8 @@
         "endpoint": "styles",
         "valueField": "id",
         "labelField": "name",
-        "cache": true
+        "cache": true,
+        "manageUrl": "/styles"
       }
     },
     "styleByAttribute": {
@@ -260,7 +269,32 @@
       "type": "object",
       "title": "Attribute Configuration",
       "description": "Definition of how attributes are presented in feature info",
-      "additionalProperties": true,
+      "patternProperties": {
+        "^[a-zA-Z0-9_]+$": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "type": {
+              "type": "string",
+              "enum": ["string", "number", "date", "url", "image"]
+            },
+            "visible": {
+              "type": "boolean",
+              "default": true
+            },
+            "format": {
+              "type": "string"
+            }
+          },
+          "required": ["title", "type"],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
       "x-ui": {
         "component": "json-editor",
         "section": "advanced",
@@ -312,24 +346,28 @@
       "title": "Cluster Options",
       "description": "Clustering configuration options",
       "properties": {
-        "distance": {
+        "clusterDistance": {
           "type": "number",
           "title": "Cluster Distance",
           "description": "Pixel distance for clustering",
           "minimum": 1,
-          "default": 20
+          "maximum": 200,
+          "default": 40
         },
-        "minDistance": {
+        "clusterMaxZoom": {
           "type": "number",
-          "title": "Minimum Distance",
-          "description": "Minimum pixel distance between clusters",
+          "title": "Cluster Max Zoom",
+          "description": "Maximum zoom level for clustering",
           "minimum": 0,
-          "default": 0
+          "maximum": 20,
+          "default": 2
         }
       },
+      "additionalProperties": false,
       "x-ui": {
-        "component": "object",
-        "section": "advanced"
+        "component": "json-editor",
+        "section": "advanced",
+        "placeholder": "{\n  \"clusterDistance\": 40,\n  \"clusterMaxZoom\": 2\n}"
       }
     },
     "searchable": {

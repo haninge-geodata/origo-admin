@@ -1,8 +1,16 @@
 import { IMapper } from "@/interfaces";
-import { LayerMapper, WFSLayerMapper, WMSLayerMapper, WMTSLayerMapper } from "@/mappers/layerMapper";
+import {
+  LayerMapper,
+  WFSLayerMapper,
+  WMSLayerMapper,
+  WMTSLayerMapper,
+} from "@/mappers/layerMapper";
+import { DynamicLayerMapper } from "@/mappers/dynamicLayerMapper";
 
 function createLayerMapper(type: string): IMapper<any, any> {
-  switch (type.toUpperCase()) {
+  const upperType = type.toUpperCase();
+
+  switch (upperType) {
     case "WFS":
       return new WFSLayerMapper();
     case "WMS":
@@ -12,7 +20,7 @@ function createLayerMapper(type: string): IMapper<any, any> {
     case "ALL":
       return new LayerMapper();
     default:
-      throw new Error(`No mapper available for type: ${type}`);
+      return new DynamicLayerMapper();
   }
 }
 

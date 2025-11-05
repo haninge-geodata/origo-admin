@@ -59,9 +59,12 @@ class LayerService<T extends DBLayerBase, TDto> {
     let newObject = objectToDuplicate.toObject();
     delete newObject._id;
 
+    newObject.name = newObject.name + "_copy";
     newObject.title = newObject.title + " (copy)";
-    await this.repository.create(newObject);
-    let duplicated = await this.repository.find(id);
+
+    const createdObject = await this.repository.create(newObject);
+
+    let duplicated = await this.repository.find(createdObject._id.toString());
     return this.toDtoMapper(duplicated);
   }
 

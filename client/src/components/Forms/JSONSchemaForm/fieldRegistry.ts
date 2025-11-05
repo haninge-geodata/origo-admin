@@ -45,8 +45,7 @@ const createEnhancedTextField = (type: string = "text") => ({
         props.helperText ||
         (hasHelp ? "Click the help icon for more info" : "") ||
         (isReadonly ? "This field is read-only" : ""),
-      InputLabelProps:
-        type.includes("date") || type.includes("time") ? { shrink: true } : {},
+      InputLabelProps: { shrink: true },
       InputProps: isReadonly ? { readOnly: true } : {},
       ...(type === "number" && {
         inputProps: {
@@ -107,6 +106,7 @@ export const FIELD_REGISTRY: Record<FieldType, FieldConfig> = {
       margin: "normal",
       error: !!props.error,
       helperText: props.helperText || schema.description || "",
+      InputLabelProps: { shrink: true },
     }),
   },
 
@@ -339,15 +339,47 @@ export const FIELD_REGISTRY: Record<FieldType, FieldConfig> = {
           children,
           commonProps.helperText &&
             React.createElement(
-              Typography,
+              Box,
               {
                 key: "helper",
-                variant: "caption",
-                display: "block",
-                color: commonProps.error ? "error" : "text.secondary",
-                sx: { mt: 1 },
+                sx: {
+                  mt: 1.5,
+                  p: 1.5,
+                  borderRadius: 1,
+                  bgcolor: commonProps.error ? "error.lighter" : "grey.50",
+                  borderLeft: 3,
+                  borderColor: commonProps.error ? "error.main" : "info.main",
+                },
               },
-              commonProps.helperText
+              [
+                commonProps.error &&
+                  React.createElement(
+                    Typography,
+                    {
+                      key: "error-title",
+                      variant: "caption",
+                      display: "block",
+                      fontWeight: 600,
+                      color: "error.main",
+                      sx: { mb: 0.5 },
+                    },
+                    "⚠️ Validation Errors:"
+                  ),
+                React.createElement(
+                  Typography,
+                  {
+                    key: "error-text",
+                    variant: "caption",
+                    display: "block",
+                    color: commonProps.error ? "error.dark" : "text.secondary",
+                    sx: {
+                      whiteSpace: "pre-line",
+                      fontFamily: commonProps.error ? "monospace" : "inherit",
+                    },
+                  },
+                  commonProps.helperText
+                ),
+              ]
             ),
         ].filter(Boolean)
       ),

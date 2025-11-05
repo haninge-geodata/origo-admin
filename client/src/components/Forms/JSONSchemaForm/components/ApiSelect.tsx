@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Autocomplete, CircularProgress } from '@mui/material';
+import { TextField, Autocomplete, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { InputAdornment } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 interface ApiDataSource {
   type: 'api';
@@ -10,6 +13,7 @@ interface ApiDataSource {
   valueField: string;
   labelField: string;
   cache?: boolean;
+  manageUrl?: string;
 }
 
 interface ApiSelectProps {
@@ -64,7 +68,7 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
     );
   }
 
-  const { endpoint, url, valueField, labelField, cache = true } = datasource;
+  const { endpoint, url, valueField, labelField, cache = true, manageUrl } = datasource;
 
   // Generic function to construct API URL through proxy
   const constructApiUrl = async (endpoint: string): Promise<string> => {
@@ -85,6 +89,8 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
     data: options = [],
     isLoading,
     error: fetchError,
+    refetch,
+    isFetching,
   } = useQuery({
     queryKey: ['api-select', endpoint || url],
     queryFn: async () => {
@@ -138,7 +144,16 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
       const outputValue = newValue[valueField] !== undefined ? newValue[valueField] : newValue;
       onChange(outputValue);
     } else {
-      onChange(null);
+      onChange(undefined);
+    }
+  };
+  const handleRefresh = async () => {
+    await refetch();
+  };
+
+  const handleOpenManagePage = () => {
+    if (manageUrl) {
+      window.open(manageUrl, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -205,6 +220,49 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
           helperText={helperText}
           onBlur={onBlur}
           margin="normal"
+          InputProps={{
+            ...params.InputProps,
+            endAdornment: (
+              <>
+                {params.InputProps.endAdornment}
+
+                {/* Manage/Create button - only show if manageUrl is provided */}
+                {manageUrl && (
+                  <Tooltip title="Manage items">
+                    <IconButton
+                      onClick={handleOpenManagePage}
+                      disabled={disabled}
+                      edge="end"
+                      size="small"
+                      sx={{ mr: 0.5 }}
+                    >
+                      <OpenInNewIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                )}
+
+                {/* Refresh button */}
+                <Tooltip title="Refresh options">
+                  <IconButton
+                    onClick={handleRefresh}
+                    disabled={disabled || isFetching}
+                    edge="end"
+                    size="small"
+                    sx={{
+                      mr: 1,
+                      animation: isFetching ? 'spin 1s linear infinite' : 'none',
+                      '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' }
+                      }
+                    }}
+                  >
+                    <RefreshIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </>
+            ),
+          }}
         />
       )}
       sx={{ mt: 2, mb: 1 }}

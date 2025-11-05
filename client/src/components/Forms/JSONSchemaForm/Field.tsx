@@ -5,6 +5,26 @@ import { getFieldConfig, FieldType, renderEnumOptions } from './fieldRegistry';
 import { detectFieldType, validateSchemaForFieldType } from './utils/fieldTypeDetection';
 import { ExtendedJSONSchema } from '@/types/jsonSchema';
 import { FieldHelpTooltip, hasHelpInfo } from './components/FieldHelpTooltip';
+import { FIELD_TYPES_WITH_LABELS, FIELD_TYPES_WITH_HELP_TOOLTIP } from './constants/fieldTypes';
+
+/**
+ * Field Rendering Pipeline:
+ * 
+ * 1. Determine field type (explicit via 'as' prop or auto-detect from schema)
+ * 2. Validate schema matches the field type (dev warning if mismatch)
+ * 3. Get appropriate hook based on field type (useFormField, useBooleanField, useEnumField)
+ * 4. Handle render prop pattern if provided (children callback)
+ * 5. Get component configuration from registry (TextField, Switch, Select, etc.)
+ * 6. Transform props using registry's transform function (customization point)
+ * 7. Handle special cases:
+ *    - Enum fields: Add MenuItem children for options
+ *    - Multi-select: Build options from schema or x-ui config
+ *    - Text fields: Add label and placeholder
+ * 8. Render the base component
+ * 9. Add help tooltip for fields with constraints/examples (text fields)
+ * 10. Wrap in custom wrapper if provided by registry (booleans, enums, etc.)
+ * 11. Return final rendered component
+ */
 
 export interface FieldProps {
   schema: ExtendedJSONSchema;
@@ -34,8 +54,10 @@ export const Field: React.FC<FieldProps> = ({
   name,
   children,
 }) => {
+  // Step 1: Determine field type (explicit or auto-detect)
   const fieldType = as || detectFieldType(schema);
 
+  // Step 2: Validate schema matches field type (dev warnings only)
   const isValidSchema = validateSchemaForFieldType(schema, fieldType);
 
   if (!isValidSchema && process.env.NODE_ENV === 'development') {
@@ -49,6 +71,7 @@ export const Field: React.FC<FieldProps> = ({
     }
   }
 
+  // Step 3: Get appropriate hook based on field type
   const getFieldHookResult = () => {
     const baseProps = { schema, value, onChange, onBlur, error, disabled };
 
@@ -67,6 +90,7 @@ export const Field: React.FC<FieldProps> = ({
   const hookResult = getFieldHookResult();
   const { commonProps, componentProps, fieldMeta } = hookResult;
 
+  // Step 4: Handle render prop pattern (allows custom rendering)
   if (children) {
     return (
       <>
@@ -80,17 +104,23 @@ export const Field: React.FC<FieldProps> = ({
     );
   }
 
+  // Step 5: Get component configuration from registry
   const fieldConfig = getFieldConfig(fieldType);
   const { component: Component, wrapper: Wrapper, transformProps } = fieldConfig;
 
+  // Step 6: Transform props (registry can customize behavior)
   const finalProps = transformProps
     ? transformProps({ ...commonProps, ...componentProps, schema }, schema)
     : { ...commonProps, ...componentProps };
 
+  // Step 7: Handle special cases
+  
+  // Enum fields need MenuItem children
   if (fieldType === 'enum' && 'enumOptions' in hookResult) {
     finalProps.children = renderEnumOptions((schema.enum as string[]) || []);
   }
 
+  // Multi-select needs options from schema or x-ui config
   if (fieldType === 'multi-select') {
     let options: Array<{ value: any; label: string }> = [];
 
@@ -112,14 +142,17 @@ export const Field: React.FC<FieldProps> = ({
     );
   }
 
-  if (['text', 'number', 'email', 'url', 'password', 'textarea', 'date', 'datetime', 'time', 'color', 'file', 'array-text', 'api-select'].includes(fieldType)) {
+  // Text-based fields need label and placeholder
+  if (FIELD_TYPES_WITH_LABELS.includes(fieldType as any)) {
     finalProps.label = fieldMeta.title;
     finalProps.placeholder = fieldMeta.placeholder;
   }
 
+  // Step 8: Render the base component
   const renderedComponent = <Component {...finalProps} />;
 
-  const needsHelpTooltip = ['text', 'number', 'email', 'url', 'password', 'textarea', 'date', 'datetime', 'time', 'color', 'file', 'array-text'].includes(fieldType);
+  // Step 9: Add help tooltip for fields with constraints/examples
+  const needsHelpTooltip = FIELD_TYPES_WITH_HELP_TOOLTIP.includes(fieldType as any);
 
   if (needsHelpTooltip && hasHelpInfo(schema)) {
     return (
@@ -132,6 +165,7 @@ export const Field: React.FC<FieldProps> = ({
     );
   }
 
+  // Step 10: Wrap in custom wrapper if provided (for booleans, enums, etc.)
   if (Wrapper) {
     return (
       <Wrapper
@@ -146,6 +180,7 @@ export const Field: React.FC<FieldProps> = ({
     );
   }
 
+  // Step 11: Return the final rendered component
   return renderedComponent;
 };
 

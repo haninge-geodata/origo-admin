@@ -145,6 +145,26 @@ const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
   wmtsLayerSchema
 );
 
+interface DBDynamicLayer extends DBLayerBase {
+  dynamicProperties?: any;
+}
+
+const dynamicLayerSchema = new Schema({
+  dynamicProperties: {
+    type: Schema.Types.Mixed,
+    required: false,
+    default: null,
+  },
+  queryable: { type: Boolean, required: false },
+  visible: { type: Boolean, required: false },
+  // Source is flexible for dynamic layers - can be string (URL), ObjectId, or anything
+  // Override base schema's ObjectId-only definition
+  source: { type: Schema.Types.Mixed, required: false },
+  // Style is also flexible - can be string, ObjectId, or anything
+  // Override base schema's ObjectId-only definition
+  style: { type: Schema.Types.Mixed, required: false },
+});
+
 export {
   DBLayerBase,
   layerModel,
@@ -154,4 +174,6 @@ export {
   WMSLayerModel,
   DBWMTSLayer,
   WMTSLayerModel,
+  DBDynamicLayer,
+  dynamicLayerSchema,
 };

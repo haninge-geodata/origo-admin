@@ -46,28 +46,34 @@ function convertStringSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   let schema = z.string();
 
   if (typeof property.minLength === "number") {
-    schema = schema.min(property.minLength);
+    schema = schema.min(property.minLength, {
+      message: `Must be at least ${property.minLength} characters`,
+    });
   }
 
   if (typeof property.maxLength === "number") {
-    schema = schema.max(property.maxLength);
+    schema = schema.max(property.maxLength, {
+      message: `Must be at most ${property.maxLength} characters`,
+    });
   }
 
   if (property.pattern) {
-    schema = schema.regex(new RegExp(property.pattern));
+    schema = schema.regex(new RegExp(property.pattern), {
+      message: `Must match pattern: ${property.pattern}`,
+    });
   }
 
   if (property.format) {
     switch (property.format) {
       case "email":
-        schema = schema.email();
+        schema = schema.email({ message: "Must be a valid email address" });
         break;
       case "uri":
       case "url":
-        schema = schema.url();
+        schema = schema.url({ message: "Must be a valid URL" });
         break;
       case "date":
-        schema = schema.datetime();
+        schema = schema.datetime({ message: "Must be a valid date" });
         break;
     }
   }
@@ -75,7 +81,11 @@ function convertStringSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   if (property.enum && Array.isArray(property.enum)) {
     const enumValues = property.enum as string[];
     if (enumValues.length > 0) {
-      return z.enum(enumValues as [string, ...string[]]);
+      return z.enum(enumValues as [string, ...string[]], {
+        errorMap: () => ({
+          message: `Must be one of: ${enumValues.join(", ")}`,
+        }),
+      });
     }
   }
 
@@ -86,20 +96,57 @@ function convertStringSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   return schema;
 }
 
-function convertNumberSchema(property: ExtendedJSONSchema): z.ZodNumber {
-  let schema = z.coerce.number();
+function convertNumberSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
+  // Start with base number schema
+  let numberSchema = z.number({
+    invalid_type_error: "Must be a number",
+  });
 
+  // Apply min/max constraints
   if (typeof property.minimum === "number") {
-    schema = schema.min(property.minimum);
+    numberSchema = numberSchema.min(property.minimum, {
+      message: `Must be at least ${property.minimum}`,
+    });
   }
 
   if (typeof property.maximum === "number") {
-    schema = schema.max(property.maximum);
+    numberSchema = numberSchema.max(property.maximum, {
+      message: `Must be at most ${property.maximum}`,
+    });
   }
 
   if (property.type === "integer") {
-    schema = schema.int();
+    numberSchema = numberSchema.int({ message: "Must be an integer" });
   }
+
+  // Wrap with union that handles string-to-number conversion
+  // but rejects empty strings (z.coerce.number converts "" to 0)
+  const schema = z.union([
+    numberSchema,
+    z
+      .string()
+      .transform((val, ctx) => {
+        // Reject empty strings explicitly
+        if (val === "") {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be a number (empty string not allowed)",
+          });
+          return z.NEVER;
+        }
+        // Try to parse as number
+        const num = Number(val);
+        if (isNaN(num)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be a valid number",
+          });
+          return z.NEVER;
+        }
+        return num;
+      })
+      .pipe(numberSchema), // Apply same min/max constraints to converted strings
+  ]);
 
   return schema;
 }
@@ -120,19 +167,24 @@ function convertArraySchema(property: ExtendedJSONSchema): z.ZodArray<any> {
   let schema = z.array(itemSchema);
 
   if (typeof property.minItems === "number") {
-    schema = schema.min(property.minItems);
+    schema = schema.min(property.minItems, {
+      message: `Must have at least ${property.minItems} items`,
+    });
   }
 
   if (typeof property.maxItems === "number") {
-    schema = schema.max(property.maxItems);
+    schema = schema.max(property.maxItems, {
+      message: `Must have at most ${property.maxItems} items`,
+    });
   }
 
   return schema;
 }
 
-function convertObjectSchema(property: ExtendedJSONSchema): z.ZodObject<any> {
+function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   const shape: Record<string, z.ZodSchema<any>> = {};
 
+  // Handle defined properties
   if (property.properties) {
     Object.entries(property.properties).forEach(([key, propSchema]) => {
       let fieldSchema = convertSchemaProperty(propSchema);
@@ -153,7 +205,106 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodObject<any> {
     });
   }
 
-  return z.object(shape);
+  let schema = z.object(shape);
+
+  // Handle additionalProperties
+  if (property.additionalProperties === false) {
+    // Strict mode - no additional properties allowed
+    schema = schema.strict({
+      message: "Unknown properties are not allowed",
+    });
+  } else if (
+    property.additionalProperties === true ||
+    property.additionalProperties === undefined
+  ) {
+    // Allow any additional properties
+    schema = schema.passthrough();
+  } else if (typeof property.additionalProperties === "object") {
+    // Additional properties must match a specific schema
+    const additionalSchema = convertSchemaProperty(
+      property.additionalProperties as ExtendedJSONSchema
+    );
+    schema = schema.passthrough().superRefine((val, ctx) => {
+      const knownKeys = Object.keys(shape);
+      Object.entries(val).forEach(([key, value]) => {
+        if (!knownKeys.includes(key)) {
+          const result = additionalSchema.safeParse(value);
+          if (!result.success) {
+            result.error.errors.forEach((err) => {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: [key, ...err.path],
+                message: `"${key}": ${err.message}`,
+              });
+            });
+          }
+        }
+      });
+    });
+  }
+
+  // Handle patternProperties (JSON Schema feature)
+  if (property.patternProperties) {
+    const patternProps = property.patternProperties as Record<
+      string,
+      ExtendedJSONSchema
+    >;
+
+    schema = schema.passthrough().superRefine((val, ctx) => {
+      const knownKeys = Object.keys(shape);
+
+      Object.entries(val).forEach(([key, value]) => {
+        // Skip validation for explicitly defined properties
+        if (knownKeys.includes(key)) return;
+
+        let matchedPattern = false;
+
+        // Check each pattern
+        for (const [pattern, patternSchema] of Object.entries(patternProps)) {
+          const regex = new RegExp(pattern);
+          if (regex.test(key)) {
+            matchedPattern = true;
+            const patternZodSchema = convertSchemaProperty(patternSchema);
+            const result = patternZodSchema.safeParse(value);
+
+            if (!result.success) {
+              result.error.errors.forEach((err) => {
+                const pathStr =
+                  err.path.length > 0 ? `.${err.path.join(".")}` : "";
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  path: [key, ...err.path],
+                  message: `"${key}${pathStr}": ${err.message}`,
+                });
+              });
+            }
+            break; // Stop after first matching pattern
+          }
+        }
+
+        // If no pattern matched, check if key format is invalid
+        if (!matchedPattern && property.additionalProperties === false) {
+          const patterns = Object.keys(patternProps);
+          if (patterns.length > 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: [key],
+              message: `Key "${key}" does not match required pattern: ${patterns[0]}`,
+            });
+          } else {
+            ctx.addIssue({
+              code: z.ZodIssueCode.unrecognized_keys,
+              keys: [key],
+              path: [],
+              message: `Unknown key: "${key}"`,
+            });
+          }
+        }
+      });
+    });
+  }
+
+  return schema;
 }
 
 export function formatZodError(error: z.ZodError): Record<string, string> {
@@ -165,4 +316,15 @@ export function formatZodError(error: z.ZodError): Record<string, string> {
   });
 
   return errorMap;
+}
+
+// Helper to format nested object validation errors for display
+export function formatNestedErrors(errors: z.ZodError): string {
+  const messages: string[] = [];
+
+  errors.errors.forEach((err) => {
+    messages.push(err.message);
+  });
+
+  return messages.join("; ");
 }

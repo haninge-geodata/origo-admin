@@ -24,6 +24,7 @@ export interface ExtendedJSONSchema extends JSONSchema7 {
     placeholder?: string;
     helperText?: string;
     readonly?: boolean;
+    hide?: boolean;
     rows?: number;
     step?: number;
     marks?: boolean;
@@ -69,6 +70,9 @@ export interface ExtendedJSONSchema extends JSONSchema7 {
   oneOf?: ExtendedJSONSchema[];
   anyOf?: ExtendedJSONSchema[];
   allOf?: ExtendedJSONSchema[];
+  patternProperties?: {
+    [pattern: string]: ExtendedJSONSchema;
+  };
 }
 
 export interface FormSection {

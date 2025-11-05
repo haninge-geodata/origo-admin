@@ -8,7 +8,6 @@ import { getJSONSchema } from '@/utils/schema/schemaRegistry';
 import { findMenuItemByType } from '@/utils/menu/menuLookup';
 import { ExtendedJSONSchema } from '@/types/jsonSchema';
 import { createGenericLayerService } from '@/api/genericLayerService';
-import { createMockGenericLayerService } from '@/api/mockGenericLayerService';
 import { useQuery } from '@tanstack/react-query';
 
 interface GenericSchemaEditPageProps {
@@ -25,8 +24,8 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [menuItem, setMenuItem] = useState<any>(null);
-  //TODO: Use real service when backend is implemented
-  const [service] = useState(() => createMockGenericLayerService(params.schema));
+  // Use real generic layer service with schema type
+  const [service] = useState(() => createGenericLayerService(params.schema));
 
   const schemaType = params.schema;
   const layerId = params.id;

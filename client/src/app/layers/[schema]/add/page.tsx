@@ -7,7 +7,8 @@ import { JSONSchemaForm } from '@/components/Forms/JSONSchemaForm';
 import { getJSONSchema } from '@/utils/schema/schemaRegistry';
 import { findMenuItemByType } from '@/utils/menu/menuLookup';
 import { ExtendedJSONSchema } from '@/types/jsonSchema';
-import { createMockGenericLayerService } from '@/api/mockGenericLayerService';
+import { createGenericLayerService } from '@/api/genericLayerService';
+import { useApp } from "@/contexts/AppContext";
 
 interface DynamicSchemaPageProps {
   params: {
@@ -22,8 +23,8 @@ export default function DynamicSchemaPage({ params }: DynamicSchemaPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [menuItem, setMenuItem] = useState<any>(null);
-  //TODO: Change to use generic layer service when backend is implemented
-  const [service] = useState(() => createMockGenericLayerService(params.schema));
+  const [service] = useState(() => createGenericLayerService(params.schema));
+  const { showToast, showToastAfterNavigation } = useApp();
 
   const schemaType = params.schema;
 
@@ -66,12 +67,11 @@ export default function DynamicSchemaPage({ params }: DynamicSchemaPageProps) {
     try {
       setSubmitting(true);
 
-      console.log(`💾 Form submitted for ${schemaType} with data:`, formData);
 
-      const createdLayer = await service.add(formData as any);
+      const createdLayers = await service.addRange([formData as any]);
+      const createdLayer = createdLayers[0];
 
-      //TODO: Show toast instead of alert
-      alert(`${menuItem?.name || schemaType} layer created successfully!\n\nID: ${createdLayer.id}\nName: ${createdLayer.name}`);
+      showToastAfterNavigation(`${menuItem?.name || schemaType} layer created successfully!`, "success");
 
       router.push(`/layers/${schemaType}`);
 

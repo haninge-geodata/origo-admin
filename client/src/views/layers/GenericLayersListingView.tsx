@@ -14,7 +14,6 @@ import AlertDialog from "@/components/Dialogs/AlertDialog";
 import React from "react";
 import { useApp } from "@/contexts/AppContext";
 import { createGenericLayerService } from "@/api/genericLayerService";
-import { createMockGenericLayerService } from "@/api/mockGenericLayerService";
 import { generateTableSpecification, TableSpecification } from "@/utils/schema/generateTableSpecification";
 import { getJSONSchema } from "@/utils/schema/schemaRegistry";
 import { findMenuItemByType } from "@/utils/menu/menuLookup";
@@ -25,8 +24,7 @@ interface GenericLayersListingViewProps {
 }
 
 export default function GenericLayersListingView({ schemaType }: GenericLayersListingViewProps) {
-    //TODO: Use real service when backend is implemented
-    const [service] = useState(() => createMockGenericLayerService(schemaType));
+    const [service] = useState(() => createGenericLayerService(schemaType));
     const [tableSpec, setTableSpec] = useState<TableSpecification | null>(null);
     const [menuItem, setMenuItem] = useState<any>(null);
     const [loadingSchema, setLoadingSchema] = useState(true);
@@ -236,12 +234,12 @@ export default function GenericLayersListingView({ schemaType }: GenericLayersLi
                 </Grid>
             </Grid >
 
-            {selectedLayer && (
+            {selectedLayer && isDialogOpen && selectedLayer.source && (
                 <LinkResourceDialog
                     key={key}
                     linkResourceType={schemaType.toUpperCase()}
                     layerId={selectedLayer.id}
-                    linkResource={selectedLayer!.source}
+                    linkResource={selectedLayer.source}
                     open={isDialogOpen}
                     onClose={handleDialogClose}
                     onSubmit={onSubmit}
