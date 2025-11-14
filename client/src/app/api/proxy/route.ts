@@ -34,8 +34,10 @@ async function handler(req: NextRequest) {
 
     try {
       const userInfo = await userInfoService.getUserInfo(jwtPayload.access_token as string, jwtPayload.accessTokenExpires as number);
-      const userGroups = userInfo.claims.split(",").map((dn: string) => dn.trim());
+      console.debug(userInfo);
+      const userGroups = typeof userInfo.groups === "string" ? userInfo.groups.split(",").map((dn: string) => dn.trim()) : Array.isArray(userInfo.groups) ? userInfo.groups : Object.keys(userInfo.groups);
       const roleInfo = await getRoleInfo(ADMIN_ROLE!);
+      console.debug(userGroups, roleInfo);
 
       headers["X-User-Info"] = JSON.stringify(userInfo.username);
 
@@ -52,7 +54,7 @@ async function handler(req: NextRequest) {
         }
       }
     } catch (error) {
-      console.error(`[${new Date().toISOString()}] Error in authentication process: User not authorized`);
+      console.error(`[${new Date().toISOString()}] Error in authentication process: User not authorized (${error})`);
       return NextResponse.redirect(new URL(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/api/auth/signin`, req.url));
     }
   }
