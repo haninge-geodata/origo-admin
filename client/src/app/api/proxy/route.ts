@@ -111,6 +111,7 @@ async function handler(req: NextRequest) {
 
 async function getRoleInfo(roleName: string) {
   const roleUrl = `${BASE_URL}${ROLE_ROUTE}${roleName}`;
+  console.log(`Fetching role info from: ${roleUrl}`);
   const response = await fetch(roleUrl, {
     headers: {
       Authorization: `Bearer ${API_ACCESS_TOKEN}`,

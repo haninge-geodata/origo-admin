@@ -59,6 +59,7 @@ export class UserInfoService {
     }
 
     const data = await response.json();
+    console.debug(data, process.env.PROTECTED_IDP_CLAIM_ROLES);
     return {
       access_token: accessToken,
       expires_at: Date.now() + expires_in * 1000,
