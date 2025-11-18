@@ -92,14 +92,11 @@ function createLayerService(type: string) {
         toDBModelMethod
       );
     case "ALL":
-      return new LayerService<DBLayerBase, WMTSLayerDto>(
-        layerModel,
-        toDtoMethod,
-        toDBModelMethod
-      );
+      return new LayerService<
+        DBLayerBase,
+        WFSLayerDto | WMSLayerDto | WMTSLayerDto | DynamicLayerDto
+      >(layerModel, toDtoMethod, toDBModelMethod);
     default:
-      // For any other type, create a dynamic layer service
-      // This includes: GEOJSON, GPX, TOPOJSON, KML, and any future types
       const dynamicModel = getDynamicLayerModel(type);
       return new LayerService<DBDynamicLayer, DynamicLayerDto>(
         dynamicModel,

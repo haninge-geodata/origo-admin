@@ -1,27 +1,36 @@
 import { DBStyleSchema } from "@/models";
-import { CustomStyleDto, IconStyleDto, StyleSchemaDto, StyleType } from "@/shared/interfaces/dtos";
+import {
+  CustomStyleDto,
+  IconStyleDto,
+  StyleSchemaDto,
+  StyleType,
+} from "@/shared/interfaces/dtos";
 import { v4 as uuidv4 } from "uuid";
 
 import mongoose from "mongoose";
 import { IMapper } from "@/interfaces";
 
-export default class StyleSchemaMapper implements IMapper<DBStyleSchema, StyleSchemaDto> {
+export default class StyleSchemaMapper
+  implements IMapper<DBStyleSchema, StyleSchemaDto>
+{
   toDto(model: DBStyleSchema): StyleSchemaDto {
     return {
       id: model._id.toHexString(),
       name: model.name,
-      styles: model.styles.map((row) =>
-        row.map((styleItem) => {
-          if (isIconStyleDto(styleItem)) {
-            let item = styleItem as IconStyleDto;
-            return item;
-          } else if (isCustomStyleDto(styleItem)) {
-            let item = styleItem as CustomStyleDto;
-            return item;
-          }
-          throw new Error("Okänd styleItem-typ.");
-        })
-      ),
+      styles: model.styles
+        ? model.styles.map((row) =>
+            row.map((styleItem) => {
+              if (isIconStyleDto(styleItem)) {
+                let item = styleItem as IconStyleDto;
+                return item;
+              } else if (isCustomStyleDto(styleItem)) {
+                let item = styleItem as CustomStyleDto;
+                return item;
+              }
+              throw new Error("Okänd styleItem-typ.");
+            })
+          )
+        : [],
     };
   }
   toDBModel(dto: StyleSchemaDto, create: boolean = false): DBStyleSchema {

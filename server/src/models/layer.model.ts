@@ -66,16 +66,6 @@ const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
   { discriminatorKey: "type" }
 );
 
-layerBaseSchema.pre("findOne", function () {
-  this.populate("source");
-  this.populate("style");
-});
-
-layerBaseSchema.pre("find", function () {
-  this.populate("source");
-  this.populate("style");
-});
-
 const layerModel = mongoose.model<DBLayerBase>("Layers", layerBaseSchema);
 
 interface DBWFSLayer extends DBLayerBase {
@@ -96,10 +86,14 @@ const wfsLayerSchema = new Schema({
 
 wfsLayerSchema.pre("findOne", function () {
   this.populate("clusterStyle");
+  this.populate("source");
+  this.populate("style");
 });
 
 wfsLayerSchema.pre("find", function () {
   this.populate("clusterStyle");
+  this.populate("source");
+  this.populate("style");
 });
 
 const WFSLayerModel = layerModel.discriminator<DBWFSLayer>(
@@ -123,6 +117,16 @@ const wmsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
+wmsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
+wmsLayerSchema.pre("find", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
 const WMSLayerModel = layerModel.discriminator<DBWMSLayer>(
   "WMS",
   wmsLayerSchema
@@ -138,6 +142,16 @@ const wmtsLayerSchema = new Schema({
   format: { type: String, required: true },
   maxScale: { type: Number, required: false },
   featureinfoLayer: { type: String, required: false },
+});
+
+wmtsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
+wmtsLayerSchema.pre("find", function () {
+  this.populate("source");
+  this.populate("style");
 });
 
 const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(

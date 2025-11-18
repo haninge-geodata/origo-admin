@@ -34,16 +34,24 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
       id: model._id.toString(),
       layer_id: model.layer_id,
       name: model.name,
-      source: this._linkResourceMapper.toDto(model.source as DBLinkResource),
+      source:
+        model.source &&
+        typeof model.source === "object" &&
+        (model.source as any)._id
+          ? this._linkResourceMapper.toDto(model.source as DBLinkResource)
+          : (undefined as any),
       title: model.title,
       abstract: model.abstract ?? "",
       queryable: model.queryable,
       type: model.type,
       visible: model.visible,
       attribution: model.attribution ?? "",
-      style: model.style
-        ? this._styleSchemaMapper.toDto(model.style as DBStyleSchema)
-        : undefined,
+      style:
+        model.style &&
+        typeof model.style === "object" &&
+        (model.style as any)._id
+          ? this._styleSchemaMapper.toDto(model.style as DBStyleSchema)
+          : undefined,
       extendedAttributes: model.extendedAttributes ?? undefined,
     };
   }
@@ -52,14 +60,20 @@ class BaseLayerMapper implements IMapper<DBLayerBase, BaseLayerDto> {
     const dbModel = new layerModel({
       name: dto.name,
       layer_id: dto.layer_id,
-      source: this._linkResourceMapper.toDBModel(dto.source),
+      source:
+        dto.source && typeof dto.source === "object" && dto.source.id
+          ? this._linkResourceMapper.toDBModel(dto.source)
+          : undefined,
       title: dto.title,
       abstract: dto.abstract,
       queryable: dto.queryable,
       type: dto.type,
       visible: dto.visible,
       attribution: dto.attribution,
-      style: dto.style ? new mongoose.Types.ObjectId(dto.style.id) : undefined,
+      style:
+        dto.style && typeof dto.style === "object" && dto.style.id
+          ? new mongoose.Types.ObjectId(dto.style.id)
+          : undefined,
       extendedAttributes: dto.extendedAttributes ?? null,
     } as Partial<DBLayerBase>);
 
@@ -173,23 +187,59 @@ export class WMTSLayerMapper
   }
 }
 
+/**
+ * LayerMapper handles polymorphic mapping for all layer types by delegating
+ * to the appropriate specific mapper based on the layer's type discriminator.
+ * This is used for the /layers/all endpoint to correctly map all layer types.
+ */
 export class LayerMapper
   extends BaseLayerMapper
   implements IMapper<DBLayerBase, BaseLayerDto>
 {
+  private wfsMapper: WFSLayerMapper;
+  private wmsMapper: WMSLayerMapper;
+  private wmtsMapper: WMTSLayerMapper;
+  private dynamicMapper: any; // Import dynamically to avoid circular dependency
+
   constructor() {
     super();
-  }
-  toDto(model: DBLayerBase): BaseLayerDto {
-    const baseDto = super.toDto(model) as WMTSLayerDto;
-    return {
-      ...baseDto,
-    };
+    this.wfsMapper = new WFSLayerMapper();
+    this.wmsMapper = new WMSLayerMapper();
+    this.wmtsMapper = new WMTSLayerMapper();
+    // Import DynamicLayerMapper dynamically
+    const { DynamicLayerMapper } = require("./dynamicLayerMapper");
+    this.dynamicMapper = new DynamicLayerMapper();
   }
 
-  toDBModel(dto: WMTSLayerDto, create: boolean): DBWMTSLayer {
-    throw new Error(
-      "Method not implemented since it is not needed for this mapper"
-    );
+  toDto(model: DBLayerBase): BaseLayerDto {
+    const type = model.type.toUpperCase();
+
+    switch (type) {
+      case "WFS":
+        return this.wfsMapper.toDto(model as DBWFSLayer);
+      case "WMS":
+        return this.wmsMapper.toDto(model as DBWMSLayer);
+      case "WMTS":
+        return this.wmtsMapper.toDto(model as DBWMTSLayer);
+      default:
+        // For any other type (GEOJSON, GPX, TOPOJSON, KML, etc.)
+        return this.dynamicMapper.toDto(model);
+    }
+  }
+
+  toDBModel(dto: BaseLayerDto, create: boolean): DBLayerBase {
+    const type = dto.type.toUpperCase();
+
+    switch (type) {
+      case "WFS":
+        return this.wfsMapper.toDBModel(dto as any, create);
+      case "WMS":
+        return this.wmsMapper.toDBModel(dto as any, create);
+      case "WMTS":
+        return this.wmtsMapper.toDBModel(dto as any, create);
+      default:
+        // For any other type (GEOJSON, GPX, TOPOJSON, KML, etc.)
+        return this.dynamicMapper.toDBModel(dto, create);
+    }
   }
 }

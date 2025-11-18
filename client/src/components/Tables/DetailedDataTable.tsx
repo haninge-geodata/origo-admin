@@ -10,7 +10,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { Box, Button, Checkbox, Chip, Grid, Link, Menu, MenuItem, TextField } from '@mui/material';
+import { Box, Button, Checkbox, Chip, Grid, Link, Menu, MenuItem, TextField, Popover, FormControlLabel, FormGroup, Badge } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { Column, DataRow, TableData } from '@/interfaces';
 import TablePagination from '@mui/material/TablePagination';
 
@@ -54,15 +55,102 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
     const [sortState, setSortState] = useState<{ field: string, direction: 'asc' | 'desc' } | null>(null);
     const prevDataRef = useRef<TableData | undefined>();
     const [selectAll, setSelectAll] = useState(false);
+    const [columnFilters, setColumnFilters] = useState<{ [key: string]: string[] }>({});
+    const [filterAnchorEl, setFilterAnchorEl] = useState<{ [key: string]: HTMLElement | null }>({});
+
+    // Extract unique values from a column
+    const getUniqueColumnValues = (field: string): string[] => {
+        if (!data?.rows) return [];
+        const uniqueValues = new Set<string>();
+        data.rows.forEach(row => {
+            const value = row[field];
+            if (value !== null && value !== undefined) {
+                // Handle different value types
+                if (typeof value === 'boolean') {
+                    uniqueValues.add(String(value));
+                } else if (typeof value === 'object' && value !== null) {
+                    if (Array.isArray(value)) {
+                        value.forEach(item => {
+                            if (typeof item === 'string') {
+                                uniqueValues.add(item);
+                            } else if (typeof item === 'object' && (item.hasOwnProperty('name') || item.hasOwnProperty('title'))) {
+                                uniqueValues.add(item.name || item.title);
+                            } else {
+                                uniqueValues.add(JSON.stringify(item));
+                            }
+                        });
+                    } else if (value.title) {
+                        uniqueValues.add(value.title);
+                    } else if (value.name) {
+                        uniqueValues.add(value.name);
+                    } else {
+                        uniqueValues.add(JSON.stringify(value));
+                    }
+                } else {
+                    uniqueValues.add(String(value));
+                }
+            }
+        });
+        return Array.from(uniqueValues).sort();
+    };
 
     const filteredRows = useMemo(() => {
-        if (!searchTerm) return data?.rows || [];
-        return data?.rows.filter((row) =>
-            Object.values(row).some(val =>
-                String(val).toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        ) || [];
-    }, [data?.rows, searchTerm]);
+        let rows = data?.rows || [];
+
+        // Apply global search filter
+        if (searchTerm) {
+            rows = rows.filter((row) =>
+                Object.values(row).some(val =>
+                    String(val).toLowerCase().includes(searchTerm.toLowerCase())
+                )
+            );
+        }
+
+        // Apply column-specific filters
+        Object.keys(columnFilters).forEach(field => {
+            const selectedValues = columnFilters[field];
+            if (selectedValues && selectedValues.length > 0) {
+                rows = rows.filter(row => {
+                    const value = row[field];
+                    let stringValue = '';
+
+                    if (value === null || value === undefined) return false;
+
+                    // Convert value to string based on type
+                    if (typeof value === 'boolean') {
+                        stringValue = String(value);
+                    } else if (typeof value === 'object' && value !== null) {
+                        if (Array.isArray(value)) {
+                            // For arrays, check if any item matches
+                            return value.some(item => {
+                                let itemStr = '';
+                                if (typeof item === 'string') {
+                                    itemStr = item;
+                                } else if (typeof item === 'object' && (item.hasOwnProperty('name') || item.hasOwnProperty('title'))) {
+                                    itemStr = item.name || item.title;
+                                } else {
+                                    itemStr = JSON.stringify(item);
+                                }
+                                return selectedValues.includes(itemStr);
+                            });
+                        } else if (value.title) {
+                            stringValue = value.title;
+                        } else if (value.name) {
+                            stringValue = value.name;
+                        } else {
+                            stringValue = JSON.stringify(value);
+                        }
+                    } else {
+                        stringValue = String(value);
+                    }
+
+                    return selectedValues.includes(stringValue);
+                });
+            }
+        });
+
+        return rows;
+    }, [data?.rows, searchTerm, columnFilters]);
 
     useEffect(() => {
         if (JSON.stringify(prevDataRef.current) !== JSON.stringify(data)) {
@@ -148,6 +236,128 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
 
     const isFiltered = searchTerm !== '';
 
+    // Filter handlers
+    const handleFilterClick = (field: string, event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
+        setFilterAnchorEl(prev => ({ ...prev, [field]: event.currentTarget }));
+    };
+
+    const handleFilterClose = (field: string) => {
+        setFilterAnchorEl(prev => ({ ...prev, [field]: null }));
+    };
+
+    const handleFilterChange = (field: string, value: string) => {
+        setColumnFilters(prev => {
+            const currentValues = prev[field] || getUniqueColumnValues(field);
+            const newValues = currentValues.includes(value)
+                ? currentValues.filter(v => v !== value)
+                : [...currentValues, value];
+            return { ...prev, [field]: newValues };
+        });
+    };
+
+    const handleSelectAllFilter = (field: string, checked: boolean) => {
+        setColumnFilters(prev => {
+            if (checked) {
+                return { ...prev, [field]: getUniqueColumnValues(field) };
+            } else {
+                return { ...prev, [field]: [] };
+            }
+        });
+    };
+
+    const clearColumnFilter = (field: string) => {
+        setColumnFilters(prev => {
+            const newFilters = { ...prev };
+            delete newFilters[field];
+            return newFilters;
+        });
+        setPage(0);
+    };
+
+    const getActiveFilterCount = () => {
+        return Object.keys(columnFilters).filter(key =>
+            columnFilters[key] && columnFilters[key].length > 0 &&
+            columnFilters[key].length < getUniqueColumnValues(key).length
+        ).length;
+    };
+
+    // Render filter popover for a column
+    const renderFilterPopover = (column: Column) => {
+        const field = column.field;
+        const uniqueValues = getUniqueColumnValues(field);
+        const selectedValues = columnFilters[field] || uniqueValues;
+        const allSelected = selectedValues.length === uniqueValues.length;
+        const open = Boolean(filterAnchorEl[field]);
+
+        return (
+            <Popover
+                key={`filter-${field}`}
+                open={open}
+                anchorEl={filterAnchorEl[field]}
+                onClose={() => handleFilterClose(field)}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'left',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+            >
+                <Box sx={{ p: 2, minWidth: 200, maxWidth: 300 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                        Filtrera {column.headerName}
+                    </Typography>
+                    <FormGroup>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={allSelected}
+                                    indeterminate={selectedValues.length > 0 && !allSelected}
+                                    onChange={(e) => handleSelectAllFilter(field, e.target.checked)}
+                                />
+                            }
+                            label="Välj alla"
+                        />
+                        <Box sx={{ maxHeight: 300, overflowY: 'auto', mt: 1 }}>
+                            {uniqueValues.map((value) => (
+                                <FormControlLabel
+                                    key={value}
+                                    control={
+                                        <Checkbox
+                                            checked={selectedValues.includes(value)}
+                                            onChange={() => handleFilterChange(field, value)}
+                                        />
+                                    }
+                                    label={value || '(tom)'}
+                                />
+                            ))}
+                        </Box>
+                    </FormGroup>
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                        <Button
+                            size="small"
+                            onClick={() => {
+                                clearColumnFilter(field);
+                                handleFilterClose(field);
+                            }}
+                        >
+                            Rensa
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="contained"
+                            onClick={() => handleFilterClose(field)}
+                        >
+                            Tillämpa
+                        </Button>
+                    </Box>
+                </Box>
+            </Popover>
+        );
+    };
+
     return (
         <Grid>
             <Grid container alignItems="center" justifyContent="space-between" sx={{ mb: '20px', height: '40px' }}>
@@ -177,9 +387,12 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
                                 style: { height: '40px', padding: '0 14px' }
                             }}
                         />
-                        {isFiltered && (
+                        {(isFiltered || getActiveFilterCount() > 0) && (
                             <Typography variant="body2" sx={{ ml: 2, color: 'text.secondary' }}>
                                 Visar {filteredRows.length} av {data?.rows.length} resultat
+                                {getActiveFilterCount() > 0 && (
+                                    <span> ({getActiveFilterCount()} filter aktiva)</span>
+                                )}
                             </Typography>
                         )}
                     </Box>
@@ -204,18 +417,46 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
                                         />
                                     </TableCell>
                                 )}
-                                {data?.columns.filter(column => !column.hide).map((column: Column) => (
-                                    <TableCell
-                                        key={column.field}
-                                        onClick={() => handleSort(column.field)}
-                                        style={{ cursor: sortingEnabled ? 'pointer' : 'default' }}
-                                    >
-                                        {column.headerName}
-                                        {sortingEnabled && sortState?.field === column.field && (
-                                            sortState.direction === 'asc' ? ' ▲' : ' ▼'
-                                        )}
-                                    </TableCell>
-                                ))}
+                                {data?.columns.filter(column => !column.hide).map((column: Column) => {
+                                    const hasActiveFilter = columnFilters[column.field] &&
+                                        columnFilters[column.field].length > 0 &&
+                                        columnFilters[column.field].length < getUniqueColumnValues(column.field).length;
+
+                                    return (
+                                        <TableCell
+                                            key={column.field}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                <Box
+                                                    onClick={() => handleSort(column.field)}
+                                                    sx={{ flex: 1, display: 'flex', alignItems: 'center' }}
+                                                >
+                                                    {column.headerName}
+                                                    {sortingEnabled && sortState?.field === column.field && (
+                                                        <span style={{ marginLeft: 4 }}>
+                                                            {sortState.direction === 'asc' ? '▲' : '▼'}
+                                                        </span>
+                                                    )}
+                                                </Box>
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={(e) => handleFilterClick(column.field, e)}
+                                                    sx={{ padding: '4px' }}
+                                                >
+                                                    <Badge
+                                                        color="primary"
+                                                        variant="dot"
+                                                        invisible={!hasActiveFilter}
+                                                    >
+                                                        <FilterListIcon fontSize="small" />
+                                                    </Badge>
+                                                </IconButton>
+                                            </Box>
+                                            {renderFilterPopover(column)}
+                                        </TableCell>
+                                    );
+                                })}
                                 {expandable && (
                                     <TableCell>Visa Mer</TableCell>
                                 )}
@@ -242,7 +483,7 @@ export default function DetailedDataTable({ data, selectedRows, isSearchable = f
                                 ))
                             ) : (
                                 <RowContent
-                                    row={{ id: "-1", title: "No data available"}}
+                                    row={{ id: "-1", title: "No data available" }}
                                     columns={[]}
                                     isSelected={false}
                                     expandable={false}
