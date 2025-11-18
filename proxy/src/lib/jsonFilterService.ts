@@ -9,6 +9,7 @@ export class FilterJsonService {
             ? userInfo.groups
             : Object.keys(userInfo.groups);
     permissions.push(userInfo.username);
+    console.debug("User permissions:", permissions);
 
     if (json.layers) {
       json.layers = json.layers.filter((layer: any) => {
