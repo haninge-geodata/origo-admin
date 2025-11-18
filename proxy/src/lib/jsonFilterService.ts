@@ -3,11 +3,13 @@ import { UserInfo } from "./auth/userInfoCache";
 
 export class FilterJsonService {
   public async filterJson(json: any, proxyUrl: string, userInfo: UserInfo, cacheManager: CacheManager): Promise<any> {
-    let permissions = userInfo.claims
-      .replace(/^CN=/gi,"")
-      .split(",CN=")
-      .map((claim : string) => `CN=${claim}`);
+    const permissions = typeof userInfo.groups === "string"
+        ? userInfo.groups.replace(/^CN=/gi,"").split(",CN=").map((claim : string) => `CN=${claim}`)
+        : Array.isArray(userInfo.groups)
+            ? userInfo.groups
+            : Object.keys(userInfo.groups);
     permissions.push(userInfo.username);
+    console.debug("User permissions:", permissions);
 
     if (json.layers) {
       json.layers = json.layers.filter((layer: any) => {
