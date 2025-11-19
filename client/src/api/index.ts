@@ -15,3 +15,4 @@ export * from "./permissionService";
 export * from "./accessTokenService";
 export * from "./routeService";
 export * from "./DashboardService";
+export * from "./schemaService";

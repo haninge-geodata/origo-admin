@@ -4,7 +4,9 @@ import path from "path";
 console.info(`[${new Date().toISOString()}] Initializing environment...`);
 const environment = process.env.NODE_ENV || "local";
 
-console.info(`[${new Date().toISOString()}] Environment set to: ${environment}`);
+console.info(
+  `[${new Date().toISOString()}] Environment set to: ${environment}`
+);
 
 let envPath = "";
 if (
@@ -41,6 +43,7 @@ import {
   AccessTokenRoutes,
   RouteRoutes,
   DashboardRoutes,
+  JsonSchemaRoutes,
 } from "./routes";
 
 import initializeDatabase from "./database";
@@ -110,6 +113,7 @@ app.use(`${BASE_PATH}`, ProxyRoutes);
 app.use(`${BASE_PATH}`, AccessTokenRoutes);
 app.use(`${BASE_PATH}`, RouteRoutes);
 app.use(`${BASE_PATH}`, DashboardRoutes);
+app.use(`${BASE_PATH}`, JsonSchemaRoutes);
 app.use(`${BASE_PATH}/uploads`, express.static(path.resolve(UPLOAD_FOLDER)));
 
 interface NodeError extends Error {
@@ -119,12 +123,16 @@ interface NodeError extends Error {
 console.info(`[${new Date().toISOString()}] Server started...`);
 app
   .listen(PORT, () => {
-    console.info(`[${new Date().toISOString()}] Server is listening on port ${PORT}`);
+    console.info(
+      `[${new Date().toISOString()}] Server is listening on port ${PORT}`
+    );
     swaggerDocs(app);
   })
   .on("error", (err: NodeError) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`[${new Date().toISOString()}] Port ${PORT} is already in use.`);
+      console.error(
+        `[${new Date().toISOString()}] Port ${PORT} is already in use.`
+      );
     } else {
       console.error(`[${new Date().toISOString()}] ${err}`);
     }

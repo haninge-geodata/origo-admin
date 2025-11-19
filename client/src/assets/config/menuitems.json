@@ -51,33 +51,6 @@
         "type": "item",
         "icon": "AddLocationAltTwoTone",
         "disabled": false
-      },
-      {
-        "id": 34,
-        "name": "GeoJSON",
-        "urlSegment": "/layers/geojson",
-        "type": "item",
-        "icon": "DataObject",
-        "schemaPath": "geojson/geojson-layer-schema.json",
-        "disabled": false
-      },
-      {
-        "id": 35,
-        "name": "GPX",
-        "urlSegment": "/layers/gpx",
-        "type": "item",
-        "icon": "DataObject",
-        "schemaPath": "gpx/gpx-layer-schema.json",
-        "disabled": false
-      },
-      {
-        "id": 36,
-        "name": "TopoJSON",
-        "urlSegment": "/layers/topojson",
-        "type": "item",
-        "icon": "DataObject",
-        "schemaPath": "geojson/topojson-layer-schema.json",
-        "disabled": false
       }
     ]
   },
@@ -141,7 +114,7 @@
   {
     "id": 40,
     "name": "Behörigheter",
-    "requiresAuth": true,
+    "requiresAuth": false,
     "type": "group",
     "children": [{
         "id": 41,
@@ -157,6 +130,14 @@
         "urlSegment": "/accessTokens",
         "type": "item",
         "icon": "Key",
+        "disabled": false
+      },
+      {
+        "id": 43,
+        "name": "Scheman",
+        "urlSegment": "/schemas",
+        "type": "item",
+        "icon": "DataObject",
         "disabled": false
       }
     ]

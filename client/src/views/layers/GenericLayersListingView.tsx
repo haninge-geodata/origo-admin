@@ -16,7 +16,6 @@ import { useApp } from "@/contexts/AppContext";
 import { createGenericLayerService } from "@/api/genericLayerService";
 import { generateTableSpecification, TableSpecification } from "@/utils/schema/generateTableSpecification";
 import { getJSONSchema } from "@/utils/schema/schemaRegistry";
-import { findMenuItemByType } from "@/utils/menu/menuLookup";
 import { ExtendedJSONSchema } from "@/types/jsonSchema";
 
 interface GenericLayersListingViewProps {
@@ -52,10 +51,10 @@ export default function GenericLayersListingView({ schemaType }: GenericLayersLi
             try {
                 setLoadingSchema(true);
 
-                const foundMenuItem = findMenuItemByType(schemaType);
-                setMenuItem(foundMenuItem);
+                const schema: ExtendedJSONSchema = await getJSONSchema(schemaType);
 
-                const schema: ExtendedJSONSchema = await getJSONSchema(foundMenuItem.schemaPath);
+                const displayName = schema.title || schemaType.toUpperCase();
+                setMenuItem({ name: displayName } as any);
 
                 const generatedSpec = generateTableSpecification(schema);
                 setTableSpec(generatedSpec);

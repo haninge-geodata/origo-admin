@@ -12,3 +12,4 @@ export { default as ProxyRoutes } from "./ProxyRoutes";
 export { default as AccessTokenRoutes } from "./AccessTokenRoutes";
 export { default as RouteRoutes } from "./RouteRoutes";
 export { default as DashboardRoutes } from "./DashboardRoutes";
+export { default as JsonSchemaRoutes } from "./JsonSchemaRoutes";

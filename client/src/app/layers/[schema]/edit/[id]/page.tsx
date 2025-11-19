@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Box, Container, Paper, Alert, CircularProgress, Typography } from '@mui/material';
 import { JSONSchemaForm } from '@/components/Forms/JSONSchemaForm';
 import { getJSONSchema } from '@/utils/schema/schemaRegistry';
-import { findMenuItemByType } from '@/utils/menu/menuLookup';
 import { ExtendedJSONSchema } from '@/types/jsonSchema';
 import { createGenericLayerService } from '@/api/genericLayerService';
 import { useQuery } from '@tanstack/react-query';
@@ -43,11 +42,10 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
         setLoading(true);
         setError(null);
 
-        const menuItem = findMenuItemByType(schemaType);
-        setMenuItem(menuItem);
-
-        const loadedSchema = await getJSONSchema(menuItem.schemaPath);
+        const loadedSchema = await getJSONSchema(schemaType);
         setSchema(loadedSchema);
+
+        setMenuItem({ name: loadedSchema.title || schemaType.toUpperCase() } as any);
       } catch (err) {
         console.error(`❌ Failed to load schema for type: ${schemaType}`, err);
         let errorMessage = 'Unknown error occurred';
@@ -55,15 +53,7 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
           errorMessage = err.message;
         }
 
-        if (errorMessage.includes('No menu item found')) {
-          errorMessage = `Schema type "${schemaType}" is not configured in the menu. Available types: geojson. Please check the URL or add a menu configuration.`;
-        } else if (errorMessage.includes('has no schemaPath')) {
-          errorMessage = `Menu item for "${schemaType}" exists but is missing the "schemaPath" configuration. Please add the schemaPath property to the menu item.`;
-        } else if (errorMessage.includes('Schema not found')) {
-          errorMessage = `Schema file not found. Please ensure the schema file exists at the specified path in /public/schemas/.`;
-        }
-
-        setError(errorMessage);
+        setError(`Failed to load schema for "${schemaType}": ${errorMessage}`);
       } finally {
         setLoading(false);
       }

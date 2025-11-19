@@ -19,3 +19,4 @@ export * from "./RouteDto";
 export * from "./KeyValuePairDto";
 export * from "./DashboardDto";
 export * from "./SyncLayerRequestDto";
+export * from "./JsonSchemaDto";

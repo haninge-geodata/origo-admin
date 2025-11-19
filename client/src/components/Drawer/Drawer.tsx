@@ -5,12 +5,15 @@ import Logo from "@/components/Drawer/Logo/Logo";
 import { useRouter, usePathname } from "next/navigation";
 import Drawer from "@/components/Extensions/Drawer";
 import useStore from "@/stores/Navigation";
-import menuItems from '@/assets/config/menuitems.json';
+import staticMenuItems from '@/assets/config/menuitems.json';
 import { getIcon } from "@/utils/helpers/iconHelper";
 import envStore from '@/stores/Environment';
+import { schemaService } from '@/api/schemaService';
+import { globalEventEmitter } from '@/utils/EventEmitter';
 
 export default function DrawerComponent() {
     const [activeItemId, setActiveItemId] = useState(0);
+    const [menuItems, setMenuItems] = useState<any[]>(staticMenuItems);
     const router = useRouter();
     const pathname = usePathname();
     const { isDrawerOpen, openDrawer } = useStore();
@@ -26,6 +29,42 @@ export default function DrawerComponent() {
                 setIsAuthEnabled(fetchedAuthEnabled === "true" || false);
         }
         fetchEnvVars();
+    }, []);
+
+    useEffect(() => {
+        async function fetchDynamicMenuItems() {
+            try {
+                const dynamicItems = await schemaService.fetchMenuItems();
+
+                const mergedMenuItems = staticMenuItems.map((group: any) => {
+                    if (group.id === 30 && group.name === "Lager") {
+                        return {
+                            ...group,
+                            children: [...group.children, ...dynamicItems]
+                        };
+                    }
+                    return group;
+                });
+
+                setMenuItems(mergedMenuItems);
+            } catch (error) {
+                console.error('[Drawer] Failed to fetch dynamic menu items:', error);
+                setMenuItems(staticMenuItems);
+            }
+        }
+
+        fetchDynamicMenuItems();
+
+        const handleSchemaChange = () => {
+            console.log('[Drawer] Schema changed, refreshing menu...');
+            fetchDynamicMenuItems();
+        };
+
+        globalEventEmitter.on('schema-changed', handleSchemaChange);
+
+        return () => {
+            globalEventEmitter.off('schema-changed', handleSchemaChange);
+        };
     }, []);
 
     useEffect(() => {
@@ -73,7 +112,7 @@ export default function DrawerComponent() {
                 (!group.requiresAuth || (group.requiresAuth && isAuthEnabled)) && (
                     <List key={group.id}>
                         <Typography variant="subtitle2" sx={{ ml: 2, mb: 1, opacity: isDrawerOpen ? 1 : 0 }}>{group.name}</Typography>
-                        {group.children?.map((item) => (
+                        {group.children?.map((item: any) => (
                             <ListItem key={item.id} disablePadding
                                 sx={{
                                     display: 'block', '&:hover': { backgroundColor: BACKGROUND_COLOR_HOVER },

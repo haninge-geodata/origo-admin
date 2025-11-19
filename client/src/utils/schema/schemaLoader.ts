@@ -1,8 +1,22 @@
 import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { schemaService } from "@/api/schemaService";
 
 export async function loadSchema(
   schemaPath: string
 ): Promise<ExtendedJSONSchema> {
+  const schemaName = extractSchemaName(schemaPath);
+
+  try {
+    const schemaDto = await fetchSchemaFromAPI(schemaName);
+    if (schemaDto) {
+      return schemaDto.schemaContent as ExtendedJSONSchema;
+    }
+  } catch (apiError) {
+    console.info(
+      `[SchemaLoader] Schema "${schemaName}" not found in database, trying file system...`
+    );
+  }
+
   try {
     const schema = await fetchSchemaFromPublic(schemaPath);
 
@@ -18,6 +32,22 @@ export async function loadSchema(
   } catch (error) {
     console.error(`Failed to load schema: ${schemaPath}`, error);
     throw new Error(`Schema not found or invalid: ${schemaPath}`);
+  }
+}
+
+function extractSchemaName(schemaPath: string): string {
+  if (schemaPath.includes("/")) {
+    return schemaPath.split("/")[0];
+  }
+  return schemaPath;
+}
+
+async function fetchSchemaFromAPI(schemaName: string): Promise<any> {
+  try {
+    const schema = await schemaService.fetchByName(schemaName);
+    return schema;
+  } catch (error) {
+    return null;
   }
 }
 
