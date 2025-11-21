@@ -13,6 +13,7 @@ dotevnv.config();
 const AZURE_STORAGE_CONNECTION_STRING =
   process.env.AZURE_STORAGE_CONNECTION_STRING!;
 const AZURE_CONTAINER_NAME = process.env.AZURE_CONTAINER_NAME!;
+const UPLOAD_MAX_FILESIZE = parseInt(process.env.UPLOAD_MAX_FILESIZE as string) || 100000000;
 
 class AzureUploadService implements IUploadService {
   private uploadPath = process.env.UPLOAD_PATH!;
@@ -89,7 +90,7 @@ class AzureUploadService implements IUploadService {
       storage: storage,
       fileFilter: fileFilter,
       limits: {
-        fileSize: 100000000,
+        fileSize: UPLOAD_MAX_FILESIZE,
       },
     };
   };
@@ -100,13 +101,16 @@ const storage: StorageEngine = multer.memoryStorage();
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
-  cb: multer.FileFilterCallback
-) => {
+  callback: multer.FileFilterCallback
+) => callback(null, true);
+/** The filter function can be used to restrict which files are allowed.
+{
   if (file.mimetype.startsWith("image/")) {
     cb(null, true);
   } else {
     cb(null, false);
   }
 };
+ */
 
 export { AzureUploadService };
