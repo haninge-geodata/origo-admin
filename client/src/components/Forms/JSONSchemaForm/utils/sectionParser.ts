@@ -1,4 +1,4 @@
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import { DEFAULT_SECTION_NAME } from "../constants/fieldTypes";
 
 export interface ParsedFormSection {

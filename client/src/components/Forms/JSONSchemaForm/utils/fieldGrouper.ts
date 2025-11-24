@@ -1,4 +1,4 @@
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 
 export interface FieldGroup {
   type: 'single' | 'inline' | 'row';

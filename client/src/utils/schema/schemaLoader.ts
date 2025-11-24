@@ -1,4 +1,4 @@
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import { schemaService } from "@/api/schemaService";
 
 export async function loadSchema(

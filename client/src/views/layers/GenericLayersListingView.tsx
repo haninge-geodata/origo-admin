@@ -16,7 +16,7 @@ import { useApp } from "@/contexts/AppContext";
 import { createGenericLayerService } from "@/api/genericLayerService";
 import { generateTableSpecification, TableSpecification } from "@/utils/schema/generateTableSpecification";
 import { getJSONSchema } from "@/utils/schema/schemaRegistry";
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 
 interface GenericLayersListingViewProps {
     schemaType: string;

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Box, Container, Paper, Alert, CircularProgress, Typography } from '@mui/material';
 import { JSONSchemaForm } from '@/components/Forms/JSONSchemaForm';
 import { getJSONSchema } from '@/utils/schema/schemaRegistry';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces';
 import { createGenericLayerService } from '@/api/genericLayerService';
 import { useApp } from "@/contexts/AppContext";
 
@@ -57,7 +57,7 @@ export default function DynamicSchemaPage({ params }: DynamicSchemaPageProps) {
     try {
       setSubmitting(true);
 
-
+      // Validation is now on by default (no parameter needed)
       const createdLayers = await service.addRange([formData as any]);
       const createdLayer = createdLayers[0];
 
@@ -65,9 +65,19 @@ export default function DynamicSchemaPage({ params }: DynamicSchemaPageProps) {
 
       router.push(`/layers/${schemaType}`);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(`❌ Failed to save ${schemaType} layer:`, err);
-      alert(`Failed to save ${schemaType} layer. Please try again.`);
+      
+      // Check if this is a validation error from the backend
+      if (err.response?.status === 400 && err.response?.data?.validationErrors) {
+        const validationErrors = err.response.data.validationErrors;
+        const errorMessages = validationErrors
+          .map((e: any) => `${e.field}: ${e.message}`)
+          .join('\n');
+        showToast(`Validation failed:\n${errorMessages}`, "error");
+      } else {
+        showToast(`Failed to save ${schemaType} layer. Please try again.`, "error");
+      }
     } finally {
       setSubmitting(false);
     }

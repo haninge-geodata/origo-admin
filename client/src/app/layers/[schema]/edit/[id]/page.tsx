@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Box, Container, Paper, Alert, CircularProgress, Typography } from '@mui/material';
 import { JSONSchemaForm } from '@/components/Forms/JSONSchemaForm';
 import { getJSONSchema } from '@/utils/schema/schemaRegistry';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces';
 import { createGenericLayerService } from '@/api/genericLayerService';
 import { useQuery } from '@tanstack/react-query';
+import { useApp } from "@/contexts/AppContext";
 
 interface GenericSchemaEditPageProps {
   params: {
@@ -25,6 +26,7 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
   const [menuItem, setMenuItem] = useState<any>(null);
   // Use real generic layer service with schema type
   const [service] = useState(() => createGenericLayerService(params.schema));
+  const { showToast, showToastAfterNavigation } = useApp();
 
   const schemaType = params.schema;
   const layerId = params.id;
@@ -66,16 +68,27 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
   const handleSubmit = async (formData: Record<string, any>) => {
     try {
       setSubmitting(true);
+      
+      // Validation is now on by default (no parameter needed)
       await service.update(layerId, formData as any);
 
-      //TODO: Show toast instead of alert
-      alert(`${menuItem?.name || schemaType} layer updated successfully!`);
+      showToastAfterNavigation(`${menuItem?.name || schemaType} layer updated successfully!`, "success");
 
       router.push(`/layers/${schemaType}`);
 
-    } catch (err) {
+    } catch (err: any) {
       console.error(`❌ Failed to update ${schemaType} layer:`, err);
-      alert(`Failed to update ${schemaType} layer. Please try again.`);
+      
+      // Check if this is a validation error from the backend
+      if (err.response?.status === 400 && err.response?.data?.validationErrors) {
+        const validationErrors = err.response.data.validationErrors;
+        const errorMessages = validationErrors
+          .map((e: any) => `${e.field}: ${e.message}`)
+          .join('\n');
+        showToast(`Validation failed:\n${errorMessages}`, "error");
+      } else {
+        showToast(`Failed to update ${schemaType} layer. Please try again.`, "error");
+      }
     } finally {
       setSubmitting(false);
     }

@@ -11,7 +11,7 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import JSONEditor from "@/components/Editors/JSONEditor";
 import KeyValuePairEditor from "@/components/Editors/KeyValuePairEditor";
 import StylePicker from "@/components/AutoComplete/StylePicker";

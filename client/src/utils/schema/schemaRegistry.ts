@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import { loadSchema } from "./schemaLoader";
 import { jsonSchemaToZod } from "./jsonSchemaToZod";
 

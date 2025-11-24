@@ -1,4 +1,4 @@
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import { FieldType } from "./fieldRegistry";
 
 export interface FieldProps {

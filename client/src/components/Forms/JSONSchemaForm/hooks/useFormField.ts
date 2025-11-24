@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ExtendedJSONSchema } from "@/types/jsonSchema";
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 
 interface UseFormFieldProps {
   schema: ExtendedJSONSchema;

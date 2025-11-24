@@ -81,11 +81,7 @@ function convertStringSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   if (property.enum && Array.isArray(property.enum)) {
     const enumValues = property.enum as string[];
     if (enumValues.length > 0) {
-      return z.enum(enumValues as [string, ...string[]], {
-        errorMap: () => ({
-          message: `Must be one of: ${enumValues.join(", ")}`,
-        }),
-      });
+      return z.enum(enumValues as [string, ...string[]]);
     }
   }
 
@@ -99,7 +95,7 @@ function convertStringSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
 function convertNumberSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   // Start with base number schema
   let numberSchema = z.number({
-    invalid_type_error: "Must be a number",
+    message: "Must be a number",
   });
 
   // Apply min/max constraints
@@ -120,7 +116,6 @@ function convertNumberSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   }
 
   // Wrap with union that handles string-to-number conversion
-  // but rejects empty strings (z.coerce.number converts "" to 0)
   const schema = z.union([
     numberSchema,
     z
@@ -145,7 +140,7 @@ function convertNumberSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
         }
         return num;
       })
-      .pipe(numberSchema), // Apply same min/max constraints to converted strings
+      .pipe(numberSchema),
   ]);
 
   return schema;
@@ -210,9 +205,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
   // Handle additionalProperties
   if (property.additionalProperties === false) {
     // Strict mode - no additional properties allowed
-    schema = schema.strict({
-      message: "Unknown properties are not allowed",
-    });
+    schema = schema.strict();
   } else if (
     property.additionalProperties === true ||
     property.additionalProperties === undefined
@@ -230,7 +223,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
         if (!knownKeys.includes(key)) {
           const result = additionalSchema.safeParse(value);
           if (!result.success) {
-            result.error.errors.forEach((err) => {
+            result.error.issues.forEach((err: any) => {
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: [key, ...err.path],
@@ -268,7 +261,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
             const result = patternZodSchema.safeParse(value);
 
             if (!result.success) {
-              result.error.errors.forEach((err) => {
+              result.error.issues.forEach((err: any) => {
                 const pathStr =
                   err.path.length > 0 ? `.${err.path.join(".")}` : "";
                 ctx.addIssue({
@@ -310,7 +303,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
 export function formatZodError(error: z.ZodError): Record<string, string> {
   const errorMap: Record<string, string> = {};
 
-  error.errors.forEach((err) => {
+  error.issues.forEach((err: any) => {
     const path = err.path.join(".");
     errorMap[path] = err.message;
   });
@@ -318,13 +311,3 @@ export function formatZodError(error: z.ZodError): Record<string, string> {
   return errorMap;
 }
 
-// Helper to format nested object validation errors for display
-export function formatNestedErrors(errors: z.ZodError): string {
-  const messages: string[] = [];
-
-  errors.errors.forEach((err) => {
-    messages.push(err.message);
-  });
-
-  return messages.join("; ");
-}
