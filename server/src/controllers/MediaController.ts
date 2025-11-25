@@ -26,6 +26,16 @@ class MediaController {
       this.handleError(res, error);
     }
   }
+
+  async getByIdOrFilename(req: Request, res: Response) {
+    try {
+      const item = await this.service.getFileByIdOrFilename(req.params.id);
+      res.status(200).json(item);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async upload(req: Request, res: Response) {
     const multerReq = req as MulterRequest;
     if (multerReq.files && Array.isArray(multerReq.files)) {
@@ -37,7 +47,7 @@ class MediaController {
       res.status(200).json(createdFiles);
     } else {
       res.status(400).json({
-        message: "Inga filer uppladdade eller filtypen är inte tillåten",
+        message: "No files were uploaded",
       });
     }
   }
@@ -48,7 +58,7 @@ class MediaController {
       let file = await this.service.deleteFile(id);
       res
         .status(200)
-        .json({ message: "Ikonen har tagits bort framgångsrikt", file: file });
+        .json({ message: "Media file and registration successfully removed", file: file });
     } catch (error) {
       this.handleError(res, error);
     }
@@ -57,7 +67,7 @@ class MediaController {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
     } else {
-      res.status(500).json({ error: "Ett oväntat fel inträffade" });
+      res.status(500).json({ error: "Unexpected error" });
     }
   }
 }

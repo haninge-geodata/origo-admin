@@ -28,7 +28,17 @@ class AzureUploadService implements IUploadService {
       return files.map((file) => mapDBMediaToMediaDto(file, this.uploadPath));
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ${error}`);
-      throw new Error("Det gick inte att hämta filerna");
+      throw new Error("Unable to get media registrations");
+    }
+  }
+
+  async getFileByIdOrFilename(id: string): Promise<MediaDto> {
+    try {
+      const file = (await this.repository.query({ $or: [ { _id: id }, { filename: id } ] }, null, 1))[0];
+      return mapDBMediaToMediaDto(file, this.uploadPath);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] ${error}`);
+      throw new Error("Unable to get the media registration");
     }
   }
 
