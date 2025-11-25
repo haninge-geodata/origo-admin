@@ -118,9 +118,17 @@ function createDistinctSources(layers: any[], sources: LinkResourceDto[]): any {
   const sourceMap = new Map<string, any>();
 
   layers.forEach((layer) => {
-    const { name, url } = layer.source;
-    if (!sourceMap.has(name)) {
-      sourceMap.set(name, { url });
+    if (!layer.source) return;
+    
+    if (typeof layer.source === 'string') {
+      return;
+    }
+    
+    if (typeof layer.source === 'object' && layer.source.name) {
+      const { name, url } = layer.source;
+      if (!sourceMap.has(name)) {
+        sourceMap.set(name, { url });
+      }
     }
   });
 
@@ -211,11 +219,30 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
       layer_id,
       ...restOfLayer
     } = layer;
-    const transformedLayer = {
+    const transformedLayer: any = {
       ...restOfLayer,
-      source: source.name || layer.source,
-      style: style.name || layer.style,
     };
+
+    if (source) {
+      if (typeof source === 'object' && source.name) {
+        transformedLayer.source = source.name;
+      } else {
+        transformedLayer.source = source;
+      }
+    } else if (layer.source) {
+      transformedLayer.source = layer.source;
+    }
+
+    if (style) {
+      if (typeof style === 'object' && style.name) {
+        transformedLayer.style = style.name;
+      } else {
+        transformedLayer.style = style;
+      }
+    } else if (layer.style) {
+      transformedLayer.style = layer.style;
+    }
+
     if (clusterStyle) {
       transformedLayer.clusterStyle = clusterStyle.name;
     }
