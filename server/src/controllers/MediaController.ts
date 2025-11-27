@@ -48,8 +48,8 @@ class MediaController {
         res.status(200).json(createdFiles);
       } catch (error) {
         res.status(400).json({
-        message: "No files were uploaded",
-      });
+          message: "No files were uploaded",
+        });
       }
     } else {
       res.status(400).json({
