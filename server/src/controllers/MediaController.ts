@@ -38,13 +38,19 @@ class MediaController {
 
   async upload(req: Request, res: Response) {
     const multerReq = req as MulterRequest;
-    if (multerReq.files && Array.isArray(multerReq.files)) {
+    if (multerReq?.files?.length > 0) {
       let createdFiles = [] as MediaDto[];
-      for (const file of multerReq.files) {
-        let createdFile = await this.service.saveFiles([file]);
-        createdFiles.push(createdFile[0]);
+      try {
+        for (const file of multerReq.files) {
+          let createdFile = await this.service.saveFiles([file]);
+          createdFiles.push(createdFile[0]);
+        }
+        res.status(200).json(createdFiles);
+      } catch (error) {
+        res.status(400).json({
+        message: "No files were uploaded",
+      });
       }
-      res.status(200).json(createdFiles);
     } else {
       res.status(400).json({
         message: "No files were uploaded",
