@@ -45,7 +45,7 @@ class MediaController {
           let createdFile = await this.service.saveFiles([file]);
           createdFiles.push(createdFile[0]);
         }
-        res.status(200).json(createdFiles);
+        res.status(201).json(createdFiles);
       } catch (error) {
         res.status(400).json({
           message: "No files were uploaded",
