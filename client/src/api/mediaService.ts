@@ -13,11 +13,26 @@ class MediaService extends BaseApiService<MediaDto> {
     });
 
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}`, formData);
+      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}/upload`, formData);
       return response;
     });
   }
+
+  async deleteFile(id: string): Promise<MediaDto> {
+    return super.delete(id, "upload");
+  }
+
+  async createFolder(folderName: string): Promise<MediaDto> {
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).post<MediaDto>(`${this.resourcePath}/folder/${folderName}`);
+      return response;
+    });
+  }
+
+  async deleteFolder(id: string): Promise<MediaDto> {
+    return super.delete(id, "folder");
+  }
 }
 
-const mediaService = new MediaService("media/upload");
+const mediaService = new MediaService("media");
 export { mediaService as MediaService };

@@ -86,9 +86,9 @@ export class BaseApiService<T> {
     });
   }
 
-  async delete(id: string, subPath?: string): Promise<void> {
+  async delete(id: string, subPath?: string): Promise<T> {
     return this.executeWithEvents(async () => {
-      await this._restClient.delete<void>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}`);
+      await this._restClient.delete<T>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}`);
     });
   }
 }

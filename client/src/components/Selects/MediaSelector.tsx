@@ -1,13 +1,17 @@
 import { MediaDto } from "@/shared/interfaces/dtos";
 import { Box, Button, Grid, InputAdornment, TextField, Typography, styled } from "@mui/material";
 import { useEffect, useState } from "react";
-import SearchIcon from '@mui/icons-material/Search';
-import CloudUpload from '@mui/icons-material/CloudUpload';
+import { Folder as FolderIcon,
+    CloudUpload as CloudUploadIcon,
+    CreateNewFolder as CreateNewFolderIcon,
+    Search as SearchIcon
+} from '@mui/icons-material';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { MediaService as service } from '@/api';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useApp } from "@/contexts/AppContext";
 import AlertDialog from "../Dialogs/AlertDialog";
+import FormDialog from "@/components/Dialogs/FormDialog";
 
 interface MediaSelectorProps {
     showSelectedMediaInfo?: boolean;
@@ -25,6 +29,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const [filterText, setFilterText] = useState('');
     const [filteredData, setFilteredData] = useState<MediaDto[]>([]);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
+    const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
     const queryClient = useQueryClient();
     const { showToast } = useApp();
     const VisuallyHiddenInput = styled('input')({
@@ -61,11 +66,35 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFilterText(event.target.value);
     };
+
     function extractFilename(url: string): string {
         const regex = /[^\/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/;
         const match = url.match(regex);
         return match ? match[0] : '';
     }
+
+    const toggleCreateFolderDialog = async () => {
+        if (isFolderDialogOpen) {
+            setIsFolderDialogOpen(false);
+        } else {
+            setIsFolderDialogOpen(true);
+        }
+    };
+
+    const handleSubmitFolder = async (formData: FormData) => {
+        const folderName = formData.get('name');
+        console.log(`[${new Date().toISOString()}] Creating folder: ${folderName}`);
+        try {
+            await service.createFolder(folderName!.toString());
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            showToast('Mappen har skapats', 'success');
+            toggleCreateFolderDialog();
+        } catch (error) {
+            showToast('Kunde inte skapa mapp.', 'error');
+            console.error(`[${new Date().toISOString()}] Error creating folder: ${error}`);
+        }
+    }
+
     const handleUpload = async (event: any) => {
         const files = event.target.files;
         if (files.length > 0) {
@@ -88,10 +117,15 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const confirmDelete = async () => {
         if (selectedMedia) {
             try {
-                await service.delete(selectedMedia.id!);
+                if(selectedMedia.fieldname === 'folders') {
+                    await service.deleteFolder(selectedMedia.id!);
+                    showToast('Mappen har raderats', 'success');
+                } else {
+                    await service.deleteFile(selectedMedia.id!);
+                    showToast('Ikonen har raderats', 'success');
+                }
                 queryClient.invalidateQueries({ queryKey: [queryKey] });
                 setselectedMedia(null as unknown as MediaDto);
-                showToast('Ikonen har raderats', 'success');
                 setAlertDialogOpen(false);
             } catch (error) {
                 showToast('Kunde inte radera ikonen.', 'error');
@@ -152,7 +186,25 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                         role={undefined}
                         variant="contained"
                         tabIndex={-1}
-                        startIcon={<CloudUpload />}
+                        startIcon={<CreateNewFolderIcon />}
+                        onClick={toggleCreateFolderDialog}
+                    />
+                    <Button
+                        sx={{
+                            height: '40px',
+                            bgcolor: 'transparent',
+                            color: '#1677ff',
+                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                            '&:hover': {
+                                bgcolor: 'transparent',
+                                color: '#1677ff',
+                            }
+                        }}
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
                     >
                         <VisuallyHiddenInput multiple type="file" onChange={handleUpload} />
                     </Button>
@@ -178,19 +230,35 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             <Grid item xs={12} md={12} lg={12} sx={{ display: 'flex', maxHeight: `${maxHeight}px`, minHeight: `${minHeight}px` }}>
                 <Grid container rowSpacing={4.5} columnSpacing={0} sx={{ mt: '1px', overflowY: 'auto' }}>
                     {filteredData.map((item, index) => (
-                        <Grid key={index} item xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
-                            <img style={{
-                                width: '48px',
-                                height: '48px',
-                                borderRadius: '50%',
-                                objectFit: 'cover',
-                                cursor: 'pointer',
-                                border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
-                                boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
-                            }}
-                                src={`${item.path}?w=48px&h=48px&fit=crop&auto=format`}
-                                onClick={() => handleMediaClick(item)}
-                            />
+                        <Grid item key={index} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
+                            {
+                                // Display images using <img> elements, otherwise use appropriate mui icons
+                                item.mimetype.startsWith('image/') ?
+                                    <img style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            borderRadius: '50%',
+                                            objectFit: 'cover',
+                                            cursor: 'pointer',
+                                            border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
+                                            boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                        }}
+                                        src={`${item.path}?w=48px&h=48px&fit=crop&auto=format`}
+                                        onClick={() => handleMediaClick(item)}
+                                    /> :
+                                item.fieldname === 'folders' ?
+                                    <FolderIcon onClick={() => handleMediaClick(item)}
+                                        style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            borderRadius: '50%',
+                                            cursor: 'pointer',
+                                            color: 'rgba(0, 0, 0, 0.54)',
+                                            border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
+                                            boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                        }}
+                                    /> : null
+                            }
                             <Typography variant="body2" sx={{ mt: 1 }}>
                                 {formatName(item.name, 20)}
                             </Typography>
@@ -210,13 +278,29 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                         </Box>
                                     </Box>
                                     <Box component="div">
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.mimetype}</Typography>
+                                        <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.fieldname === 'folders' ? 'mapp' : selectedMedia.mimetype}</Typography>
                                     </Box>
                                 </>
                             ) : <Typography sx={{ p: 2 }}>Välj en ikon för att visa information.</Typography>}
                         </Box>
                     </Grid>
                 )}
+                <FormDialog open={isFolderDialogOpen} onClose={toggleCreateFolderDialog} title="Skapa ny mapp"
+                    contentText="Fyll i ett unikt namn för mappen och tryck Skapa mapp. Undvik gärna specialtecken och blanksteg i mappnamnet eftersom det ingår i sökvägen till uppladdade filer."
+                    onSubmit={handleSubmitFolder}
+                    fieldToValidate="name"
+                    textField={<TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="name"
+                        name="name"
+                        label="Namn på mappen"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                    />}
+                />
                 <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av ikonen!"
                     onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
                 </AlertDialog>
