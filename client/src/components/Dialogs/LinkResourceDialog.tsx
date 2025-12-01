@@ -67,6 +67,13 @@ export default function LinkResourceDialog({ open, onClose, onSubmit, linkResour
         <Dialog
             open={open}
             onClose={onClose}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' && !disableSubmit) {
+                    handleOnSubmit();
+                } else if (e.key === 'Escape') {
+                    handleOnClose();
+                }
+            }}
             PaperProps={{
                 component: 'form',
                 onSubmit: onSubmit,
