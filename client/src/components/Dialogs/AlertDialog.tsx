@@ -20,6 +20,13 @@ export default function AlertDialog({ open, title, contentText, onClose, onConfi
     <Dialog
       open={open}
       onClose={onClose}
+      onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+              onConfirm?.();
+          } else if (e.key === 'Escape') {
+              onClose();
+          }
+      }}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >

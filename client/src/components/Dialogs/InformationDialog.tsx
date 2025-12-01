@@ -19,6 +19,7 @@ export default function InformationDialog({ open, title, contentText, onClose }:
     <Dialog
       open={open}
       onClose={onClose}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === 'Escape') && onClose()}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
