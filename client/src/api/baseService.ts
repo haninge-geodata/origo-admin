@@ -51,44 +51,44 @@ export class BaseApiService<T> {
     }
     return this._baseUrl;
   }
-  async fetch(id: string): Promise<T> {
+  async fetch(id: string, subPath?: string): Promise<T> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).get<T>(`${this.resourcePath}/${id}`);
+      const response = (await this.getRestClient()).get<T>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}`);
       return response;
     });
   }
 
-  async fetchAll(): Promise<T[]> {
+  async fetchAll(subPath?: string): Promise<T[]> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).get<T[]>(`${this.resourcePath}`);
+      const response = (await this.getRestClient()).get<T[]>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}`);
       return response;
     });
   }
 
-  async add(resource: T): Promise<T> {
+  async add(resource: T, subPath?: string): Promise<T> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<T>(`${this.resourcePath}`, resource);
+      const response = (await this.getRestClient()).post<T>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}`, resource);
       return response;
     });
   }
 
-  async addRange(resource: T[]): Promise<T[]> {
+  async addRange(resource: T[], subPath?: string): Promise<T[]> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<T[]>(`${this.resourcePath}`, resource);
+      const response = (await this.getRestClient()).post<T[]>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}`, resource);
       return response;
     });
   }
 
-  async update(id: string, resource: T): Promise<T> {
+  async update(id: string, resource: T, subPath?: string): Promise<T> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).put<T>(`${this.resourcePath}/${id}`, resource);
+      const response = (await this.getRestClient()).put<T>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}`, resource);
       return response;
     });
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, subPath?: string): Promise<void> {
     return this.executeWithEvents(async () => {
-      await this._restClient.delete<void>(`${this.resourcePath}/${id}`);
+      await this._restClient.delete<void>(`${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}`);
     });
   }
 }
