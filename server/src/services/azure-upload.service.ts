@@ -99,6 +99,26 @@ class AzureUploadService implements IUploadService {
     }
   }
 
+  async getAllFolders(): Promise<MediaDto[]> {
+    console.log("Not implemented: getAllFolders in AzureUploadService");
+    return null as unknown as MediaDto[];
+  }
+
+  async getFolderByIdOrFolderName(): Promise<MediaDto> {
+    console.log("Not implemented: getFolderByIdOrFolderName in AzureUploadService");
+    return null as unknown as MediaDto;
+  }
+
+  async createFolder(folderName: string): Promise<MediaDto> {
+    console.log("Not implemented: createFolder in AzureUploadService");
+    return folderName as unknown as MediaDto;
+  }
+
+  async deleteFolder(folderName: string): Promise<MediaDto> {
+    console.log("Not implemented: deleteFolder in AzureUploadService");
+    return folderName as unknown as MediaDto;
+  }
+
   getMulterConfig = () => {
     return {
       storage: storage,

@@ -26,4 +26,15 @@ function mapMulterFileToDBMedia(file: Express.Multer.File): DBMedia {
   };
 }
 
-export { mapMulterFileToDBMedia, mapDBMediaToMediaDto };
+function mapFolderToDBMedia(folderName: string): DBMedia {
+  return {
+    _id: new mongoose.Types.ObjectId(),
+    name: folderName,
+    filename: folderName,
+    mimetype: "folder",
+    fieldname: "folders",
+    size: 0,
+  };
+}
+
+export { mapDBMediaToMediaDto, mapMulterFileToDBMedia, mapFolderToDBMedia };

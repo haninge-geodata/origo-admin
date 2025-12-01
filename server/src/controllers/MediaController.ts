@@ -18,7 +18,7 @@ class MediaController {
         : new LocalUploadService();
   }
 
-  async getAll(req: Request, res: Response) {
+  async getAllFiles(req: Request, res: Response) {
     try {
       const items = await this.service.getAllFiles();
       res.status(200).json(items);
@@ -27,7 +27,7 @@ class MediaController {
     }
   }
 
-  async getByIdOrFilename(req: Request, res: Response) {
+  async getFileByIdOrFilename(req: Request, res: Response) {
     try {
       const item = await this.service.getFileByIdOrFilename(req.params.id);
       res.status(200).json(item);
@@ -64,6 +64,46 @@ class MediaController {
       let file = await this.service.deleteFile(id);
       console.log(`[${new Date().toISOString()}] Media file and registration with id '${id}' deleted successfully`);
       res.status(200).json(file);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async getAllFolders(req: Request, res: Response) {
+    try {
+      const items = await this.service.getAllFolders();
+      res.status(200).json(items);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async getFolderByIdOrFolderName(req: Request, res: Response) {
+    try {
+      const item = await this.service.getFolderByIdOrFolderName(req.params.id);
+      res.status(200).json(item);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async createFolder(req: Request, res: Response) {
+    const folderName = req.params.name;
+    console.log(`[${new Date().toISOString()}] Creating folder: ${folderName}`);
+    try {
+      const folderRegistration = await this.service.createFolder(folderName);
+      res.status(201).json(folderRegistration);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async deleteFolderById(req: Request, res: Response) {
+    const folderId = req.params.id;
+    try {
+      const folderRegistration = await this.service.deleteFolder(folderId);
+      console.log(`[${new Date().toISOString()}] Folder with id '${folderId}' deleted successfully`);
+      res.status(200).json(folderRegistration);
     } catch (error) {
       this.handleError(res, error);
     }

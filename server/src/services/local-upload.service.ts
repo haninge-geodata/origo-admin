@@ -3,7 +3,7 @@ import fsPromises from "fs/promises";
 import fs from "fs";
 import path from "path";
 import { Request } from "express";
-import { mapMulterFileToDBMedia, mapDBMediaToMediaDto } from "@/mappers/";
+import { mapMulterFileToDBMedia, mapFolderToDBMedia, mapDBMediaToMediaDto } from "@/mappers/";
 import { Repository } from "@/repositories/Repository";
 import { DBMedia, MediaModel } from "@/models";
 import { MediaDto } from "@/shared/interfaces/dtos";
@@ -21,21 +21,27 @@ class LocalUploadService implements IUploadService {
 
   async getAllFiles(): Promise<MediaDto[]> {
     try {
-      const files = await this.repository.findAll();
+      const files = await this.repository.findByCriteria({ fieldname: 'files' });
       return files.map((file) => mapDBMediaToMediaDto(file, this.uploadUrl));
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ${error}`);
-      throw new Error("Unable to get media registrations");
+      throw new Error("Unable to get media file registrations");
     }
   }
 
   async getFileByIdOrFilename(id: string): Promise<MediaDto> {
     try {
-      const file = (await this.repository.query({ $or: [ { _id: id }, { filename: id } ] }, null, 1))[0];
+      let file;
+      if (id.match(/^[0-9a-f]{24}$/i)) {
+        // id is a valid ObjectId
+        file = (await this.repository.query({ _id: id, fieldname: "files"  }, null, 1))[0];
+      } else {
+        file = (await this.repository.query({ filename: id, fieldname: "files"  }, null, 1))[0];
+      }
       return mapDBMediaToMediaDto(file, this.uploadUrl);
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ${error}`);
-      throw new Error("Unable to get the media registration");
+      throw new Error("Unable to get the media file registration");
     }
   }
 
@@ -63,6 +69,62 @@ class LocalUploadService implements IUploadService {
       return mapDBMediaToMediaDto(file, this.uploadUrl);
     } catch (err) {
         throw new Error("Unable to delete file");
+    }
+  }
+
+  async getAllFolders(): Promise<MediaDto[]> {
+    try {
+      const files = await this.repository.findByCriteria({ fieldname: 'folders' });
+      return files.map((file) => mapDBMediaToMediaDto(file, this.uploadUrl));
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] ${error}`);
+      throw new Error("Unable to get media folder registrations");
+    }
+  }
+
+  async getFolderByIdOrFolderName(id: string): Promise<MediaDto> {
+    try {
+      let folder;
+      if (id.match(/^[0-9a-f]{24}$/i)) {
+        // id is a valid ObjectId
+        folder = (await this.repository.query({ _id: id, fieldname: "folders" }, null, 1))[0];
+      } else {
+        folder = (await this.repository.query({ filename: id, fieldname: "folders" }, null, 1))[0];
+      }
+      return mapDBMediaToMediaDto(folder, this.uploadUrl);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] ${error}`);
+      throw new Error("Unable to get the media folder registration");
+    }
+  }
+
+  async createFolder(folderName: string): Promise<MediaDto> {
+    const folderPath = path.resolve(UPLOAD_FOLDER, folderName);
+
+    if (!fs.existsSync(folderPath)) {
+      await fsPromises.mkdir(folderPath, { recursive: false });
+      try {
+        const createdFolder = await this.repository.create(mapFolderToDBMedia(folderName));
+        return mapDBMediaToMediaDto(createdFolder, this.uploadUrl);
+      } catch (error) {
+        console.error(`[${new Date().toISOString()}] ${error}`);
+        throw new Error("Unable to create folder registration");
+      }
+    } else {
+      throw new Error("Folder already exists");
+    }
+  }
+
+  async deleteFolder(id: string): Promise<MediaDto> {
+    try {
+      const folder = (await this.repository.query({ _id: id, fieldname: "folders" }, null, 1))[0];
+      const folderPath = path.resolve(UPLOAD_FOLDER, folder.filename);
+      await this.repository.delete(folder._id.toString());
+      await fsPromises.rmdir(folderPath);
+      console.warn(`Folder deleted: ${folderPath}`);
+      return mapDBMediaToMediaDto(folder, this.uploadUrl);
+    } catch (err) {
+        throw new Error("Unable to delete folder");
     }
   }
 

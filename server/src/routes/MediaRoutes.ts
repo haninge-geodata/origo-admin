@@ -11,15 +11,15 @@ const router = createSecureRouter(route);
  * @description Get all media file registrations
  * @returns {MediaDto[]}
  */
-router.get(`/${route}/upload`, (req, res) => controller.getAll(req, res));
+router.get(`/${route}/upload`, (req, res) => controller.getAllFiles(req, res));
 
 /**
  * @route GET /${route}/upload/:id
  * @description Get a specific media file registration by id or filename
- * @param {string} id - The media file ID
+ * @param {string} id - The media file ID or filename
  * @returns {MediaDto}
  */
-router.get(`/${route}/upload/:id`, (req, res) => controller.getByIdOrFilename(req, res));
+router.get(`/${route}/upload/:id`, (req, res) => controller.getFileByIdOrFilename(req, res));
 
 /**
  * @route POST /${route}/upload/
@@ -38,6 +38,37 @@ router.post(`/${route}/upload/`, upload.any(), (req, res) => {
  * @returns {MediaDto}
  */
 router.delete(`/${route}/upload/:id`, (req, res) => controller.deleteById(req, res));
+
+/**
+ * @route GET /${route}/folder/
+ * @description Get all media folder registrations
+ * @returns {MediaDto[]}
+ */
+router.get(`/${route}/folder`, (req, res) => controller.getAllFolders(req, res));
+
+/**
+ * @route GET /${route}/folder/:id
+ * @description Get a specific media folder registration by id or folder name
+ * @param {string} id - The media folder ID or folder name
+ * @returns {MediaDto}
+ */
+router.get(`/${route}/folder/:id`, (req, res) => controller.getFolderByIdOrFolderName(req, res));
+
+/**
+ * @route POST /${route}/folder/:name
+ * @description Create a new media folder
+ * @param {string} name - The media folder name. The POST body will be ignored
+ * @returns {MediaDto}
+ */
+router.post(`/${route}/folder/:name`, (req, res) => controller.createFolder(req, res));
+
+/**
+ * @route DELETE /${route}/folder/:id
+ * @description Delete a media folder (must be empty)
+ * @param {string} id - The media folder id
+ * @returns {MediaDto}
+ */
+router.delete(`/${route}/folder/:id`, (req, res) => controller.deleteFolderById(req, res));
 
 RouteRegistry.registerRoutes(router, route);
 export default router;
