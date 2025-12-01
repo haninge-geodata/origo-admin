@@ -59,6 +59,22 @@ class LocalUploadService implements IUploadService {
     return created.map((item) => mapDBMediaToMediaDto(item, this.uploadUrl));
   }
 
+  async renameFile(currentFilename: string, newFilename: string): Promise<MediaDto> {
+    try {
+      const file = (await this.repository.findByCriteria({ filename: currentFilename }))[0];
+      const currentFilePath = path.resolve(UPLOAD_FOLDER, file.filename);
+      const newFilePath = path.resolve(UPLOAD_FOLDER, newFilename);
+      file.filename = newFilename;
+      file.name = newFilename;
+      const renamedFile = await this.repository.update(file._id.toString(), file);
+      await fsPromises.rename(currentFilePath, newFilePath);
+      console.warn(`File '${currentFilePath}' renamed to '${newFilePath}'`);
+      return mapDBMediaToMediaDto(renamedFile, this.uploadUrl);
+    } catch (err) {
+        throw new Error("Unable to rename file");
+    }
+  }
+
   async deleteFile(id: string): Promise<MediaDto> {
     const file = (await this.repository.query({ _id: id, fieldname: "files" }, null, 1))[0];
     const filename = file.filename;
@@ -112,6 +128,22 @@ class LocalUploadService implements IUploadService {
       }
     } else {
       throw new Error("Folder already exists");
+    }
+  }
+
+  async renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto> {
+    try {
+      const folder = (await this.repository.findByCriteria({ filename: currentFolderName }))[0];
+      const currentFolderPath = path.resolve(UPLOAD_FOLDER, folder.filename);
+      const newFolderPath = path.resolve(UPLOAD_FOLDER, newFolderName);
+      folder.filename = newFolderName;
+      folder.name = newFolderName;
+      const renamedFolder = await this.repository.update(folder._id.toString(), folder);
+      await fsPromises.rename(currentFolderPath, newFolderPath);
+      console.warn(`Folder '${currentFolderPath}' renamed to '${newFolderPath}'`);
+      return mapDBMediaToMediaDto(renamedFolder, this.uploadUrl);
+    } catch (err) {
+        throw new Error("Unable to rename folder");
     }
   }
 

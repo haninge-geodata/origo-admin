@@ -88,6 +88,11 @@ class AzureUploadService implements IUploadService {
     );
   }
 
+  async renameFile(currentFilename: string, newFilename: string): Promise<MediaDto> {
+    console.log("Not implemented: renameFile in AzureUploadService");
+    return newFilename as unknown as MediaDto;
+  }
+
   async deleteFile(id: string): Promise<MediaDto> {
     const file = await this.repository.find(id);
     try {
@@ -112,6 +117,11 @@ class AzureUploadService implements IUploadService {
   async createFolder(folderName: string): Promise<MediaDto> {
     console.log("Not implemented: createFolder in AzureUploadService");
     return folderName as unknown as MediaDto;
+  }
+
+  async renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto> {
+    console.log("Not implemented: renameFolder in AzureUploadService");
+    return newFolderName as unknown as MediaDto;
   }
 
   async deleteFolder(folderName: string): Promise<MediaDto> {

@@ -58,6 +58,18 @@ class MediaController {
     }
   }
 
+  async renameFile(req: Request, res: Response) {
+    const currentFilename = req.params.currentName;
+    const newFilename = req.params.newName;
+    console.log(`[${new Date().toISOString()}] Renaming file '${currentFilename}' to '${newFilename}'`);
+    try {
+      const fileRegistration = await this.service.renameFile(currentFilename, newFilename);
+      res.status(200).json(fileRegistration);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
   async deleteById(req: Request, res: Response) {
     const { id } = req.params;
     try {
@@ -93,6 +105,18 @@ class MediaController {
     try {
       const folderRegistration = await this.service.createFolder(folderName);
       res.status(201).json(folderRegistration);
+    } catch (error) {
+      this.handleError(res, error);
+    }
+  }
+
+  async renameFolder(req: Request, res: Response) {
+    const currentFolderName = req.params.currentName;
+    const newFolderName = req.params.newName;
+    console.log(`[${new Date().toISOString()}] Renaming folder '${currentFolderName}' to '${newFolderName}'`);
+    try {
+      const folderRegistration = await this.service.renameFolder(currentFolderName, newFolderName);
+      res.status(200).json(folderRegistration);
     } catch (error) {
       this.handleError(res, error);
     }

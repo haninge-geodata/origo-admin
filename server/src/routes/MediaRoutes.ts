@@ -32,6 +32,15 @@ router.post(`/${route}/upload/`, upload.any(), (req, res) => {
 });
 
 /**
+ * @route PUT /${route}/upload/:currentName/:newName
+ * @description Rename a media file
+ * @param {string} currentName - The media file's current name
+ * @param {string} newName - What to rename the media file to
+ * @returns {MediaDto}
+ */
+router.put(`/${route}/upload/:currentName/:newName`, (req, res) => controller.renameFile(req, res));
+
+/**
  * @route DELETE /${route}/upload/:id
  * @description Delete a specific media file and its registration
  * @param {string} id - The media file ID
@@ -61,6 +70,15 @@ router.get(`/${route}/folder/:id`, (req, res) => controller.getFolderByIdOrFolde
  * @returns {MediaDto}
  */
 router.post(`/${route}/folder/:name`, (req, res) => controller.createFolder(req, res));
+
+/**
+ * @route PUT /${route}/folder/:currentName/:newName
+ * @description Rename a media folder
+ * @param {string} currentName - The media folder's current name
+ * @param {string} newName - What to rename the media folder to
+ * @returns {MediaDto}
+ */
+router.put(`/${route}/folder/:currentName/:newName`, (req, res) => controller.renameFolder(req, res));
 
 /**
  * @route DELETE /${route}/folder/:id
