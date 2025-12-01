@@ -62,13 +62,13 @@ class MediaController {
     const { id } = req.params;
     try {
       let file = await this.service.deleteFile(id);
-      res
-        .status(200)
-        .json({ message: "Media file and registration successfully removed", file: file });
+      console.log(`[${new Date().toISOString()}] Media file and registration with id '${id}' deleted successfully`);
+      res.status(200).json(file);
     } catch (error) {
       this.handleError(res, error);
     }
   }
+
   private handleError(res: Response, error: any) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });

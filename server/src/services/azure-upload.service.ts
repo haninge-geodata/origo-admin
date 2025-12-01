@@ -88,10 +88,15 @@ class AzureUploadService implements IUploadService {
     );
   }
 
-  async deleteFile(id: string): Promise<void> {
+  async deleteFile(id: string): Promise<MediaDto> {
     const file = await this.repository.find(id);
-    await this.deleteFileFromAzure(file.filename);
-    await this.repository.delete(id);
+    try {
+      const deletedFile = await this.repository.delete(id);
+      await this.deleteFileFromAzure(file.filename);
+      return mapDBMediaToMediaDto(deletedFile, this.uploadPath)
+    } catch (err) {
+        throw new Error("Unable to delete file");
+    }
   }
 
   getMulterConfig = () => {

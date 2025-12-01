@@ -53,12 +53,17 @@ class LocalUploadService implements IUploadService {
     return created.map((item) => mapDBMediaToMediaDto(item, this.uploadUrl));
   }
 
-  async deleteFile(id: string): Promise<void> {
-    const file = await this.repository.find(id);
+  async deleteFile(id: string): Promise<MediaDto> {
+    const file = (await this.repository.query({ _id: id, fieldname: "files" }, null, 1))[0];
     const filename = file.filename;
     const filePath = path.resolve(UPLOAD_FOLDER, filename);
-    await fsPromises.unlink(filePath);
-    await this.repository.delete(id);
+    try {
+      await this.repository.delete(id);
+      await fsPromises.unlink(filePath);
+      return mapDBMediaToMediaDto(file, this.uploadUrl);
+    } catch (err) {
+        throw new Error("Unable to delete file");
+    }
   }
 
   getMulterConfig = () => {
