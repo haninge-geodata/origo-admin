@@ -6,6 +6,18 @@ class MediaService extends BaseApiService<MediaDto> {
     super(baseUrl);
   }
 
+  sortMediaByName = (arrayToSort: MediaDto[]) => {
+    return arrayToSort.sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
+  };
+
+  async fetchAll(): Promise<MediaDto[]> {
+    const sortedFolders = this.sortMediaByName(await super.fetchAll("folder"));
+    const sortedFiles = this.sortMediaByName(await super.fetchAll("upload"));
+    return sortedFolders.concat(sortedFiles);
+  }
+
   async upload(files: File[]): Promise<MediaDto[]> {
     const formData = new FormData();
     files.forEach((file, index) => {
