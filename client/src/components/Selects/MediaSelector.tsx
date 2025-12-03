@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { Folder as FolderIcon,
     CloudUpload as CloudUploadIcon,
     CreateNewFolder as CreateNewFolderIcon,
+    Delete as DeleteIcon,
+    Edit as EditIcon,
     Search as SearchIcon
 } from '@mui/icons-material';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { MediaService as service } from '@/api';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useApp } from "@/contexts/AppContext";
 import AlertDialog from "../Dialogs/AlertDialog";
 import FormDialog from "@/components/Dialogs/FormDialog";
@@ -29,7 +30,9 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const [filterText, setFilterText] = useState('');
     const [filteredData, setFilteredData] = useState<MediaDto[]>([]);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
-    const [isFolderDialogOpen, setIsFolderDialogOpen] = useState(false);
+    const [isFolderDialogOpen, setFolderDialogOpen] = useState(false);
+    const [isRenameDialogOpen, setRenameDialogOpen] = useState(false);
+    const [renameDialogValue, setRenameDialogValue] = useState('');
     const queryClient = useQueryClient();
     const { showToast } = useApp();
     const VisuallyHiddenInput = styled('input')({
@@ -75,9 +78,9 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
 
     const toggleCreateFolderDialog = async () => {
         if (isFolderDialogOpen) {
-            setIsFolderDialogOpen(false);
+            setFolderDialogOpen(false);
         } else {
-            setIsFolderDialogOpen(true);
+            setFolderDialogOpen(true);
         }
     };
 
@@ -109,6 +112,39 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             }
         }
     };
+
+    const toggleRenameDialog = async () => {
+        if (isRenameDialogOpen) {
+            setRenameDialogOpen(false);
+        } else {
+            setRenameDialogValue(selectedMedia?.filename || '');
+            setRenameDialogOpen(true);
+        }
+    };
+
+    const handleSubmitRename = async (formData: FormData) => {
+        const elementType = selectedMedia.mimetype.startsWith('image/') ? 'icon' :
+            selectedMedia.fieldname === 'folders' ? 'folder' : 'file';
+        const currentName = selectedMedia.name;
+        // FormDialog does not allow submitting empty values, so we can safely assert that newName is present
+        const newName = formData.get('name')?.toString()!;
+        console.log(`[${new Date().toISOString()}] Renaming ${elementType} ${currentName} to ${newName}.`);
+        try {
+            if (elementType === 'folder') {
+                setselectedMedia(await service.renameFolder(currentName, newName));
+                showToast('Mappens namn har ändrats', 'success');
+            } else {
+                setselectedMedia(await service.renameFile(currentName, newName));
+                showToast('Filens namn har ändrats', 'success');
+            }
+            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            
+            toggleRenameDialog();
+        } catch (error) {
+            showToast('Kunde inte ändra namnet.', 'error');
+            console.error(`[${new Date().toISOString()}] Error renaming ${elementType}: ${error}`);
+        }
+    }
 
     const handleDeleteMedia = async () => {
         setAlertDialogOpen(true);
@@ -208,6 +244,25 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                     >
                         <VisuallyHiddenInput multiple type="file" onChange={handleUpload} />
                     </Button>
+                    <Button
+                        sx={{
+                            height: '40px',
+                            bgcolor: 'transparent',
+                            color: '#1677ff',
+                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                            '&:hover': {
+                                bgcolor: 'transparent',
+                                color: '#1677ff',
+                            }
+                        }}
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<EditIcon />}
+                        disabled={!selectedMedia}
+                        onClick={toggleRenameDialog}
+                    />
                     <TextField
                         value={filterText}
                         onChange={handleFilterChange}
@@ -296,6 +351,27 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                         id="name"
                         name="name"
                         label="Namn på mappen"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                    />}
+                />
+                <FormDialog open={isRenameDialogOpen} onClose={toggleRenameDialog} title="Ändra namn"
+                    contentText="Fyll i ett nytt unikt namn och tryck Ändra. Undvik gärna specialtecken och blanksteg i mappnamn eftersom de ingår i sökvägen till uppladdade filer."
+                    submitButtonText="Ändra"
+                    onSubmit={handleSubmitRename}
+                    fieldToValidate="name"
+                    textField={<TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="name"
+                        name="name"
+                        label="Nytt namn"
+                        value={renameDialogValue}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            setRenameDialogValue(event.target.value);
+                        }}
                         type="text"
                         fullWidth
                         variant="standard"

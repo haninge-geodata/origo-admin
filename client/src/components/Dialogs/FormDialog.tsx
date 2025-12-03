@@ -4,6 +4,7 @@ import { useState } from "react";
 interface FormDialogProps {
     title: string;
     contentText: string;
+    submitButtonText?: string;
     open: boolean;
     fieldToValidate: string;
     errorMessage?: string | null;
@@ -12,7 +13,7 @@ interface FormDialogProps {
     textField: React.ReactNode;
 }
 
-export default function FormDialog({ open, onClose, onSubmit, title, fieldToValidate, contentText, textField, errorMessage }: FormDialogProps) {
+export default function FormDialog({ open, onClose, onSubmit, title, fieldToValidate, contentText, submitButtonText = 'Skapa', textField, errorMessage }: FormDialogProps) {
     const [localErrorMessage, setLocalErrorMessage] = useState<string | null>(null);
 
     const handleSubmit = (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLDivElement>) => {
@@ -59,7 +60,7 @@ export default function FormDialog({ open, onClose, onSubmit, title, fieldToVali
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Avbryt</Button>
-                <Button onClick={handleSubmit}>Skapa</Button>
+                <Button onClick={handleSubmit}>{submitButtonText}</Button>
             </DialogActions>
         </Dialog>
     );

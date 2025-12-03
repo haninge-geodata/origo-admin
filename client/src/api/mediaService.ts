@@ -30,6 +30,13 @@ class MediaService extends BaseApiService<MediaDto> {
     });
   }
 
+  async renameFile(currentName: string, newName: string): Promise<MediaDto> {
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/upload/${currentName}/${newName}`);
+      return response;
+    });
+  }
+
   async deleteFile(id: string): Promise<MediaDto> {
     return super.delete(id, "upload");
   }
@@ -37,6 +44,13 @@ class MediaService extends BaseApiService<MediaDto> {
   async createFolder(folderName: string): Promise<MediaDto> {
     return this.executeWithEvents(async () => {
       const response = (await this.getRestClient()).post<MediaDto>(`${this.resourcePath}/folder/${folderName}`);
+      return response;
+    });
+  }
+
+  async renameFolder(currentName: string, newName: string): Promise<MediaDto> {
+    return this.executeWithEvents(async () => {
+      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/folder/${currentName}/${newName}`);
       return response;
     });
   }
