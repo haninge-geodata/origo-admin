@@ -36,7 +36,7 @@ class LocalUploadService implements IUploadService {
         // id is a valid ObjectId
         file = (await this.repository.query({ _id: id, fieldname: "files"  }, null, 1))[0];
       } else {
-        file = (await this.repository.query({ filename: id, fieldname: "files"  }, null, 1))[0];
+        file = (await this.repository.findByCriteria({ filename: new RegExp(`^${id}$`, "i"), fieldname: "files"  }))[0];
       }
       return mapDBMediaToMediaDto(file, this.uploadUrl);
     } catch (error) {
@@ -45,8 +45,8 @@ class LocalUploadService implements IUploadService {
     }
   }
 
-  async saveFiles(files: Express.Multer.File[]): Promise<MediaDto[]> {
-    const filesToSave = files.map((file) => mapMulterFileToDBMedia(file));
+  async saveFiles(files: Express.Multer.File[], path: string): Promise<MediaDto[]> {
+    const filesToSave = files.map((file) => mapMulterFileToDBMedia(file, path));
     let created = [];
     for (const fileToSave of filesToSave) {
       try {
@@ -59,16 +59,16 @@ class LocalUploadService implements IUploadService {
     return created.map((item) => mapDBMediaToMediaDto(item, this.uploadUrl));
   }
 
-  async renameFile(currentFilename: string, newFilename: string): Promise<MediaDto> {
+  async renameFile(currentFilename: string, newFilename: string, move: boolean = true): Promise<MediaDto> {
     try {
       const file = (await this.repository.findByCriteria({ filename: currentFilename }))[0];
       const currentFilePath = path.resolve(UPLOAD_FOLDER, file.filename);
       const newFilePath = path.resolve(UPLOAD_FOLDER, newFilename);
+      file.name = newFilename.substring(newFilename.lastIndexOf('/') + 1);
       file.filename = newFilename;
-      file.name = newFilename;
       const renamedFile = await this.repository.update(file._id.toString(), file);
-      await fsPromises.rename(currentFilePath, newFilePath);
-      console.warn(`File '${currentFilePath}' renamed to '${newFilePath}'`);
+      move && await fsPromises.rename(currentFilePath, newFilePath);
+      console.warn(`[${new Date().toISOString()}] File '${currentFilePath}' renamed to '${newFilePath}'`);
       return mapDBMediaToMediaDto(renamedFile, this.uploadUrl);
     } catch (err) {
         throw new Error("Unable to rename file");
@@ -82,6 +82,7 @@ class LocalUploadService implements IUploadService {
     try {
       await this.repository.delete(id);
       await fsPromises.unlink(filePath);
+      console.warn(`[${new Date().toISOString()}] File deleted: ${filePath}`);
       return mapDBMediaToMediaDto(file, this.uploadUrl);
     } catch (err) {
         throw new Error("Unable to delete file");
@@ -103,11 +104,31 @@ class LocalUploadService implements IUploadService {
       let folder;
       if (id.match(/^[0-9a-f]{24}$/i)) {
         // id is a valid ObjectId
-        folder = (await this.repository.query({ _id: id, fieldname: "folders" }, null, 1))[0];
+        folder = (await this.repository.findByCriteria({ _id: id, fieldname: "folders" }))[0];
       } else {
-        folder = (await this.repository.query({ filename: id, fieldname: "folders" }, null, 1))[0];
+        folder = (await this.repository.findByCriteria({ filename: new RegExp(`^${id}$`, "i"), fieldname: "folders" }))[0];
       }
       return mapDBMediaToMediaDto(folder, this.uploadUrl);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] ${error}`);
+      throw new Error("Unable to get the media folder registration");
+    }
+  }
+
+  async getByFolder(id: string): Promise<MediaDto[]> {
+    try {
+      let folder: DBMedia;
+      if (id.match(/^[0-9a-f]{24}$/i)) {
+        // id is a valid ObjectId
+        folder = (await this.repository.findByCriteria({ _id: id, fieldname: "folders" }))[0];
+      } else if (!id) {
+        folder = { filename: '' } as DBMedia;
+      } else {
+        folder = (await this.repository.findByCriteria({ filename: new RegExp(`^${id}$`, "i"), fieldname: "folders" }))[0];
+      }
+      const folderRegex = new RegExp(`^${folder.filename ? folder.filename + "/" : ""}[^/]+$`, "i");
+      const files = await this.repository.findByCriteria({ filename: folderRegex });
+      return files.map((file) => mapDBMediaToMediaDto(file, this.uploadUrl));
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ${error}`);
       throw new Error("Unable to get the media folder registration");
@@ -118,8 +139,9 @@ class LocalUploadService implements IUploadService {
     const folderPath = path.resolve(UPLOAD_FOLDER, folderName);
 
     if (!fs.existsSync(folderPath)) {
-      await fsPromises.mkdir(folderPath, { recursive: false });
       try {
+        await fsPromises.mkdir(folderPath, { recursive: false });
+        console.warn(`[${new Date().toISOString()}] Folder created at path: ${folderPath}`);
         const createdFolder = await this.repository.create(mapFolderToDBMedia(folderName));
         return mapDBMediaToMediaDto(createdFolder, this.uploadUrl);
       } catch (error) {
@@ -133,14 +155,14 @@ class LocalUploadService implements IUploadService {
 
   async renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto> {
     try {
-      const folder = (await this.repository.findByCriteria({ filename: currentFolderName }))[0];
+      const folder = (await this.repository.findByCriteria({ filename: new RegExp(`^${currentFolderName}$`, "i") }))[0];
       const currentFolderPath = path.resolve(UPLOAD_FOLDER, folder.filename);
       const newFolderPath = path.resolve(UPLOAD_FOLDER, newFolderName);
+      folder.name = newFolderName.substring(newFolderName.lastIndexOf('/') + 1);
       folder.filename = newFolderName;
-      folder.name = newFolderName;
       const renamedFolder = await this.repository.update(folder._id.toString(), folder);
       await fsPromises.rename(currentFolderPath, newFolderPath);
-      console.warn(`Folder '${currentFolderPath}' renamed to '${newFolderPath}'`);
+      console.warn(`[${new Date().toISOString()}] Folder '${currentFolderPath}' renamed to '${newFolderPath}'`);
       return mapDBMediaToMediaDto(renamedFolder, this.uploadUrl);
     } catch (err) {
         throw new Error("Unable to rename folder");
@@ -153,7 +175,7 @@ class LocalUploadService implements IUploadService {
       const folderPath = path.resolve(UPLOAD_FOLDER, folder.filename);
       await this.repository.delete(folder._id.toString());
       await fsPromises.rmdir(folderPath);
-      console.warn(`Folder deleted: ${folderPath}`);
+      console.warn(`[${new Date().toISOString()}] Folder deleted: ${folderPath}`);
       return mapDBMediaToMediaDto(folder, this.uploadUrl);
     } catch (err) {
         throw new Error("Unable to delete folder");
@@ -173,10 +195,14 @@ class LocalUploadService implements IUploadService {
 
 const storage: StorageEngine = multer.diskStorage({
   destination: (req, file, callback) => {
-    const localUploadPath = path.resolve(UPLOAD_FOLDER);
+    const localUploadRoot = path.resolve(UPLOAD_FOLDER);
+    const localUploadPath = path.resolve(`${UPLOAD_FOLDER}${req.params.path ? '/' + req.params.path : ''}`);
 
+    if (!fs.existsSync(localUploadRoot)) {
+      fs.mkdirSync(localUploadRoot, { recursive: true });
+    }
     if (!fs.existsSync(localUploadPath)) {
-      fs.mkdirSync(localUploadPath, { recursive: true });
+      throw new Error(`Upload path does not exist: ${localUploadPath}`);
     }
 
     callback(null, localUploadPath);

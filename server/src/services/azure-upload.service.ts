@@ -66,7 +66,11 @@ class AzureUploadService implements IUploadService {
     await blobClient.delete();
   }
 
-  async saveFiles(files: Express.Multer.File[]): Promise<MediaDto[]> {
+  async saveFiles(files: Express.Multer.File[], path?: string): Promise<MediaDto[]> {
+    // TODO: Handle path parameter to save files in virtual folders in Azure
+    if (path) {
+      console.error("Not implemented: Path parameter handling in AzureUploadService.saveFiles");
+    }
     const promises = files.map(async (file) => {
       const fileData = {
         originalName: file.originalname,
@@ -88,8 +92,8 @@ class AzureUploadService implements IUploadService {
     );
   }
 
-  async renameFile(currentFilename: string, newFilename: string): Promise<MediaDto> {
-    console.log("Not implemented: renameFile in AzureUploadService");
+  async renameFile(currentFilename: string, newFilename: string, move: boolean = true): Promise<MediaDto> {
+    console.error("Not implemented: renameFile in AzureUploadService");
     return newFilename as unknown as MediaDto;
   }
 
@@ -105,27 +109,32 @@ class AzureUploadService implements IUploadService {
   }
 
   async getAllFolders(): Promise<MediaDto[]> {
-    console.log("Not implemented: getAllFolders in AzureUploadService");
+    console.error("Not implemented: getAllFolders in AzureUploadService");
     return null as unknown as MediaDto[];
   }
 
   async getFolderByIdOrFolderName(): Promise<MediaDto> {
-    console.log("Not implemented: getFolderByIdOrFolderName in AzureUploadService");
+    console.error("Not implemented: getFolderByIdOrFolderName in AzureUploadService");
     return null as unknown as MediaDto;
   }
 
+  async getByFolder(id: string): Promise<MediaDto[]> {
+    console.error("Not implemented: getByFolder in AzureUploadService");
+    return null as unknown as MediaDto[];
+  }
+
   async createFolder(folderName: string): Promise<MediaDto> {
-    console.log("Not implemented: createFolder in AzureUploadService");
+    console.error("Not implemented: createFolder in AzureUploadService");
     return folderName as unknown as MediaDto;
   }
 
   async renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto> {
-    console.log("Not implemented: renameFolder in AzureUploadService");
+    console.error("Not implemented: renameFolder in AzureUploadService");
     return newFolderName as unknown as MediaDto;
   }
 
   async deleteFolder(folderName: string): Promise<MediaDto> {
-    console.log("Not implemented: deleteFolder in AzureUploadService");
+    console.error("Not implemented: deleteFolder in AzureUploadService");
     return folderName as unknown as MediaDto;
   }
 
@@ -140,6 +149,7 @@ class AzureUploadService implements IUploadService {
   };
 }
 
+// TODO : Implement folder operations in AzureUploadService
 const storage: StorageEngine = multer.memoryStorage();
 
 const fileFilter = (

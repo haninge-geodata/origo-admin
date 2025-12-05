@@ -180,20 +180,41 @@ function extractRouteInfo(node: Node, routeName: string) {
               .split(" ")[0]
               .replace(/[\[\]{}*\/]/g, "")
               .trim()}`;
+            const reqBodyType = (jsDocInfoParams.request?.[0] || "").split(" ")[0].slice(1, -1);
 
             swaggerDocs.paths[path][method].requestBody = {
               required: true,
               // If the request body type is an array, present the example as an array
-              content: (jsDocInfoParams.request?.[0] || "").split(" ")[0].slice(1, -1).endsWith("[]") ? {
-                  "application/json": {
-                    schema: {
-                      "type": "array",
-                      "items": {
-                        $ref: `#/components/schemas/${reqBody}`
+              content: reqBodyType.endsWith("[]") ?
+                (reqBodyType === "multipart/form-data[]" ?
+                  {
+                    "multipart/form-data": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "files": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "binary"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  } :
+                  {
+                    "application/json": {
+                      schema: {
+                        "type": "array",
+                        "items": {
+                          $ref: `#/components/schemas/${reqBody}`
+                        }
                       }
                     }
                   }
-                } : {
+                ) :
+                {
                   "application/json": {
                     schema: {
                       $ref: `#/components/schemas/${reqBody}`

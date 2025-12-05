@@ -7,7 +7,7 @@ const upload = getUpload();
 const router = createSecureRouter(route);
 
 /**
- * @route GET /${route}/upload/
+ * @route GET /${route}/upload
  * @description Get all media file registrations
  * @returns {MediaDto[]}
  */
@@ -22,18 +22,29 @@ router.get(`/${route}/upload`, (req, res) => controller.getAllFiles(req, res));
 router.get(`/${route}/upload/:id`, (req, res) => controller.getFileByIdOrFilename(req, res));
 
 /**
- * @route POST /${route}/upload/
- * @description Upload media file(s)
- * @request {request} requestBody - The media file(s) to upload
+ * @route POST /${route}/upload
+ * @description Upload media file(s) to root folder
+ * @request {multipart/form-data[]} requestBody - The media file(s) to upload
  * @returns {MediaDto[]}
  */
-router.post(`/${route}/upload/`, upload.any(), (req, res) => {
+router.post(`/${route}/upload`, upload.any(), (req, res) => {
+  controller.upload(req, res);
+});
+
+/**
+ * @route POST /${route}/upload/:path
+ * @description Upload media file(s) to subfolder
+ * @param {string} path - The subfolder in which to store the media file(s). Use the POST /${route}/upload endpoint to store in root. Use URL-encoded forward slashes '%2F' for nested subfolders.
+ * @request {multipart/form-data[]} requestBody - The media file(s) to upload
+ * @returns {MediaDto[]}
+ */
+router.post(`/${route}/upload/:path`, upload.any(), (req, res) => {
   controller.upload(req, res);
 });
 
 /**
  * @route PUT /${route}/upload/:currentName/:newName
- * @description Rename a media file
+ * @description Rename or move a media file. Include the media file's current path in 'currentName' and the desired new path in 'newName', e g 'file.txt' and 'folder1/file.txt' to move 'file.txt' into 'folder1'. Use URL-encoded forward slashes '%2F' for nested subfolders.
  * @param {string} currentName - The media file's current name
  * @param {string} newName - What to rename the media file to
  * @returns {MediaDto}
@@ -49,7 +60,7 @@ router.put(`/${route}/upload/:currentName/:newName`, (req, res) => controller.re
 router.delete(`/${route}/upload/:id`, (req, res) => controller.deleteById(req, res));
 
 /**
- * @route GET /${route}/folder/
+ * @route GET /${route}/folder
  * @description Get all media folder registrations
  * @returns {MediaDto[]}
  */
@@ -64,6 +75,14 @@ router.get(`/${route}/folder`, (req, res) => controller.getAllFolders(req, res))
 router.get(`/${route}/folder/:id`, (req, res) => controller.getFolderByIdOrFolderName(req, res));
 
 /**
+ * @route GET /${route}/folder/:id/uploads
+ * @description Get all media file and folder registrations by folder id or name
+ * @param {string} id - The media folder ID or folder name. The special name "root" can be used to get all files not in a folder.
+ * @returns {MediaDto[]}
+ */
+router.get(`/${route}/folder/:id/uploads`, (req, res) => controller.getByFolder(req, res));
+
+/**
  * @route POST /${route}/folder/:name
  * @description Create a new media folder
  * @param {string} name - The media folder name. The POST body will be ignored
@@ -73,7 +92,7 @@ router.post(`/${route}/folder/:name`, (req, res) => controller.createFolder(req,
 
 /**
  * @route PUT /${route}/folder/:currentName/:newName
- * @description Rename a media folder
+ * @description Rename or move a media folder
  * @param {string} currentName - The media folder's current name
  * @param {string} newName - What to rename the media folder to
  * @returns {MediaDto}
