@@ -50,7 +50,7 @@ class LocalUploadService implements IUploadService {
     let created = [];
     for (const fileToSave of filesToSave) {
       try {
-        const createdObject = await this.repository.create(fileToSave);
+        const createdObject = await this.repository.upsert({ filename: new RegExp(`^${fileToSave.filename}$`, "i") }, fileToSave);
         created.push(createdObject);
       } catch (error) {
         console.error(`[${new Date().toISOString()}] ${error}`);
