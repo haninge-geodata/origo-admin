@@ -13,6 +13,7 @@ import { MediaService as service } from '@/api';
 import { useApp } from "@/contexts/AppContext";
 import AlertDialog from "../Dialogs/AlertDialog";
 import FormDialog from "@/components/Dialogs/FormDialog";
+import OverwriteMediaDialog from "../Dialogs/OverwriteMediaDialog";
 
 interface MediaSelectorProps {
     showSelectedMediaInfo?: boolean;
@@ -24,7 +25,8 @@ interface MediaSelectorProps {
 
 export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350, showSelectedMediaInfo, mediaToSelect }: MediaSelectorProps) => {
     const queryKey = "media";
-    const { data } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchAll() });
+    const [currentPath, setCurrentPath] = useState('root');
+    const { data } = useQuery({ queryKey: [queryKey, currentPath], queryFn: () => service.fetchByFolder(currentPath)});
     const [selectedMedia, setselectedMedia] = useState(null as unknown as MediaDto);
     const [mediaData, setmediaData] = useState<MediaDto[]>([]);
     const [filterText, setFilterText] = useState('');
@@ -33,6 +35,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const [isFolderDialogOpen, setFolderDialogOpen] = useState(false);
     const [isRenameDialogOpen, setRenameDialogOpen] = useState(false);
     const [renameDialogValue, setRenameDialogValue] = useState('');
+    const [overwriteFiles, setOverwriteFiles] = useState<Array<File>>([]);
     const queryClient = useQueryClient();
     const { showToast } = useApp();
     const VisuallyHiddenInput = styled('input')({
@@ -89,7 +92,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
         console.log(`[${new Date().toISOString()}] Creating folder: ${folderName}`);
         try {
             await service.createFolder(folderName!.toString());
-            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
             showToast('Mappen har skapats', 'success');
             toggleCreateFolderDialog();
         } catch (error) {
@@ -99,17 +102,42 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     }
 
     const handleUpload = async (event: any) => {
-        const files = event.target.files;
+        const files: Array<File> = Array.from(event.target.files);
         if (files.length > 0) {
             try {
-                await service.upload(Array.from(files));
-                queryClient.invalidateQueries({ queryKey: [queryKey] });
-                showToast('Ikonen har laddats upp', 'success');
-
+                const currentFiles = await service.fetchByFolder(currentPath);
+                const newFiles = [] as Array<File>;
+                const overwritables = files.filter((newFile) => {
+                    if ((currentFiles).find((file) => file.fieldname !== 'folders' && file.name === newFile.name)) {
+                        return true;
+                    } else {
+                        newFiles.push(newFile);
+                        return false;
+                    }
+                });
+                if (overwritables.length > 0) {
+                    if (newFiles.length > 0) {
+                        handleSubmitUpload(newFiles);
+                    }
+                    setOverwriteFiles(overwritables);
+                } else {
+                    handleSubmitUpload(files);
+                }
             } catch (error) {
-                showToast('Ikonen kunde inte laddas upp', 'error');
-                console.error(`[${new Date().toISOString()}] Fel vid uppladdning av filer: ${error}`);
+                showToast('Kunde inte läsa mappen', 'error');
+                console.error(`[${new Date().toISOString()}] Error when reading media files in folder '${currentPath}': ${error}`);
             }
+        }
+    };
+
+    const handleSubmitUpload = async (files: File[]) => {
+        try {
+            await service.upload(files, currentPath);
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
+            showToast('Ikonen har laddats upp', 'success');
+        } catch (error) {
+            showToast('Ikonen kunde inte laddas upp', 'error');
+            console.error(`[${new Date().toISOString()}] Error when uploading files: ${error}`);
         }
     };
 
@@ -137,7 +165,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                 setselectedMedia(await service.renameFile(currentName, newName));
                 showToast('Filens namn har ändrats', 'success');
             }
-            queryClient.invalidateQueries({ queryKey: [queryKey] });
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
             
             toggleRenameDialog();
         } catch (error) {
@@ -160,18 +188,18 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                     await service.deleteFile(selectedMedia.id!);
                     showToast('Ikonen har raderats', 'success');
                 }
-                queryClient.invalidateQueries({ queryKey: [queryKey] });
+                queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
                 setselectedMedia(null as unknown as MediaDto);
                 setAlertDialogOpen(false);
             } catch (error) {
-                showToast('Kunde inte radera ikonen.', 'error');
+                showToast(`Kunde inte radera ${selectedMedia.fieldname === 'folders' ? 'mappen' : 'ikonen'}.`, 'error');
                 console.error(`[${new Date().toISOString()}] Error deleting the icon: ${error}`);
                 setAlertDialogOpen(false);
             }
         }
     };
 
-    const handleMediaClick = (item: MediaDto) => {
+    const handleMediaSelection = (item: MediaDto) => {
         let selectedItem = mediaData.find((x) => x.id === item.id);
 
         if (selectedMedia && selectedMedia.id === item.id) {
@@ -186,6 +214,12 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
         if (onMediaSelect) {
             onMediaSelect({ file: selectedItem!.filename, fileIncPath: selectedItem!.path });
         }
+    };
+
+    const handleMediaNavigation = (item: MediaDto) => {
+        console.log(`Navigating into folder: ${item.filename}`);
+        setCurrentPath(item.filename);
+        setselectedMedia(null as unknown as MediaDto);
     };
 
     const formatName = (name: string, cropAt: number) => {
@@ -284,6 +318,23 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             </Box>
             <Grid item xs={12} md={12} lg={12} sx={{ display: 'flex', maxHeight: `${maxHeight}px`, minHeight: `${minHeight}px` }}>
                 <Grid container rowSpacing={4.5} columnSpacing={0} sx={{ mt: '1px', overflowY: 'auto' }}>
+                    {currentPath !== 'root' ?
+                        <Grid item key={-1} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
+                            <FolderIcon onDoubleClick={() => handleMediaNavigation({ name: '..', filename: 'root', fieldname: 'folders', mimetype: 'folder'} as MediaDto)}
+                                style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '50%',
+                                    cursor: 'pointer',
+                                    color: 'rgba(0, 0, 0, 0.54)',
+                                    border: selectedMedia && selectedMedia.filename === 'root' ? '2px solid #1890ff' : 'none',
+                                    boxShadow: selectedMedia && selectedMedia.filename === 'root' ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                }}
+                            />
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                {'../'}
+                            </Typography>
+                        </Grid> : null}
                     {filteredData.map((item, index) => (
                         <Grid item key={index} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
                             {
@@ -299,10 +350,10 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                             boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
                                         }}
                                         src={`${item.path}?w=48px&h=48px&fit=crop&auto=format`}
-                                        onClick={() => handleMediaClick(item)}
+                                        onClick={() => handleMediaSelection(item)}
                                     /> :
                                 item.fieldname === 'folders' ?
-                                    <FolderIcon onClick={() => handleMediaClick(item)}
+                                    <FolderIcon onClick={() => handleMediaSelection(item)} onDoubleClick={() => handleMediaNavigation(item)}
                                         style={{
                                             width: '48px',
                                             height: '48px',
@@ -376,6 +427,14 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                         fullWidth
                         variant="standard"
                     />}
+                />
+                <OverwriteMediaDialog title="Skriva över filer?"
+                    mediaToOverWrite={overwriteFiles}
+                    onClose={() => setOverwriteFiles([])}
+                    onSubmit={ (files) => {
+                        handleSubmitUpload(files);
+                        setOverwriteFiles([]);
+                    }}
                 />
                 <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av ikonen!"
                     onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">

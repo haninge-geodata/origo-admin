@@ -8,24 +8,28 @@ class MediaService extends BaseApiService<MediaDto> {
 
   sortMediaByName = (arrayToSort: MediaDto[]) => {
     return arrayToSort.sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.fieldname === b.fieldname) {
+        return a.name.localeCompare(b.name);
+      } else {
+        return (a.fieldname === "folders" && b.fieldname !== "folders") ? -1 : 1;
+      }
     });
   };
 
-  async fetchAll(): Promise<MediaDto[]> {
-    const sortedFolders = this.sortMediaByName(await super.fetchAll("folder"));
-    const sortedFiles = this.sortMediaByName(await super.fetchAll("upload"));
-    return sortedFolders.concat(sortedFiles);
+  async fetchByFolder(path: string = 'root'): Promise<MediaDto[]> {
+    const restClient = await this.getRestClient();
+    const sorted = this.sortMediaByName(await restClient.get<MediaDto[]>(`${this.resourcePath}/folder/${path}/uploads`));
+    return sorted;
   }
 
-  async upload(files: File[]): Promise<MediaDto[]> {
+  async upload(files: File[], path: string = 'root'): Promise<MediaDto[]> {
     const formData = new FormData();
     files.forEach((file, index) => {
       formData.append("files", file);
     });
 
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}/upload`, formData);
+      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}/upload${path === 'root' ? '' : `/${path}`}`, formData);
       return response;
     });
   }
