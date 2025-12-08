@@ -31,6 +31,12 @@ export default function StylePicker({ value, error, fullWidth = true, disabled =
 
     useEffect(() => {
         if (!isLoading && data) {
+            // Guard: om value är en sträng eller saknas, sätt default
+            if (typeof value === 'string' || !value) {
+                setSelectedValue(initialOption);
+                return;
+            }
+
             const actualOptions = data;
             const foundValue = actualOptions.find(option => option.id === value.id);
             if (foundValue) {

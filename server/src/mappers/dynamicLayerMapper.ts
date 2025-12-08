@@ -106,35 +106,39 @@ export class DynamicLayerMapper
       title: dto.title,
       type: dto.type,
     };
+    const isObjectIdString = (value: string): boolean =>
+      /^[a-f\d]{24}$/i.test(value);
 
     if (dto.layer_id) dbModelData.layer_id = dto.layer_id;
 
-    // Source is flexible - handle different types
+    // Source
     if (dto.source !== undefined && dto.source !== null) {
       if (typeof dto.source === "string") {
-        // String URL - store as-is
-        dbModelData.source = dto.source;
+        if (isObjectIdString(dto.source)) {
+          dbModelData.source = new mongoose.Types.ObjectId(dto.source);
+        } else {
+          dbModelData.source = dto.source; // URL eller namn
+        }
       } else if (typeof dto.source === "object" && dto.source.id) {
-        // Object from ApiSelect (LinkResourceDto) - convert to ObjectId reference
         dbModelData.source = new mongoose.Types.ObjectId(dto.source.id);
       } else {
-        // Any other format - store as-is
         dbModelData.source = dto.source;
       }
     }
 
     if (dto.abstract !== undefined) dbModelData.abstract = dto.abstract;
 
-    // Style is also flexible - handle different types
+    // Style - exakt samma mönster
     if (dto.style !== undefined && dto.style !== null) {
       if (typeof dto.style === "string") {
-        // String reference - store as-is
-        dbModelData.style = dto.style;
+        if (isObjectIdString(dto.style)) {
+          dbModelData.style = new mongoose.Types.ObjectId(dto.style);
+        } else {
+          dbModelData.style = dto.style; // Namn
+        }
       } else if (typeof dto.style === "object" && dto.style.id) {
-        // Object from ApiSelect (StyleSchemaDto) - convert to ObjectId reference
         dbModelData.style = new mongoose.Types.ObjectId(dto.style.id);
       } else {
-        // Any other format - store as-is
         dbModelData.style = dto.style;
       }
     }

@@ -303,14 +303,19 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
         localLayersState.forEach(layer => {
             if (layer.group === groupName && layer.id) {
                 const type = layer.type as LayerType;
+
+                // Lägg till i ALL oavsett typ
+                const rowData: DataRow = {
+                    id: layer.id,
+                    title: layer.title,
+                };
+                newSelectedRows.ALL.push(rowData);
+
+                // Lägg också till i specifik typ (om det inte är ALL)
                 if (type !== 'ALL') {
                     if (!newSelectedRows[type]) {
                         newSelectedRows[type] = [];
                     }
-                    const rowData: DataRow = {
-                        id: layer.id,
-                        title: layer.title,
-                    };
                     newSelectedRows[type].push(rowData);
                 }
             }

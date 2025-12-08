@@ -1,4 +1,4 @@
-import { DBLinkResource, DBMapInstance, LinkResourceModel, MapInstanceModel } from "@/models";
+import { DBLinkResource, DBMapInstance, DBStyleSchema, LinkResourceModel, MapInstanceModel, StyleSchemaModel } from "@/models";
 import "@/mappers/";
 import { Repository } from "@/repositories/Repository";
 import {
@@ -6,7 +6,8 @@ import {
   MapInstanceDto,
   MapInstanceListItemDto,
   PublishedMapConfigDto,
-  PublishedMapListItemDto
+  PublishedMapListItemDto,
+  StyleSchemaDto
 } from "@/shared/interfaces/dtos";
 import { DBPublishedMap, PublishedMapModel } from "@/models/publishedMap.model";
 import mongoose from "mongoose";
@@ -20,17 +21,20 @@ import {
 } from "@/mappers/publishedMapMapper";
 import { instanceListItemMapper, instanceMapper } from "@/mappers/InstanceMapper";
 import { linkResourceMapper } from "@/mappers/";
+import StyleSchemaMapper from "@/mappers/styleSchemaMapper";
 
 class MapInstanceService {
   private repository: Repository<DBMapInstance>;
   private publishedRepository: Repository<DBPublishedMap>;
   private linkResourceRepository: Repository<DBLinkResource>;
+  private styleSchemaRepository: Repository<DBStyleSchema>;
 
   private listItemMapper: IMapper<DBMapInstance, MapInstanceListItemDto>;
   private instanceMapper: IMapper<DBMapInstance, MapInstanceDto>;
   private instanceToPublishedMapMapper: IMapper<DBPublishedMap, DBMapInstance>;
   private previewMapMapper: IMapper<DBMapInstance, PublishedMapConfigDto>;
   private _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
+  private _styleSchemaMapper: IMapper<DBStyleSchema, StyleSchemaDto>;
 
   private publishedMapMapper: IMapper<DBPublishedMap, PublishedMapConfigDto>;
   private publishedMapListItemMapper: IMapper<DBPublishedMap, PublishedMapListItemDto>;
@@ -39,9 +43,11 @@ class MapInstanceService {
     this.repository = new Repository<DBMapInstance>(MapInstanceModel);
     this.publishedRepository = new Repository<DBPublishedMap>(PublishedMapModel);
     this.linkResourceRepository = new Repository<DBLinkResource>(LinkResourceModel);
+    this.styleSchemaRepository = new Repository<DBStyleSchema>(StyleSchemaModel);
     this.listItemMapper = new instanceListItemMapper();
     this.instanceMapper = new instanceMapper();
     this._linkResourceMapper = new linkResourceMapper();
+    this._styleSchemaMapper = new StyleSchemaMapper();
     this.previewMapMapper = new PreviewMapMapper();
     this.instanceToPublishedMapMapper = new InstanceToPublishedMapMapper();
     this.publishedMapMapper = new publishedMapMapper();
@@ -73,8 +79,10 @@ class MapInstanceService {
     }
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
+    let dbStyles = await this.styleSchemaRepository.findAll();
+    let styles = dbStyles.map((item) => this._styleSchemaMapper.toDto(item));
 
-    return this.previewMapMapper.toDto(response, sources);
+    return this.previewMapMapper.toDto(response, sources, styles);
   }
 
   async publish(id: string, comment: string): Promise<PublishedMapListItemDto> {
@@ -83,7 +91,9 @@ class MapInstanceService {
 
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
-    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources);
+    let dbStyles = await this.styleSchemaRepository.findAll();
+    let styles = dbStyles.map((item) => this._styleSchemaMapper.toDto(item));
+    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources, styles);
 
     let response = await this.publishedRepository.create(publishedMap);
     return this.publishedMapListItemMapper.toDto(response);

@@ -171,12 +171,33 @@ const dynamicLayerSchema = new Schema({
   },
   queryable: { type: Boolean, required: false },
   visible: { type: Boolean, required: false },
-  // Source is flexible for dynamic layers - can be string (URL), ObjectId, or anything
-  // Override base schema's ObjectId-only definition
   source: { type: Schema.Types.Mixed, required: false },
-  // Style is also flexible - can be string, ObjectId, or anything
-  // Override base schema's ObjectId-only definition
   style: { type: Schema.Types.Mixed, required: false },
+});
+
+dynamicLayerSchema.post("find", async function (docs) {
+  if (!Array.isArray(docs)) return;
+
+  for (const doc of docs) {
+    // Only populate if value is actually an ObjectId instance (not just a string)
+    if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "source", model: "LinkResource" });
+    }
+    if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "style", model: "StyleSchema" });
+    }
+  }
+});
+
+dynamicLayerSchema.post("findOne", async function (doc) {
+  if (!doc) return;
+
+  if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "source", model: "LinkResource" });
+  }
+  if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "style", model: "StyleSchema" });
+  }
 });
 
 export {

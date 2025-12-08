@@ -10,6 +10,7 @@ import {
   PublishedMapConfigDto,
   PublishedMapListItemDto,
   StyleItemDto,
+  StyleSchemaDto,
   StyleType,
 } from "@/shared/interfaces/dtos";
 
@@ -44,8 +45,12 @@ export class InstanceToPublishedMapMapper
   toDto(model: DBPublishedMap): DBMapInstance {
     throw new Error("Method not implemented, not needed");
   }
-  toDBModel(model: DBMapInstance, comment: string, ...contexts: any[]): DBPublishedMap {
-    const [sources = []] = contexts;
+  toDBModel(
+    model: DBMapInstance,
+    comment: string,
+    ...contexts: any[]
+  ): DBPublishedMap {
+    const [sources = [], styles = []] = contexts;
     const publishedModel: Partial<DBPublishedMap> = {
       comment,
       mapInstanceId: model._id,
@@ -53,7 +58,7 @@ export class InstanceToPublishedMapMapper
       name: model.name,
       abstract: model.abstract ? model.abstract : "",
       publishedDate: new Date(),
-      map: this.previewMapMapper.toDto(model, sources, true),
+      map: this.previewMapMapper.toDto(model, sources, styles, true),
     };
 
     return publishedModel as DBPublishedMap;
@@ -68,7 +73,7 @@ export class PreviewMapMapper
   }
 
   toDto(model: DBMapInstance, ...contexts: any[]): PublishedMapConfigDto {
-    const [sources = [], publish = false] = contexts;
+    const [sources = [], styles = [], publish = false] = contexts;
     const settings = model.instance.settings?.setting || {};
     const groupsWithoutId = model.instance.groups
       ? removeIdFromGroups(model.instance.groups as GroupDto[])
@@ -82,8 +87,13 @@ export class PreviewMapMapper
         model.instance.layers as LayerDto[],
         sources
       ),
-      layers: transformLayers(model.instance.layers as LayerDto[], publish),
-      styles: createDistinctStyles(model.instance.layers as LayerDto[]),
+      layers: transformLayers(
+        model.instance.layers as LayerDto[],
+        publish,
+        sources,
+        styles
+      ),
+      styles: createDistinctStyles(model.instance.layers as LayerDto[], styles),
     };
   }
 }
@@ -119,16 +129,31 @@ function createDistinctSources(layers: any[], sources: LinkResourceDto[]): any {
 
   layers.forEach((layer) => {
     if (!layer.source) return;
-    
-    if (typeof layer.source === 'string') {
+
+    // For string sources (dynamic layers where source is a URL)
+    if (typeof layer.source === "string") {
+      const syntheticName = `${layer.name}-src`;
+      if (!sourceMap.has(syntheticName)) {
+        sourceMap.set(syntheticName, { url: layer.source });
+      }
       return;
     }
-    
-    if (typeof layer.source === 'object' && layer.source.name) {
-      const { name, url } = layer.source;
-      if (!sourceMap.has(name)) {
-        sourceMap.set(name, { url });
+
+    // For object sources - try to get name directly or look up by ID
+    let sourceName = layer.source.name;
+    let sourceUrl = layer.source.url;
+
+    // If no name but has id, look up from sources array
+    if (!sourceName && layer.source.id) {
+      const matchingSource = sources.find((s) => s.id === layer.source.id);
+      if (matchingSource) {
+        sourceName = matchingSource.name;
+        sourceUrl = matchingSource.url;
       }
+    }
+
+    if (sourceName && !sourceMap.has(sourceName)) {
+      sourceMap.set(sourceName, { url: sourceUrl });
     }
   });
 
@@ -159,16 +184,34 @@ function createDistinctSources(layers: any[], sources: LinkResourceDto[]): any {
 
   return Object.fromEntries(sourceMap);
 }
-function createDistinctStyles(layers: any[]): any {
+function createDistinctStyles(
+  layers: any[],
+  styleSchemas: StyleSchemaDto[] = []
+): any {
   const styles = layers.reduce((acc, layer) => {
     ["style", "clusterStyle"].forEach((styleKey) => {
       const styleContainer = layer[styleKey];
-      if (!styleContainer || !styleContainer.styles) return;
+      if (!styleContainer) return;
 
-      const { name, styles: layerStyles } = styleContainer;
+      // Try to get name directly or look up by ID
+      let styleName = styleContainer.name;
+      let layerStyles = styleContainer.styles;
 
-      if (!acc[name]) {
-        acc[name] = [];
+      // If no name but has id, look up from styleSchemas array
+      if (!styleName && styleContainer.id) {
+        const matchingStyle = styleSchemas.find(
+          (s) => s.id === styleContainer.id
+        );
+        if (matchingStyle) {
+          styleName = matchingStyle.name;
+          layerStyles = matchingStyle.styles;
+        }
+      }
+
+      if (!styleName || !layerStyles) return;
+
+      if (!acc[styleName]) {
+        acc[styleName] = [];
       }
 
       layerStyles.forEach((styleArray: StyleItemDto[]) => {
@@ -191,12 +234,12 @@ function createDistinctStyles(layers: any[]): any {
 
         const stringifiedStyle = JSON.stringify(transformedStyle);
         if (
-          !acc[name].some(
+          !acc[styleName].some(
             (existingStyleArray: any) =>
               JSON.stringify(existingStyleArray) === stringifiedStyle
           )
         ) {
-          acc[name].push(transformedStyle);
+          acc[styleName].push(transformedStyle);
         }
       });
     });
@@ -207,9 +250,15 @@ function createDistinctStyles(layers: any[]): any {
   return styles;
 }
 
-function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
-  const proxyUrlSet = process.env.PROXY_UPDATE_URL && process.env.PROXY_UPDATE_URL !== "";
-  const authEnabled = (process.env.AUTH_ENABLED?.toLowerCase?.() === 'true');
+function transformLayers(
+  layerDtos: any[],
+  publish: boolean = false,
+  sources: LinkResourceDto[] = [],
+  styleSchemas: StyleSchemaDto[] = []
+): any[] {
+  const proxyUrlSet =
+    process.env.PROXY_UPDATE_URL && process.env.PROXY_UPDATE_URL !== "";
+  const authEnabled = process.env.AUTH_ENABLED?.toLowerCase?.() === "true";
   let layers = layerDtos.map((layer) => {
     const {
       style,
@@ -224,18 +273,35 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     };
 
     if (source) {
-      if (typeof source === 'object' && source.name) {
-        transformedLayer.source = source.name;
+      if (typeof source === "string") {
+        // String sources are URLs - use synthetic name to match createDistinctSources
+        transformedLayer.source = `${layer.name}-src`;
       } else {
-        transformedLayer.source = source;
+        // Object sources - try to get name directly or look up by ID
+        let sourceName = source.name;
+        if (!sourceName && source.id) {
+          const matchingSource = sources.find((s) => s.id === source.id);
+          if (matchingSource) {
+            sourceName = matchingSource.name;
+          }
+        }
+        transformedLayer.source = sourceName || source;
       }
     } else if (layer.source) {
       transformedLayer.source = layer.source;
     }
 
     if (style) {
-      if (typeof style === 'object' && style.name) {
-        transformedLayer.style = style.name;
+      if (typeof style === "object") {
+        // Object styles - try to get name directly or look up by ID
+        let styleName = style.name;
+        if (!styleName && style.id) {
+          const matchingStyle = styleSchemas.find((s) => s.id === style.id);
+          if (matchingStyle) {
+            styleName = matchingStyle.name;
+          }
+        }
+        transformedLayer.style = styleName || style;
       } else {
         transformedLayer.style = style;
       }
@@ -244,7 +310,19 @@ function transformLayers(layerDtos: any[], publish: boolean = false): any[] {
     }
 
     if (clusterStyle) {
-      transformedLayer.clusterStyle = clusterStyle.name;
+      // Object clusterStyles - try to get name directly or look up by ID
+      let clusterStyleName = clusterStyle.name;
+      if (!clusterStyleName && clusterStyle.id) {
+        const matchingStyle = styleSchemas.find(
+          (s) => s.id === clusterStyle.id
+        );
+        if (matchingStyle) {
+          clusterStyleName = matchingStyle.name;
+        }
+      }
+      if (clusterStyleName) {
+        transformedLayer.clusterStyle = clusterStyleName;
+      }
     }
     if (publish || (proxyUrlSet && authEnabled)) {
       transformedLayer.layer_id = layer_id;
