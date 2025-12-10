@@ -11,6 +11,6 @@ export interface IUploadService {
   getFolderByIdOrFolderName(id: string): Promise<MediaDto>;
   getByFolder(id: string): Promise<MediaDto[]>;
   createFolder(folderName: string): Promise<MediaDto>;
-  renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto>;
+  renameFolder(currentFolderName: string, newFolderName: string, move?: boolean): Promise<MediaDto>;
   deleteFolder(id: string): Promise<MediaDto>;
 }

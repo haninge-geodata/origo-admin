@@ -91,7 +91,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
         const folderName = formData.get('name');
         console.log(`[${new Date().toISOString()}] Creating folder: ${folderName}`);
         try {
-            await service.createFolder(folderName!.toString());
+            await service.createFolder(`${currentPath === 'root' ? '' : `${currentPath}/`}${folderName!.toString()}`);
             queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
             showToast('Mappen har skapats', 'success');
             toggleCreateFolderDialog();
@@ -153,7 +153,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const handleSubmitRename = async (formData: FormData) => {
         const elementType = selectedMedia.mimetype.startsWith('image/') ? 'icon' :
             selectedMedia.fieldname === 'folders' ? 'folder' : 'file';
-        const currentName = selectedMedia.name;
+        const currentName = selectedMedia.filename;
         // FormDialog does not allow submitting empty values, so we can safely assert that newName is present
         const newName = formData.get('name')?.toString()!;
         console.log(`[${new Date().toISOString()}] Renaming ${elementType} ${currentName} to ${newName}.`);
@@ -320,7 +320,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                 <Grid container rowSpacing={4.5} columnSpacing={0} sx={{ mt: '1px', overflowY: 'auto' }}>
                     {currentPath !== 'root' ?
                         <Grid item key={-1} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
-                            <FolderIcon onDoubleClick={() => handleMediaNavigation({ name: '..', filename: 'root', fieldname: 'folders', mimetype: 'folder'} as MediaDto)}
+                            <FolderIcon onDoubleClick={() => handleMediaNavigation({ name: '..', filename: (currentPath.includes('/') ? currentPath.replace(/\/[^/]+$/i, '') : 'root'), fieldname: 'folders', mimetype: 'folder'} as MediaDto)}
                                 style={{
                                     width: '48px',
                                     height: '48px',

@@ -128,7 +128,7 @@ class AzureUploadService implements IUploadService {
     return folderName as unknown as MediaDto;
   }
 
-  async renameFolder(currentFolderName: string, newFolderName: string): Promise<MediaDto> {
+  async renameFolder(currentFolderName: string, newFolderName: string, move: boolean = true): Promise<MediaDto> {
     console.error("Not implemented: renameFolder in AzureUploadService");
     return newFolderName as unknown as MediaDto;
   }
