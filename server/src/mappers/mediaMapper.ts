@@ -15,15 +15,26 @@ function mapDBMediaToMediaDto(dbMedia: DBMedia, upload_url: string): MediaDto {
   };
 }
 
-function mapMulterFileToDBMedia(file: Express.Multer.File): DBMedia {
+function mapMulterFileToDBMedia(file: Express.Multer.File, path?: string): DBMedia {
   return {
     _id: new mongoose.Types.ObjectId(),
     name: file.originalname,
-    filename: file.filename,
+    filename: `${path ? path + "/" : ""}${file.filename}`,
     mimetype: file.mimetype,
-    fieldname: file.fieldname,
+    fieldname: "files",
     size: file.size,
   };
 }
 
-export { mapMulterFileToDBMedia, mapDBMediaToMediaDto };
+function mapFolderToDBMedia(folderName: string): DBMedia {
+  return {
+    _id: new mongoose.Types.ObjectId(),
+    name: folderName.substring(folderName.lastIndexOf('/') + 1),
+    filename: folderName,
+    mimetype: "folder",
+    fieldname: "folders",
+    size: 0,
+  };
+}
+
+export { mapDBMediaToMediaDto, mapMulterFileToDBMedia, mapFolderToDBMedia };

@@ -67,7 +67,7 @@ class RestClient {
     return this.request<T>("POST", path, body);
   }
 
-  async put<T>(path: string, body: any): Promise<T> {
+  async put<T>(path: string, body?: any): Promise<T> {
     return this.request<T>("PUT", path, body);
   }
 

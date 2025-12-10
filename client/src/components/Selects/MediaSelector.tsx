@@ -1,13 +1,19 @@
 import { MediaDto } from "@/shared/interfaces/dtos";
 import { Box, Button, Grid, InputAdornment, TextField, Typography, styled } from "@mui/material";
 import { useEffect, useState } from "react";
-import SearchIcon from '@mui/icons-material/Search';
-import CloudUpload from '@mui/icons-material/CloudUpload';
+import { Folder as FolderIcon,
+    CloudUpload as CloudUploadIcon,
+    CreateNewFolder as CreateNewFolderIcon,
+    Delete as DeleteIcon,
+    Edit as EditIcon,
+    Search as SearchIcon
+} from '@mui/icons-material';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { MediaService as service } from '@/api';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { useApp } from "@/contexts/AppContext";
 import AlertDialog from "../Dialogs/AlertDialog";
+import FormDialog from "@/components/Dialogs/FormDialog";
+import OverwriteMediaDialog from "../Dialogs/OverwriteMediaDialog";
 
 interface MediaSelectorProps {
     showSelectedMediaInfo?: boolean;
@@ -19,12 +25,17 @@ interface MediaSelectorProps {
 
 export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350, showSelectedMediaInfo, mediaToSelect }: MediaSelectorProps) => {
     const queryKey = "media";
-    const { data } = useQuery({ queryKey: [queryKey], queryFn: () => service.fetchAll() });
+    const [currentPath, setCurrentPath] = useState('root');
+    const { data } = useQuery({ queryKey: [queryKey, currentPath], queryFn: () => service.fetchByFolder(currentPath)});
     const [selectedMedia, setselectedMedia] = useState(null as unknown as MediaDto);
     const [mediaData, setmediaData] = useState<MediaDto[]>([]);
     const [filterText, setFilterText] = useState('');
     const [filteredData, setFilteredData] = useState<MediaDto[]>([]);
     const [isAlertDialogOpen, setAlertDialogOpen] = useState(false);
+    const [isFolderDialogOpen, setFolderDialogOpen] = useState(false);
+    const [isRenameDialogOpen, setRenameDialogOpen] = useState(false);
+    const [renameDialogValue, setRenameDialogValue] = useState('');
+    const [overwriteFiles, setOverwriteFiles] = useState<Array<File>>([]);
     const queryClient = useQueryClient();
     const { showToast } = useApp();
     const VisuallyHiddenInput = styled('input')({
@@ -61,25 +72,107 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFilterText(event.target.value);
     };
+
     function extractFilename(url: string): string {
         const regex = /[^\/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))/;
         const match = url.match(regex);
         return match ? match[0] : '';
     }
+
+    const toggleCreateFolderDialog = async () => {
+        if (isFolderDialogOpen) {
+            setFolderDialogOpen(false);
+        } else {
+            setFolderDialogOpen(true);
+        }
+    };
+
+    const handleSubmitFolder = async (formData: FormData) => {
+        const folderName = formData.get('name');
+        console.log(`[${new Date().toISOString()}] Creating folder: ${folderName}`);
+        try {
+            await service.createFolder(`${currentPath === 'root' ? '' : `${currentPath}/`}${folderName!.toString()}`);
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
+            showToast('Mappen har skapats', 'success');
+            toggleCreateFolderDialog();
+        } catch (error) {
+            showToast('Kunde inte skapa mapp.', 'error');
+            console.error(`[${new Date().toISOString()}] Error creating folder: ${error}`);
+        }
+    }
+
     const handleUpload = async (event: any) => {
-        const files = event.target.files;
+        const files: Array<File> = Array.from(event.target.files);
         if (files.length > 0) {
             try {
-                await service.upload(Array.from(files));
-                queryClient.invalidateQueries({ queryKey: [queryKey] });
-                showToast('Ikonen har laddats upp', 'success');
-
+                const currentFiles = await service.fetchByFolder(currentPath);
+                const newFiles = [] as Array<File>;
+                const overwritables = files.filter((newFile) => {
+                    if ((currentFiles).find((file) => file.fieldname !== 'folders' && file.name === newFile.name)) {
+                        return true;
+                    } else {
+                        newFiles.push(newFile);
+                        return false;
+                    }
+                });
+                if (overwritables.length > 0) {
+                    if (newFiles.length > 0) {
+                        handleSubmitUpload(newFiles);
+                    }
+                    setOverwriteFiles(overwritables);
+                } else {
+                    handleSubmitUpload(files);
+                }
             } catch (error) {
-                showToast('Ikonen kunde inte laddas upp', 'error');
-                console.error(`[${new Date().toISOString()}] Fel vid uppladdning av filer: ${error}`);
+                showToast('Kunde inte läsa mappen', 'error');
+                console.error(`[${new Date().toISOString()}] Error when reading media files in folder '${currentPath}': ${error}`);
             }
         }
     };
+
+    const handleSubmitUpload = async (files: File[]) => {
+        try {
+            await service.upload(files, currentPath);
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
+            showToast('Ikonen har laddats upp', 'success');
+        } catch (error) {
+            showToast('Ikonen kunde inte laddas upp', 'error');
+            console.error(`[${new Date().toISOString()}] Error when uploading files: ${error}`);
+        }
+    };
+
+    const toggleRenameDialog = async () => {
+        if (isRenameDialogOpen) {
+            setRenameDialogOpen(false);
+        } else {
+            setRenameDialogValue(selectedMedia?.filename || '');
+            setRenameDialogOpen(true);
+        }
+    };
+
+    const handleSubmitRename = async (formData: FormData) => {
+        const elementType = selectedMedia.mimetype.startsWith('image/') ? 'icon' :
+            selectedMedia.fieldname === 'folders' ? 'folder' : 'file';
+        const currentName = selectedMedia.filename;
+        // FormDialog does not allow submitting empty values, so we can safely assert that newName is present
+        const newName = formData.get('name')?.toString()!;
+        console.log(`[${new Date().toISOString()}] Renaming ${elementType} ${currentName} to ${newName}.`);
+        try {
+            if (elementType === 'folder') {
+                setselectedMedia(await service.renameFolder(currentName, newName));
+                showToast('Mappens namn har ändrats', 'success');
+            } else {
+                setselectedMedia(await service.renameFile(currentName, newName));
+                showToast('Filens namn har ändrats', 'success');
+            }
+            queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
+            
+            toggleRenameDialog();
+        } catch (error) {
+            showToast('Kunde inte ändra namnet.', 'error');
+            console.error(`[${new Date().toISOString()}] Error renaming ${elementType}: ${error}`);
+        }
+    }
 
     const handleDeleteMedia = async () => {
         setAlertDialogOpen(true);
@@ -88,20 +181,25 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     const confirmDelete = async () => {
         if (selectedMedia) {
             try {
-                await service.delete(selectedMedia.id!);
-                queryClient.invalidateQueries({ queryKey: [queryKey] });
+                if(selectedMedia.fieldname === 'folders') {
+                    await service.deleteFolder(selectedMedia.id!);
+                    showToast('Mappen har raderats', 'success');
+                } else {
+                    await service.deleteFile(selectedMedia.id!);
+                    showToast('Ikonen har raderats', 'success');
+                }
+                queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
                 setselectedMedia(null as unknown as MediaDto);
-                showToast('Ikonen har raderats', 'success');
                 setAlertDialogOpen(false);
             } catch (error) {
-                showToast('Kunde inte radera ikonen.', 'error');
+                showToast(`Kunde inte radera ${selectedMedia.fieldname === 'folders' ? 'mappen' : 'ikonen'}.`, 'error');
                 console.error(`[${new Date().toISOString()}] Error deleting the icon: ${error}`);
                 setAlertDialogOpen(false);
             }
         }
     };
 
-    const handleMediaClick = (item: MediaDto) => {
+    const handleMediaSelection = (item: MediaDto) => {
         let selectedItem = mediaData.find((x) => x.id === item.id);
 
         if (selectedMedia && selectedMedia.id === item.id) {
@@ -116,6 +214,12 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
         if (onMediaSelect) {
             onMediaSelect({ file: selectedItem!.filename, fileIncPath: selectedItem!.path });
         }
+    };
+
+    const handleMediaNavigation = (item: MediaDto) => {
+        console.log(`Navigating into folder: ${item.filename}`);
+        setCurrentPath(item.filename);
+        setselectedMedia(null as unknown as MediaDto);
     };
 
     const formatName = (name: string, cropAt: number) => {
@@ -152,10 +256,47 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                         role={undefined}
                         variant="contained"
                         tabIndex={-1}
-                        startIcon={<CloudUpload />}
+                        startIcon={<CreateNewFolderIcon />}
+                        onClick={toggleCreateFolderDialog}
+                    />
+                    <Button
+                        sx={{
+                            height: '40px',
+                            bgcolor: 'transparent',
+                            color: '#1677ff',
+                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                            '&:hover': {
+                                bgcolor: 'transparent',
+                                color: '#1677ff',
+                            }
+                        }}
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
                     >
                         <VisuallyHiddenInput multiple type="file" onChange={handleUpload} />
                     </Button>
+                    <Button
+                        sx={{
+                            height: '40px',
+                            bgcolor: 'transparent',
+                            color: '#1677ff',
+                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                            '&:hover': {
+                                bgcolor: 'transparent',
+                                color: '#1677ff',
+                            }
+                        }}
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        tabIndex={-1}
+                        startIcon={<EditIcon />}
+                        disabled={!selectedMedia}
+                        onClick={toggleRenameDialog}
+                    />
                     <TextField
                         value={filterText}
                         onChange={handleFilterChange}
@@ -177,20 +318,53 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             </Box>
             <Grid item xs={12} md={12} lg={12} sx={{ display: 'flex', maxHeight: `${maxHeight}px`, minHeight: `${minHeight}px` }}>
                 <Grid container rowSpacing={4.5} columnSpacing={0} sx={{ mt: '1px', overflowY: 'auto' }}>
-                    {filteredData.map((item, index) => (
-                        <Grid key={index} item xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
-                            <img style={{
-                                width: '48px',
-                                height: '48px',
-                                borderRadius: '50%',
-                                objectFit: 'cover',
-                                cursor: 'pointer',
-                                border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
-                                boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
-                            }}
-                                src={`${item.path}?w=48px&h=48px&fit=crop&auto=format`}
-                                onClick={() => handleMediaClick(item)}
+                    {currentPath !== 'root' ?
+                        <Grid item key={-1} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
+                            <FolderIcon onDoubleClick={() => handleMediaNavigation({ name: '..', filename: (currentPath.includes('/') ? currentPath.replace(/\/[^/]+$/i, '') : 'root'), fieldname: 'folders', mimetype: 'folder'} as MediaDto)}
+                                style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    borderRadius: '50%',
+                                    cursor: 'pointer',
+                                    color: 'rgba(0, 0, 0, 0.54)',
+                                    border: selectedMedia && selectedMedia.filename === 'root' ? '2px solid #1890ff' : 'none',
+                                    boxShadow: selectedMedia && selectedMedia.filename === 'root' ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                }}
                             />
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                {'../'}
+                            </Typography>
+                        </Grid> : null}
+                    {filteredData.map((item, index) => (
+                        <Grid item key={index} xs={6} sm={4} md={3} lg={2} sx={{ textAlign: 'center' }}>
+                            {
+                                // Display images using <img> elements, otherwise use appropriate mui icons
+                                item.mimetype.startsWith('image/') ?
+                                    <img style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            borderRadius: '50%',
+                                            objectFit: 'cover',
+                                            cursor: 'pointer',
+                                            border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
+                                            boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                        }}
+                                        src={`${item.path}?w=48px&h=48px&fit=crop&auto=format`}
+                                        onClick={() => handleMediaSelection(item)}
+                                    /> :
+                                item.fieldname === 'folders' ?
+                                    <FolderIcon onClick={() => handleMediaSelection(item)} onDoubleClick={() => handleMediaNavigation(item)}
+                                        style={{
+                                            width: '48px',
+                                            height: '48px',
+                                            borderRadius: '50%',
+                                            cursor: 'pointer',
+                                            color: 'rgba(0, 0, 0, 0.54)',
+                                            border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
+                                            boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                        }}
+                                    /> : null
+                            }
                             <Typography variant="body2" sx={{ mt: 1 }}>
                                 {formatName(item.name, 20)}
                             </Typography>
@@ -210,13 +384,58 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                         </Box>
                                     </Box>
                                     <Box component="div">
-                                        <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.mimetype}</Typography>
+                                        <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.fieldname === 'folders' ? 'mapp' : selectedMedia.mimetype}</Typography>
                                     </Box>
                                 </>
                             ) : <Typography sx={{ p: 2 }}>Välj en ikon för att visa information.</Typography>}
                         </Box>
                     </Grid>
                 )}
+                <FormDialog open={isFolderDialogOpen} onClose={toggleCreateFolderDialog} title="Skapa ny mapp"
+                    contentText="Fyll i ett unikt namn för mappen och tryck Skapa mapp. Undvik gärna specialtecken och blanksteg i mappnamnet eftersom det ingår i sökvägen till uppladdade filer."
+                    onSubmit={handleSubmitFolder}
+                    fieldToValidate="name"
+                    textField={<TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="name"
+                        name="name"
+                        label="Namn på mappen"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                    />}
+                />
+                <FormDialog open={isRenameDialogOpen} onClose={toggleRenameDialog} title="Ändra namn"
+                    contentText="Fyll i ett nytt unikt namn och tryck Ändra. Undvik gärna specialtecken och blanksteg i mappnamn eftersom de ingår i sökvägen till uppladdade filer."
+                    submitButtonText="Ändra"
+                    onSubmit={handleSubmitRename}
+                    fieldToValidate="name"
+                    textField={<TextField
+                        autoFocus
+                        required
+                        margin="dense"
+                        id="name"
+                        name="name"
+                        label="Nytt namn"
+                        value={renameDialogValue}
+                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                            setRenameDialogValue(event.target.value);
+                        }}
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                    />}
+                />
+                <OverwriteMediaDialog title="Skriva över filer?"
+                    mediaToOverWrite={overwriteFiles}
+                    onClose={() => setOverwriteFiles([])}
+                    onSubmit={ (files) => {
+                        handleSubmitUpload(files);
+                        setOverwriteFiles([]);
+                    }}
+                />
                 <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av ikonen!"
                     onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
                 </AlertDialog>
