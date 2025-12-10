@@ -18,7 +18,7 @@ class MediaService extends BaseApiService<MediaDto> {
 
   async fetchByFolder(path: string = 'root'): Promise<MediaDto[]> {
     const restClient = await this.getRestClient();
-    const sorted = this.sortMediaByName(await restClient.get<MediaDto[]>(`${this.resourcePath}/folder/${path}/uploads`));
+    const sorted = this.sortMediaByName(await restClient.get<MediaDto[]>(`${this.resourcePath}/folder/${encodeURIComponent(path)}/uploads`));
     return sorted;
   }
 
@@ -29,14 +29,14 @@ class MediaService extends BaseApiService<MediaDto> {
     });
 
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}/upload${path === 'root' ? '' : `/${path}`}`, formData);
+      const response = (await this.getRestClient()).post<MediaDto[]>(`${this.resourcePath}/upload${path === 'root' ? '' : `/${encodeURIComponent(path)}`}`, formData);
       return response;
     });
   }
 
   async renameFile(currentName: string, newName: string): Promise<MediaDto> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/upload/${currentName}/${newName}`);
+      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/upload/${encodeURIComponent(currentName)}/${encodeURIComponent(newName)}`);
       return response;
     });
   }
@@ -47,14 +47,14 @@ class MediaService extends BaseApiService<MediaDto> {
 
   async createFolder(folderName: string): Promise<MediaDto> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).post<MediaDto>(`${this.resourcePath}/folder/${folderName}`);
+      const response = (await this.getRestClient()).post<MediaDto>(`${this.resourcePath}/folder/${encodeURIComponent(folderName)}`);
       return response;
     });
   }
 
   async renameFolder(currentName: string, newName: string): Promise<MediaDto> {
     return this.executeWithEvents(async () => {
-      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/folder/${currentName}/${newName}`);
+      const response = (await this.getRestClient()).put<MediaDto>(`${this.resourcePath}/folder/${encodeURIComponent(currentName)}/${encodeURIComponent(newName)}`);
       return response;
     });
   }
