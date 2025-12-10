@@ -1,5 +1,5 @@
 import { MediaDto } from "@/shared/interfaces/dtos";
-import { Box, Button, Grid, InputAdornment, TextField, Typography, styled } from "@mui/material";
+import { Box, Button, Grid, InputAdornment, TextField, Tooltip, Typography, styled } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Folder as FolderIcon,
     CloudUpload as CloudUploadIcon,
@@ -241,62 +241,97 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
             <Box component="div" sx={{ borderBottom: '1px solid #E0E0E0', backgroundColor: '#fbfafa', height: '56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="h5" sx={{ ml: '10px', textTransform: 'uppercase' }} >Ikoner</Typography>
                 <Box component="div" >
-                    <Button
-                        sx={{
-                            height: '40px',
-                            bgcolor: 'transparent',
-                            color: '#1677ff',
-                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
-                            '&:hover': {
-                                bgcolor: 'transparent',
-                                color: '#1677ff',
-                            }
-                        }}
-                        component="label"
-                        role={undefined}
-                        variant="contained"
-                        tabIndex={-1}
-                        startIcon={<CreateNewFolderIcon />}
-                        onClick={toggleCreateFolderDialog}
-                    />
-                    <Button
-                        sx={{
-                            height: '40px',
-                            bgcolor: 'transparent',
-                            color: '#1677ff',
-                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
-                            '&:hover': {
-                                bgcolor: 'transparent',
-                                color: '#1677ff',
-                            }
-                        }}
-                        component="label"
-                        role={undefined}
-                        variant="contained"
-                        tabIndex={-1}
-                        startIcon={<CloudUploadIcon />}
-                    >
-                        <VisuallyHiddenInput multiple type="file" onChange={handleUpload} />
-                    </Button>
-                    <Button
-                        sx={{
-                            height: '40px',
-                            bgcolor: 'transparent',
-                            color: '#1677ff',
-                            '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
-                            '&:hover': {
-                                bgcolor: 'transparent',
-                                color: '#1677ff',
-                            }
-                        }}
-                        component="label"
-                        role={undefined}
-                        variant="contained"
-                        tabIndex={-1}
-                        startIcon={<EditIcon />}
-                        disabled={!selectedMedia}
-                        onClick={toggleRenameDialog}
-                    />
+                    <Tooltip title="Skapa ny mapp">
+                        <span>
+                            <Button
+                                sx={{
+                                    height: '40px',
+                                    bgcolor: 'transparent',
+                                    color: '#1677ff',
+                                    '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                                    '&:hover': {
+                                        bgcolor: 'transparent',
+                                        color: '#1677ff',
+                                    }
+                                }}
+                                component="label"
+                                role={undefined}
+                                variant="contained"
+                                tabIndex={-1}
+                                startIcon={<CreateNewFolderIcon />}
+                                onClick={toggleCreateFolderDialog}
+                            />
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Ladda upp filer">
+                        <span>
+                            <Button
+                                sx={{
+                                    height: '40px',
+                                    bgcolor: 'transparent',
+                                    color: '#1677ff',
+                                    '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                                    '&:hover': {
+                                        bgcolor: 'transparent',
+                                        color: '#1677ff',
+                                    }
+                                }}
+                                component="label"
+                                role={undefined}
+                                variant="contained"
+                                tabIndex={-1}
+                                startIcon={<CloudUploadIcon />}
+                            >
+                                <VisuallyHiddenInput multiple type="file" onChange={handleUpload} />
+                            </Button>
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Ändra namn">
+                        <span>
+                            <Button
+                                sx={{
+                                    height: '40px',
+                                    bgcolor: 'transparent',
+                                    color: '#1677ff',
+                                    '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                                    '&:hover': {
+                                        bgcolor: 'transparent',
+                                        color: '#1677ff',
+                                    }
+                                }}
+                                component="label"
+                                role={undefined}
+                                variant="contained"
+                                tabIndex={-1}
+                                startIcon={<EditIcon />}
+                                disabled={!selectedMedia}
+                                onClick={toggleRenameDialog}
+                            />
+                        </span>
+                    </Tooltip>
+                    <Tooltip title="Radera">
+                        <span>
+                            <Button
+                                sx={{
+                                    height: '40px',
+                                    bgcolor: 'transparent',
+                                    color: '#1677ff',
+                                    '& .MuiSvgIcon-root': { fontSize: '2.1rem' },
+                                    '&:hover': {
+                                        bgcolor: 'transparent',
+                                        color: '#1677ff',
+                                    }
+                                }}
+                                component="label"
+                                role={undefined}
+                                variant="contained"
+                                tabIndex={-1}
+                                startIcon={<DeleteIcon />}
+                                disabled={!selectedMedia}
+                                onClick={handleDeleteMedia}
+                            />
+                        </span>
+                    </Tooltip>
                     <TextField
                         value={filterText}
                         onChange={handleFilterChange}
@@ -378,10 +413,6 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                 <>
                                     <Box component="div" sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <Typography variant="h6">{formatName(selectedMedia.name, 45)}</Typography>
-                                        <Box component="div" onClick={() => handleDeleteMedia()}
-                                            sx={{ opacity: 0.7, '&:hover': { opacity: 1, transform: 'scale(1.1)', cursor: 'pointer' } }}>
-                                            <DeleteIcon />
-                                        </Box>
                                     </Box>
                                     <Box component="div">
                                         <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.fieldname === 'folders' ? 'mapp' : selectedMedia.mimetype}</Typography>
@@ -436,7 +467,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                         setOverwriteFiles([]);
                     }}
                 />
-                <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText="Vänligen bekräfta borttagning av ikonen!"
+                <AlertDialog open={isAlertDialogOpen} onConfirm={confirmDelete} contentText={`Vänligen bekräfta borttagning av ${selectedMedia?.mimetype === 'folder' ? "mappen": "filen"} ${selectedMedia?.name}!`}
                     onClose={() => setAlertDialogOpen(false)} title="Bekräfta borttagning">
                 </AlertDialog>
             </Grid>
