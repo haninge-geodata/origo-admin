@@ -59,6 +59,13 @@ export default function SyncLayerDialogDialog({ open, onClose, onSubmit, title, 
         <Dialog
             open={open}
             onClose={onClose}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    handleOnSubmit();
+                } else if (e.key === 'Escape') {
+                    handleOnClose();
+                }
+            }}
             PaperProps={{
                 sx: { width: '80%', maxWidth: '600px' }
             }}

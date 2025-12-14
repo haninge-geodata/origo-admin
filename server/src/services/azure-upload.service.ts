@@ -28,7 +28,17 @@ class AzureUploadService implements IUploadService {
       return files.map((file) => mapDBMediaToMediaDto(file, this.uploadPath));
     } catch (error) {
       console.error(`[${new Date().toISOString()}] ${error}`);
-      throw new Error("Det gick inte att hämta filerna");
+      throw new Error("Unable to get media registrations");
+    }
+  }
+
+  async getFileByIdOrFilename(id: string): Promise<MediaDto> {
+    try {
+      const file = (await this.repository.query({ $or: [ { _id: id }, { filename: id } ] }, null, 1))[0];
+      return mapDBMediaToMediaDto(file, this.uploadPath);
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] ${error}`);
+      throw new Error("Unable to get the media registration");
     }
   }
 
@@ -56,7 +66,11 @@ class AzureUploadService implements IUploadService {
     await blobClient.delete();
   }
 
-  async saveFiles(files: Express.Multer.File[]): Promise<MediaDto[]> {
+  async saveFiles(files: Express.Multer.File[], path?: string): Promise<MediaDto[]> {
+    // TODO: Handle path parameter to save files in virtual folders in Azure
+    if (path) {
+      console.error("Not implemented: Path parameter handling in AzureUploadService.saveFiles");
+    }
     const promises = files.map(async (file) => {
       const fileData = {
         originalName: file.originalname,
@@ -78,10 +92,50 @@ class AzureUploadService implements IUploadService {
     );
   }
 
-  async deleteFile(id: string): Promise<void> {
+  async renameFile(currentFilename: string, newFilename: string, move: boolean = true): Promise<MediaDto> {
+    console.error("Not implemented: renameFile in AzureUploadService");
+    return newFilename as unknown as MediaDto;
+  }
+
+  async deleteFile(id: string): Promise<MediaDto> {
     const file = await this.repository.find(id);
-    await this.deleteFileFromAzure(file.filename);
-    await this.repository.delete(id);
+    try {
+      const deletedFile = await this.repository.delete(id);
+      await this.deleteFileFromAzure(file.filename);
+      return mapDBMediaToMediaDto(deletedFile, this.uploadPath)
+    } catch (err) {
+        throw new Error("Unable to delete file");
+    }
+  }
+
+  async getAllFolders(): Promise<MediaDto[]> {
+    console.error("Not implemented: getAllFolders in AzureUploadService");
+    return null as unknown as MediaDto[];
+  }
+
+  async getFolderByIdOrFolderName(): Promise<MediaDto> {
+    console.error("Not implemented: getFolderByIdOrFolderName in AzureUploadService");
+    return null as unknown as MediaDto;
+  }
+
+  async getByFolder(id: string): Promise<MediaDto[]> {
+    console.error("Not implemented: getByFolder in AzureUploadService");
+    return null as unknown as MediaDto[];
+  }
+
+  async createFolder(folderName: string): Promise<MediaDto> {
+    console.error("Not implemented: createFolder in AzureUploadService");
+    return folderName as unknown as MediaDto;
+  }
+
+  async renameFolder(currentFolderName: string, newFolderName: string, move: boolean = true): Promise<MediaDto> {
+    console.error("Not implemented: renameFolder in AzureUploadService");
+    return newFolderName as unknown as MediaDto;
+  }
+
+  async deleteFolder(folderName: string): Promise<MediaDto> {
+    console.error("Not implemented: deleteFolder in AzureUploadService");
+    return folderName as unknown as MediaDto;
   }
 
   getMulterConfig = () => {
@@ -95,17 +149,18 @@ class AzureUploadService implements IUploadService {
   };
 }
 
+// TODO : Implement folder operations in AzureUploadService
 const storage: StorageEngine = multer.memoryStorage();
 
 const fileFilter = (
   req: Request,
   file: Express.Multer.File,
-  cb: multer.FileFilterCallback
+  callback: multer.FileFilterCallback
 ) => {
   if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
+    callback(null, true);
   } else {
-    cb(null, false);
+    callback(null, false);
   }
 };
 

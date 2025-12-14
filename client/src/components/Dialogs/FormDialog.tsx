@@ -4,6 +4,7 @@ import { useState } from "react";
 interface FormDialogProps {
     title: string;
     contentText: string;
+    submitButtonText?: string;
     open: boolean;
     fieldToValidate: string;
     errorMessage?: string | null;
@@ -12,10 +13,10 @@ interface FormDialogProps {
     textField: React.ReactNode;
 }
 
-export default function FormDialog({ open, onClose, onSubmit, title, fieldToValidate, contentText, textField, errorMessage }: FormDialogProps) {
+export default function FormDialog({ open, onClose, onSubmit, title, fieldToValidate, contentText, submitButtonText = 'Skapa', textField, errorMessage }: FormDialogProps) {
     const [localErrorMessage, setLocalErrorMessage] = useState<string | null>(null);
 
-    const handleSubmit = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleSubmit = (event: React.MouseEvent<HTMLButtonElement> | React.KeyboardEvent<HTMLDivElement>) => {
         event.preventDefault();
         const form = (event.target as HTMLButtonElement).closest('form');
         if (form) {
@@ -37,6 +38,13 @@ export default function FormDialog({ open, onClose, onSubmit, title, fieldToVali
         <Dialog
             open={open}
             onClose={onClose}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    handleSubmit(e);
+                } else if (e.key === 'Escape') {
+                    onClose();
+                }
+            }}
             PaperProps={{
                 component: 'form',
                 onSubmit: onSubmit
@@ -52,7 +60,7 @@ export default function FormDialog({ open, onClose, onSubmit, title, fieldToVali
             </DialogContent>
             <DialogActions>
                 <Button onClick={onClose}>Avbryt</Button>
-                <Button onClick={handleSubmit}>Skapa</Button>
+                <Button onClick={handleSubmit}>{submitButtonText}</Button>
             </DialogActions>
         </Dialog>
     );

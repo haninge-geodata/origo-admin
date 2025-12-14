@@ -69,6 +69,15 @@ class Repository<T> implements IRepository<T> {
     return updatedModel!;
   }
 
+  async upsert(query: FilterQuery<T>, model: T, options?: object): Promise<T> {
+    const updateData: UpdateQuery<T> = model as UpdateQuery<T>;
+    updateData.$setOnInsert = { _id: updateData._id };
+    delete updateData._id;
+    const queryOptions = Object.assign(options || {}, { upsert: true, new: true });
+    const updatedModel = await this.model.findOneAndUpdate(query, updateData, queryOptions).exec();
+    return updatedModel!;
+  }
+
   async delete(id: string): Promise<T> {
     const document = await this.model.findByIdAndDelete(id).exec();
     if (!document) {

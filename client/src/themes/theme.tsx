@@ -142,6 +142,10 @@ export default function ThemeProvider({ children }: Props) {
                                 backgroundColor: '#0958d9',
                                 boxShadow: 'none'
                             },
+                            '&.Mui-disabled': {
+                                background: "#fbfafa",
+                                boxShadow: 'none'
+                            },
                             boxShadow: 'none',
                             boxSizing: 'border-box',
                             outline: 0,
