@@ -23,11 +23,9 @@ class GenericLayerService extends BaseApiService<BaseLayerDto> {
    * @param resource - The layer data
    * @param skipValidation - If true, skips validation (validation is on by default)
    */
-  async add(resource: BaseLayerDto, skipValidation: boolean = false): Promise<BaseLayerDto> {
+  async add(resource: BaseLayerDto, subPath: string | undefined = undefined, skipValidation: boolean = false): Promise<BaseLayerDto> {
     return this.executeWithEvents(async () => {
-      const url = skipValidation 
-        ? `${this.resourcePath}?skipValidation=true` 
-        : this.resourcePath;
+      const url = `${this.resourcePath}${subPath ? `/${subPath}` : ''}${skipValidation ? `?skipValidation=true` : ''}`;
       const response = (await this.getRestClient()).post<BaseLayerDto>(url, resource);
       return response;
     });
@@ -38,11 +36,9 @@ class GenericLayerService extends BaseApiService<BaseLayerDto> {
    * @param resources - Array of layer data
    * @param skipValidation - If true, skips validation (validation is on by default)
    */
-  async addRange(resources: BaseLayerDto[], skipValidation: boolean = false): Promise<BaseLayerDto[]> {
+  async addRange(resources: BaseLayerDto[], subPath: string | undefined = undefined, skipValidation: boolean = false): Promise<BaseLayerDto[]> {
     return this.executeWithEvents(async () => {
-      const url = skipValidation 
-        ? `${this.resourcePath}?skipValidation=true` 
-        : this.resourcePath;
+      const url = `${this.resourcePath}${subPath ? `/${subPath}` : ''}${skipValidation ? `?skipValidation=true` : ''}`;
       const response = (await this.getRestClient()).post<BaseLayerDto[]>(url, resources);
       return response;
     });
@@ -54,11 +50,9 @@ class GenericLayerService extends BaseApiService<BaseLayerDto> {
    * @param resource - The updated layer data
    * @param skipValidation - If true, skips validation (validation is on by default)
    */
-  async update(id: string, resource: BaseLayerDto, skipValidation: boolean = false): Promise<BaseLayerDto> {
+  async update(id: string, resource: BaseLayerDto, subPath: string | undefined = undefined, skipValidation: boolean = false): Promise<BaseLayerDto> {
     return this.executeWithEvents(async () => {
-      const url = skipValidation 
-        ? `${this.resourcePath}/${id}?skipValidation=true` 
-        : `${this.resourcePath}/${id}`;
+      const url = `${this.resourcePath}${subPath ? `/${subPath}` : ''}${skipValidation ? `?skipValidation=true` : ''}`;
       const response = (await this.getRestClient()).put<BaseLayerDto>(url, resource);
       return response;
     });
