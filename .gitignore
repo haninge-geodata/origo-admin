@@ -147,3 +147,4 @@ proxy/node_modules/
 proxy/dist/
 proxy/.env
 server/src/swagger_output.json
+uploads/
