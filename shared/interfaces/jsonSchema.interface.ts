@@ -1,4 +1,4 @@
-import { JSONSchema7 } from "json-schema";
+import { JSONSchema7 } from "../../server/node_modules/@types/json-schema";
 
 // Extended JSON Schema with our custom properties
 export interface ExtendedJSONSchema extends JSONSchema7 {

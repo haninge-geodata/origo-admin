@@ -215,7 +215,7 @@ export const FIELD_REGISTRY: Record<FieldType, FieldConfig> = {
         step: step,
         marks: marks,
         valueLabelDisplay: "auto",
-        onChange: (_, newValue) => props.onChange(newValue),
+        onChange: (_: any, newValue: any) => props.onChange(newValue),
         onBlur: props.onBlur,
         disabled: props.disabled,
       };
@@ -534,8 +534,8 @@ export const FIELD_REGISTRY: Record<FieldType, FieldConfig> = {
       };
 
       const itemType =
-        schema.items && typeof schema.items === "object"
-          ? schema.items.type
+        schema.items as ExtendedJSONSchema && typeof schema.items === "object"
+          ? (schema.items as ExtendedJSONSchema).type
           : "string";
 
       return {
@@ -552,13 +552,13 @@ export const FIELD_REGISTRY: Record<FieldType, FieldConfig> = {
             const items = value.split(",").map((s: string) => s.trim());
 
             if (itemType === "number") {
-              const numbers = items.map((s) => parseFloat(s));
-              if (numbers.every((n) => !isNaN(n))) {
+              const numbers = items.map((s: any) => parseFloat(s));
+              if (numbers.every((n: any) => !isNaN(n))) {
                 props.onChange(numbers);
                 return;
               }
             } else if (itemType === "boolean") {
-              const booleans = items.map((s) => s.toLowerCase() === "true");
+              const booleans = items.map((s: any) => s.toLowerCase() === "true");
               props.onChange(booleans);
               return;
             } else {

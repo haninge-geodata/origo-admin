@@ -15,7 +15,7 @@ import {
 import { JSONSchemaFormProps } from './types';
 import { Field } from './Field';
 import { jsonSchemaToZod } from '@/utils/schema/jsonSchemaToZod';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from "@/shared/interfaces";;
 import { parseFieldSections } from './utils/sectionParser';
 import { createFieldGroups, FieldGroup } from './utils/fieldGrouper';
 import { calculateFormStats } from './utils/formStatsCalculator';

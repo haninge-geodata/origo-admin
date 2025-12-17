@@ -16,6 +16,7 @@ import { useApp } from "@/contexts/AppContext";
 import { schemaService, JsonSchemaDto } from "@/api/schemaService";
 import JSONEditorReact from "@/components/Editors/JSONEditor";
 import { globalEventEmitter } from "@/utils/EventEmitter";
+import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
 
 export default function AddSchemaPage() {
     const router = useRouter();
@@ -24,7 +25,7 @@ export default function AddSchemaPage() {
     const [title, setTitle] = useState('');
     const [name, setName] = useState('');
     const [visible, setVisible] = useState(true);
-    const [schemaContent, setSchemaContent] = useState({
+    const [schemaContent, setSchemaContent] = useState<ExtendedJSONSchema>({
         "$schema": "http://json-schema.org/draft-07/schema#",
         "title": "New Layer Schema",
         "description": "Configuration schema for new layer type",

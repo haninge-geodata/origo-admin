@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { schemaService, JsonSchemaDto } from "@/api/schemaService";
 import { globalEventEmitter } from "@/utils/EventEmitter";
+import { TableData } from "@/interfaces/detailedDataTable";
 
 export default function SchemasListingView() {
     const queryKey = 'jsonschemas';
@@ -42,12 +43,14 @@ export default function SchemasListingView() {
 
     const confirmDelete = async () => {
         try {
-            await schemaService.delete(selectedSchema!.id);
-            queryClient.invalidateQueries({ queryKey: [queryKey] });
-            globalEventEmitter.emit('schema-changed');
-            setAlertDialogOpen(false);
-            setSelectedSchema(undefined);
-            showToast('Schemat har raderats', 'success');
+            if (selectedSchema?.id) {
+                await schemaService.delete(selectedSchema!.id);
+                queryClient.invalidateQueries({ queryKey: [queryKey] });
+                globalEventEmitter.emit('schema-changed');
+                setAlertDialogOpen(false);
+                setSelectedSchema(undefined);
+                showToast('Schemat har raderats', 'success');
+            }
         } catch (error) {
             showToast('Ett fel inträffade när schemat skulle raderas.', 'error');
             console.error(`[${new Date().toISOString()}] Error deleting schema: ${error}`);
@@ -116,8 +119,8 @@ export default function SchemasListingView() {
             name: schema.name,
             title: schema.title,
             visible: schema.visible ? 'Ja' : 'Nej',
-            createdAt: new Date(schema.createdAt).toLocaleDateString('sv-SE'),
-            updatedAt: new Date(schema.updatedAt).toLocaleDateString('sv-SE'),
+            createdAt: new Date(schema.createdAt!).toLocaleDateString('sv-SE'),
+            updatedAt: new Date(schema.updatedAt!).toLocaleDateString('sv-SE'),
         }))
     };
 
@@ -132,7 +135,7 @@ export default function SchemasListingView() {
                         <Grid container rowSpacing={4.5}>
                             <Grid item xs={12} md={12} lg={12}>
                                 <DetailedDataTable
-                                    data={tableData}
+                                    data={tableData as TableData}
                                     isSearchable={true}
                                     expandable={false}
                                     pagination={true}

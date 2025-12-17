@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TextField, Autocomplete, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
 import { InputAdornment } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z, ZodObject, ZodType, ZodTypeAny, ZodTypeDef, ZodEffects } from "zod";
 import { ExtendedJSONSchema } from "@/shared/interfaces";
 
 export function jsonSchemaToZod(schema: ExtendedJSONSchema): z.ZodSchema<any> {
@@ -205,7 +205,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
     });
   }
 
-  let schema = z.object(shape);
+  let schema: any;
 
   // Handle additionalProperties
   if (property.additionalProperties === false) {
@@ -224,7 +224,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
     const additionalSchema = convertSchemaProperty(
       property.additionalProperties as ExtendedJSONSchema
     );
-    schema = schema.passthrough().superRefine((val, ctx) => {
+    schema = schema.passthrough().superRefine((val: any, ctx: any) => {
       const knownKeys = Object.keys(shape);
       Object.entries(val).forEach(([key, value]) => {
         if (!knownKeys.includes(key)) {
@@ -250,7 +250,7 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
       ExtendedJSONSchema
     >;
 
-    schema = schema.passthrough().superRefine((val, ctx) => {
+    schema = schema.passthrough().superRefine((val: any, ctx: any) => {
       const knownKeys = Object.keys(shape);
 
       Object.entries(val).forEach(([key, value]) => {

@@ -8,7 +8,8 @@ import {
   Divider,
 } from '@mui/material';
 import { HelpOutline as HelpIcon } from '@mui/icons-material';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
+import { JSONSchema7Type } from "../../../../../../server/node_modules/@types/json-schema";
 
 interface FieldHelpTooltipProps {
   schema: ExtendedJSONSchema;
@@ -75,14 +76,14 @@ export const FieldHelpTooltip: React.FC<FieldHelpTooltipProps> = ({
       )}
 
       {/* Examples */}
-      {schema.examples && schema.examples.length > 0 && (
+      {schema.examples && (schema.examples as Array<JSONSchema7Type>).length > 0 && (
         <>
           <Divider sx={{ my: 1 }} />
           <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
             Examples:
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            {schema.examples.slice(0, 3).map((example, index) => (
+            {(schema.examples as Array<JSONSchema7Type>).slice(0, 3).map((example, index) => (
               <Typography
                 key={index}
                 variant="body2"
@@ -98,9 +99,9 @@ export const FieldHelpTooltip: React.FC<FieldHelpTooltipProps> = ({
                 {String(example)}
               </Typography>
             ))}
-            {schema.examples.length > 3 && (
+            {(schema.examples as Array<JSONSchema7Type>).length > 3 && (
               <Typography variant="caption" color="text.secondary">
-                +{schema.examples.length - 3} more examples
+                +{(schema.examples as Array<JSONSchema7Type>).length - 3} more examples
               </Typography>
             )}
           </Box>

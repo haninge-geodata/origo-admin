@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Box } from '@mui/material';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
 import { FieldGroup } from '../utils/fieldGrouper';
 import { getGroupFieldSize } from '../utils/fieldGrouper';
 

@@ -3,7 +3,7 @@ import { Box, MenuItem } from '@mui/material';
 import { useFormField, useBooleanField, useEnumField } from './hooks/useFormField';
 import { getFieldConfig, FieldType, renderEnumOptions } from './fieldRegistry';
 import { detectFieldType, validateSchemaForFieldType } from './utils/fieldTypeDetection';
-import { ExtendedJSONSchema } from '@/types/jsonSchema';
+import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
 import { FieldHelpTooltip, hasHelpInfo } from './components/FieldHelpTooltip';
 import { FIELD_TYPES_WITH_LABELS, FIELD_TYPES_WITH_HELP_TOOLTIP } from './constants/fieldTypes';
 
