@@ -205,14 +205,14 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
     });
   }
 
-  let schema: any;
+  let schema: z.ZodObject<any> = z.object(shape);
 
   // Handle additionalProperties
   if (property.additionalProperties === false) {
     // Strict mode - no additional properties allowed
     schema = schema.strict({
       message: "Unknown properties are not allowed",
-    });
+    }) as any;
   } else if (
     property.additionalProperties === true ||
     property.additionalProperties === undefined
