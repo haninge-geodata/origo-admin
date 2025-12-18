@@ -205,42 +205,44 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
     });
   }
 
-  let schema: z.ZodObject<any> = z.object(shape);
+  let schema: z.ZodTypeAny = z.object(shape);
 
   // Handle additionalProperties
   if (property.additionalProperties === false) {
     // Strict mode - no additional properties allowed
-    schema = schema.strict({
+    schema = (z.object(shape) as z.ZodObject<any>).strict({
       message: "Unknown properties are not allowed",
-    }) as any;
+    });
   } else if (
     property.additionalProperties === true ||
     property.additionalProperties === undefined
   ) {
     // Allow any additional properties
-    schema = schema.passthrough();
+    schema = (z.object(shape) as z.ZodObject<any>).passthrough();
   } else if (typeof property.additionalProperties === "object") {
     // Additional properties must match a specific schema
     const additionalSchema = convertSchemaProperty(
       property.additionalProperties as ExtendedJSONSchema
     );
-    schema = schema.passthrough().superRefine((val: any, ctx: any) => {
-      const knownKeys = Object.keys(shape);
-      Object.entries(val).forEach(([key, value]) => {
-        if (!knownKeys.includes(key)) {
-          const result = additionalSchema.safeParse(value);
-          if (!result.success) {
-            result.error.errors.forEach((err) => {
-              ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: [key, ...err.path],
-                message: `"${key}": ${err.message}`,
+    schema = (z.object(shape) as z.ZodObject<any>)
+      .passthrough()
+      .superRefine((val: any, ctx: any) => {
+        const knownKeys = Object.keys(shape);
+        Object.entries(val).forEach(([key, value]) => {
+          if (!knownKeys.includes(key)) {
+            const result = additionalSchema.safeParse(value);
+            if (!result.success) {
+              result.error.errors.forEach((err) => {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  path: [key, ...err.path],
+                  message: `"${key}": ${err.message}`,
+                });
               });
-            });
+            }
           }
-        }
+        });
       });
-    });
   }
 
   // Handle patternProperties (JSON Schema feature)
@@ -250,58 +252,60 @@ function convertObjectSchema(property: ExtendedJSONSchema): z.ZodTypeAny {
       ExtendedJSONSchema
     >;
 
-    schema = schema.passthrough().superRefine((val: any, ctx: any) => {
-      const knownKeys = Object.keys(shape);
+    schema = (z.object(shape) as z.ZodObject<any>)
+      .passthrough()
+      .superRefine((val: any, ctx: any) => {
+        const knownKeys = Object.keys(shape);
 
-      Object.entries(val).forEach(([key, value]) => {
-        // Skip validation for explicitly defined properties
-        if (knownKeys.includes(key)) return;
+        Object.entries(val).forEach(([key, value]) => {
+          // Skip validation for explicitly defined properties
+          if (knownKeys.includes(key)) return;
 
-        let matchedPattern = false;
+          let matchedPattern = false;
 
-        // Check each pattern
-        for (const [pattern, patternSchema] of Object.entries(patternProps)) {
-          const regex = new RegExp(pattern);
-          if (regex.test(key)) {
-            matchedPattern = true;
-            const patternZodSchema = convertSchemaProperty(patternSchema);
-            const result = patternZodSchema.safeParse(value);
+          // Check each pattern
+          for (const [pattern, patternSchema] of Object.entries(patternProps)) {
+            const regex = new RegExp(pattern);
+            if (regex.test(key)) {
+              matchedPattern = true;
+              const patternZodSchema = convertSchemaProperty(patternSchema);
+              const result = patternZodSchema.safeParse(value);
 
-            if (!result.success) {
-              result.error.errors.forEach((err) => {
-                const pathStr =
-                  err.path.length > 0 ? `.${err.path.join(".")}` : "";
-                ctx.addIssue({
-                  code: z.ZodIssueCode.custom,
-                  path: [key, ...err.path],
-                  message: `"${key}${pathStr}": ${err.message}`,
+              if (!result.success) {
+                result.error.errors.forEach((err) => {
+                  const pathStr =
+                    err.path.length > 0 ? `.${err.path.join(".")}` : "";
+                  ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    path: [key, ...err.path],
+                    message: `"${key}${pathStr}": ${err.message}`,
+                  });
                 });
+              }
+              break; // Stop after first matching pattern
+            }
+          }
+
+          // If no pattern matched, check if key format is invalid
+          if (!matchedPattern && property.additionalProperties === false) {
+            const patterns = Object.keys(patternProps);
+            if (patterns.length > 0) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: [key],
+                message: `Key "${key}" does not match required pattern: ${patterns[0]}`,
+              });
+            } else {
+              ctx.addIssue({
+                code: z.ZodIssueCode.unrecognized_keys,
+                keys: [key],
+                path: [],
+                message: `Unknown key: "${key}"`,
               });
             }
-            break; // Stop after first matching pattern
           }
-        }
-
-        // If no pattern matched, check if key format is invalid
-        if (!matchedPattern && property.additionalProperties === false) {
-          const patterns = Object.keys(patternProps);
-          if (patterns.length > 0) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: [key],
-              message: `Key "${key}" does not match required pattern: ${patterns[0]}`,
-            });
-          } else {
-            ctx.addIssue({
-              code: z.ZodIssueCode.unrecognized_keys,
-              keys: [key],
-              path: [],
-              message: `Unknown key: "${key}"`,
-            });
-          }
-        }
+        });
       });
-    });
   }
 
   return schema;

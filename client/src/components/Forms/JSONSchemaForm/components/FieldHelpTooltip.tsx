@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { HelpOutline as HelpIcon } from '@mui/icons-material';
 import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
-import { JSONSchema7Type } from "../../../../../../server/node_modules/@types/json-schema";
+import { JSONSchema7Type } from "json-schema";
 
 interface FieldHelpTooltipProps {
   schema: ExtendedJSONSchema;
@@ -36,8 +36,8 @@ export const FieldHelpTooltip: React.FC<FieldHelpTooltipProps> = ({
 
   const chipSx = { fontSize: '0.7rem', height: 20 };
   const hasValidationRules = schema.pattern || schema.minimum !== undefined ||
-                             schema.maximum !== undefined || schema.minLength !== undefined ||
-                             schema.maxLength !== undefined;
+    schema.maximum !== undefined || schema.minLength !== undefined ||
+    schema.maxLength !== undefined;
 
   const tooltipContent = (
     <Box sx={{ maxWidth: 320 }}>
