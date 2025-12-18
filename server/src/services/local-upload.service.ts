@@ -10,6 +10,7 @@ import { MediaDto } from "@/shared/interfaces/dtos";
 import { IUploadService } from "@/interfaces/uploadservice.interface";
 
 const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER!;
+const UPLOAD_MAX_FILESIZE = parseInt(process.env.UPLOAD_MAX_FILESIZE as string) || 100000000;
 class LocalUploadService implements IUploadService {
   private uploadUrl = "";
   private repository: Repository<DBMedia>;
@@ -190,7 +191,7 @@ class LocalUploadService implements IUploadService {
       storage: storage,
       fileFilter: fileFilter,
       limits: {
-        fileSize: 100000000,
+        fileSize: UPLOAD_MAX_FILESIZE,
       },
     };
   };
@@ -219,12 +220,15 @@ const fileFilter = (
   req: Request,
   file: Express.Multer.File,
   callback: multer.FileFilterCallback
-) => {
+) => callback(null, true);
+/** The filter function can be used to restrict which files are allowed.
+  {
   if (file.mimetype.startsWith("image/")) {
     callback(null, true);
   } else {
     callback(null, false);
   }
 };
+ */
 
 export { LocalUploadService };
