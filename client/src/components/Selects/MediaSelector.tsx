@@ -1,11 +1,13 @@
 import { MediaDto } from "@/shared/interfaces/dtos";
 import { Box, Button, Grid, InputAdornment, TextField, Tooltip, Typography, styled } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Folder as FolderIcon,
+import {
     CloudUpload as CloudUploadIcon,
     CreateNewFolder as CreateNewFolderIcon,
     Delete as DeleteIcon,
+    DescriptionRounded as DocumentIcon,
     Edit as EditIcon,
+    Folder as FolderIcon,
     Search as SearchIcon
 } from '@mui/icons-material';
 import { useQueryClient, useQuery } from "@tanstack/react-query";
@@ -134,9 +136,9 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
         try {
             await service.upload(files, currentPath);
             queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
-            showToast('Ikonen har laddats upp', 'success');
+            showToast('Filen har laddats upp', 'success');
         } catch (error) {
-            showToast('Ikonen kunde inte laddas upp', 'error');
+            showToast('Filen kunde inte laddas upp', 'error');
             console.error(`[${new Date().toISOString()}] Error when uploading files: ${error}`);
         }
     };
@@ -186,14 +188,14 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                     showToast('Mappen har raderats', 'success');
                 } else {
                     await service.deleteFile(selectedMedia.id!);
-                    showToast('Ikonen har raderats', 'success');
+                    showToast('Filen har raderats', 'success');
                 }
                 queryClient.invalidateQueries({ queryKey: [queryKey, currentPath] });
                 setselectedMedia(null as unknown as MediaDto);
                 setAlertDialogOpen(false);
             } catch (error) {
-                showToast(`Kunde inte radera ${selectedMedia.fieldname === 'folders' ? 'mappen' : 'ikonen'}.`, 'error');
-                console.error(`[${new Date().toISOString()}] Error deleting the icon: ${error}`);
+                showToast(`Kunde inte radera ${selectedMedia.fieldname === 'folders' ? 'mappen' : 'filen'}.`, 'error');
+                console.error(`[${new Date().toISOString()}] Error deleting the file: ${error}`);
                 setAlertDialogOpen(false);
             }
         }
@@ -239,7 +241,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
     return (
         <Grid item xs={12} sx={{ border: '1px solid #E0E0E0' }}>
             <Box component="div" sx={{ borderBottom: '1px solid #E0E0E0', backgroundColor: '#fbfafa', height: '56px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h5" sx={{ ml: '10px', textTransform: 'uppercase' }} >Ikoner</Typography>
+                <Typography variant="h5" sx={{ ml: '10px', textTransform: 'uppercase' }} >Uppladdade filer</Typography>
                 <Box component="div" >
                     <Tooltip title="Skapa ny mapp">
                         <span>
@@ -398,7 +400,17 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                             border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
                                             boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
                                         }}
-                                    /> : null
+                                    /> :
+                                    <DocumentIcon onClick={() => handleMediaSelection(item)}
+                                      style={{
+                                        width: '48px',
+                                        height: '48px',
+                                        borderRadius: '50%',
+                                        cursor: 'pointer',
+                                        color: 'rgba(0, 0, 0, 0.54)',
+                                        border: selectedMedia && selectedMedia.id === item.id ? '2px solid #1890ff' : 'none',
+                                        boxShadow: selectedMedia && selectedMedia.id === item.id ? '0 0 10px #1890ff, 0 0 6px #1890ff80' : 'none'
+                                    }}/>
                             }
                             <Typography variant="body2" sx={{ mt: 1 }}>
                                 {formatName(item.name, 20)}
@@ -418,7 +430,7 @@ export const MediaSelector = ({ onMediaSelect, maxHeight = 800, minHeight = 350,
                                         <Typography variant="h6" sx={{ mt: 1 }}>Filtyp: {selectedMedia.fieldname === 'folders' ? 'mapp' : selectedMedia.mimetype}</Typography>
                                     </Box>
                                 </>
-                            ) : <Typography sx={{ p: 2 }}>Välj en ikon för att visa information.</Typography>}
+                            ) : <Typography sx={{ p: 2 }}>Välj en fil för att visa information.</Typography>}
                         </Box>
                     </Grid>
                 )}
