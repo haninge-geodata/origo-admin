@@ -131,7 +131,7 @@ function createDistinctSources(layers: any[], sources: LinkResourceDto[]): any {
     if (!layer.source) return;
 
     // For string sources (dynamic layers where source is a URL)
-    if (typeof layer.source === "string") {
+    if (typeof layer.source === "string" && layer.source.match(/^http(s)?/i)) {
       const syntheticName = `${layer.name}-src`;
       if (!sourceMap.has(syntheticName)) {
         sourceMap.set(syntheticName, { url: layer.source });
@@ -273,7 +273,7 @@ function transformLayers(
     };
 
     if (source) {
-      if (typeof source === "string") {
+      if (typeof source === "string" && source.match(/^http(s)?/i)) {
         // String sources are URLs - use synthetic name to match createDistinctSources
         transformedLayer.source = `${layer.name}-src`;
       } else {
