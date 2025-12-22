@@ -97,7 +97,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             <Snackbar
                 open={!!toast}
                 autoHideDuration={6000}
-                onClose={() => setToast(null)}
+                onClose={(evt, reason) => reason !== "clickaway" && setToast(null)}
+                onClick={(evt) => {
+                    setToast(null);
+                    return evt;
+                }}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >
                 {toast ? (
