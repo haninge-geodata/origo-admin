@@ -67,7 +67,6 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
   const handleSubmit = async (formData: Record<string, any>) => {
     try {
       setSubmitting(true);
-      
       // Validation is now on by default (no parameter needed)
       await service.update(layerId, formData as any);
 
@@ -77,7 +76,7 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
 
     } catch (err: any) {
       console.error(`❌ Failed to update ${schemaType} layer:`, err);
-      
+
       // Check if this is a validation error from the backend
       if (err.response?.status === 400 && err.response?.data?.validationErrors) {
         const validationErrors = err.response.data.validationErrors;

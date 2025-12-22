@@ -111,8 +111,10 @@ export class DynamicLayerMapper
 
     if (dto.layer_id) dbModelData.layer_id = dto.layer_id;
 
-    // Source
-    if (dto.source !== undefined && dto.source !== null) {
+    // Source - handle null explicitly to allow clearing the field
+    if (dto.source === null) {
+      dbModelData.source = null;
+    } else if (dto.source !== undefined) {
       if (typeof dto.source === "string") {
         if (isObjectIdString(dto.source)) {
           dbModelData.source = new mongoose.Types.ObjectId(dto.source);
@@ -126,10 +128,13 @@ export class DynamicLayerMapper
       }
     }
 
+    // Abstract - handle null explicitly
     if (dto.abstract !== undefined) dbModelData.abstract = dto.abstract;
 
-    // Style - exakt samma mönster
-    if (dto.style !== undefined && dto.style !== null) {
+    // Style - handle null explicitly to allow clearing the field
+    if (dto.style === null) {
+      dbModelData.style = null;
+    } else if (dto.style !== undefined) {
       if (typeof dto.style === "string") {
         if (isObjectIdString(dto.style)) {
           dbModelData.style = new mongoose.Types.ObjectId(dto.style);

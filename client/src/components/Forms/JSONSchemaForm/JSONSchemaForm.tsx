@@ -15,7 +15,7 @@ import {
 import { JSONSchemaFormProps } from './types';
 import { Field } from './Field';
 import { jsonSchemaToZod } from '@/utils/schema/jsonSchemaToZod';
-import { ExtendedJSONSchema } from "@/shared/interfaces";;
+import { ExtendedJSONSchema } from "@/shared/interfaces";
 import { parseFieldSections } from './utils/sectionParser';
 import { createFieldGroups, FieldGroup } from './utils/fieldGrouper';
 import { calculateFormStats } from './utils/formStatsCalculator';
@@ -37,13 +37,11 @@ const getFormStatusMessage = (errorCount: number, completion: number, requiredFi
   return `${pluralize(remaining, 'required field')} remaining`;
 };
 
-
 const getProgressColor = (errorCount: number, completion: number): string => {
   if (errorCount > 0) return 'warning.main';
   if (completion === 100) return 'success.main';
   return 'primary.main';
 };
-
 
 const getButtonColors = (errorCount: number) => ({
   main: errorCount > 0 ? 'warning.main' : 'primary.main',
@@ -66,10 +64,10 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
     if (schema.properties) {
       Object.entries(schema.properties).forEach(([key, property]) => {
         // Replace API-select objects with their names (string)
-        if (typeof values[key] === 'object' && property['x-ui']?.component === 'api-select' && property['x-datasource']?.valueField) {
+        if (values[key] !== null && typeof values[key] === 'object' && property['x-ui']?.component === 'api-select' && property['x-datasource']?.valueField) {
           values[key] = values[key][property['x-datasource'].valueField];
         }
-        else if (values[key] === undefined && property.default !== undefined) {
+        else if ((values[key] === undefined || values[key] === null) && property.default !== undefined) {
           values[key] = property.default;
         }
       });
@@ -113,12 +111,28 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
 
   const buttonColors = getButtonColors(formStats.errorCount);
 
-  // Remove undefined values before submission
-  const onFormSubmit = (data: Record<string, any>) => {
-    const cleanedData = Object.fromEntries(
-      Object.entries(data).filter(([, value]) => value !== undefined)
-    );
+  // Convert undefined to null recursively for nested objects/arrays
+  const undefinedToNull = <T,>(input: T): T => {
+    if (input === undefined) return null as unknown as T;
+    if (input === null || typeof input !== "object") return input;
 
+    if (Array.isArray(input)) {
+      return input.map((v) => undefinedToNull(v)) as unknown as T;
+    }
+
+    const obj = input as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+
+    for (const [k, v] of Object.entries(obj)) {
+      out[k] = v === undefined ? null : undefinedToNull(v);
+    }
+
+    return out as T;
+  };
+
+  // Change undefined to null before submission to explicitly include null values in the request body
+  const onFormSubmit = (data: Record<string, any>) => {
+    const cleanedData = undefinedToNull(data);
     onSubmit(cleanedData);
   };
 
