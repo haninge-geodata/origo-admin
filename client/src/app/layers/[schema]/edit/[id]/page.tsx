@@ -7,7 +7,7 @@ import { JSONSchemaForm } from '@/components/Forms/JSONSchemaForm';
 import { getJSONSchema } from '@/utils/schema/schemaRegistry';
 import { ExtendedJSONSchema } from '@/shared/interfaces';
 import { createGenericLayerService } from '@/api/genericLayerService';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApp } from "@/contexts/AppContext";
 
 interface GenericSchemaEditPageProps {
@@ -31,7 +31,7 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
   const schemaType = params.schema;
   const layerId = params.id;
 
-
+  const queryClient = useQueryClient();
   const { data: layerData, isLoading: isLoadingLayer, error: layerError } = useQuery({
     queryKey: [`${schemaType}Layer`, layerId],
     queryFn: () => service.fetch(layerId),
@@ -64,7 +64,6 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
     loadSchema();
   }, [schemaType]);
 
-
   const handleSubmit = async (formData: Record<string, any>) => {
     try {
       setSubmitting(true);
@@ -90,6 +89,7 @@ export default function GenericSchemaEditPage({ params }: GenericSchemaEditPageP
         showToast(`Failed to update ${schemaType} layer. Please try again.`, "error");
       }
     } finally {
+      queryClient.invalidateQueries({ queryKey: [`${schemaType}Layer`, layerId] });
       setSubmitting(false);
     }
   };
