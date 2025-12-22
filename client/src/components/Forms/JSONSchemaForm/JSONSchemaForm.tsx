@@ -65,12 +65,15 @@ export const JSONSchemaForm: React.FC<JSONSchemaFormProps> = ({
 
     if (schema.properties) {
       Object.entries(schema.properties).forEach(([key, property]) => {
-        if (values[key] === undefined && property.default !== undefined) {
+        // Replace API-select objects with their names (string)
+        if (typeof values[key] === 'object' && property['x-ui']?.component === 'api-select' && property['x-datasource']?.valueField) {
+          values[key] = values[key][property['x-datasource'].valueField];
+        }
+        else if (values[key] === undefined && property.default !== undefined) {
           values[key] = property.default;
         }
       });
     }
-
     return values;
   }, [schema, initialValues]);
 

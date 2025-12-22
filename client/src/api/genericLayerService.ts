@@ -52,7 +52,7 @@ class GenericLayerService extends BaseApiService<BaseLayerDto> {
    */
   async update(id: string, resource: BaseLayerDto, subPath: string | undefined = undefined, skipValidation: boolean = false): Promise<BaseLayerDto> {
     return this.executeWithEvents(async () => {
-      const url = `${this.resourcePath}${subPath ? `/${subPath}` : ''}${skipValidation ? `?skipValidation=true` : ''}`;
+      const url = `${this.resourcePath}${subPath ? `/${subPath}` : ''}/${id}${skipValidation ? `?skipValidation=true` : ''}`;
       const response = (await this.getRestClient()).put<BaseLayerDto>(url, resource);
       return response;
     });
