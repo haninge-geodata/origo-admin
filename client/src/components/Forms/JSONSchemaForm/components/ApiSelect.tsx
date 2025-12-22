@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { TextField, Autocomplete, CircularProgress, IconButton, Tooltip } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { ExtendedJSONSchema } from '@/shared/interfaces/jsonSchema.interface';
-import { InputAdornment } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
@@ -45,6 +44,8 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
   label,
   placeholder,
 }) => {
+  const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH;
+
   const [selectedValue, setSelectedValue] = useState<ApiSelectOption | null>(null);
 
   // Extract datasource configuration from schema
@@ -73,14 +74,14 @@ export const ApiSelect: React.FC<ApiSelectProps> = ({
   // Generic function to construct API URL through proxy
   const constructApiUrl = async (endpoint: string): Promise<string> => {
     // Get BASE_URL from environment (same pattern as BaseApiService)
-    const baseUrlResponse = await fetch('/api/config?name=BASE_URL');
+    const baseUrlResponse = await fetch(`${BASE_PATH ? BASE_PATH : ""}/api/config?name=BASE_URL`);
     const baseUrl = await baseUrlResponse.text().then(url => url.trim());
 
     // Use same URL construction as RestClient
     const apiUrl = new URL(endpoint, baseUrl).toString();
 
     // Build proxy URL with encoded backend URL (same as RestClient)
-    const proxyUrl = `/api/proxy?url=${encodeURIComponent(apiUrl)}`;
+    const proxyUrl = `${BASE_PATH ? BASE_PATH : ""}/api/proxy?url=${encodeURIComponent(apiUrl)}`;
     return proxyUrl;
   };
 
