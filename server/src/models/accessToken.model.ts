@@ -19,7 +19,6 @@ const AccessTokenSchema = new Schema<DBAccessToken>({
   isValid: { type: Boolean, default: true },
   permissions: { type: [String], required: true },
 });
-AccessTokenSchema.index({ tokenId: 1 });
 
 const AccessTokenModel = model<DBAccessToken>("AccessTokens", AccessTokenSchema);
 export { DBAccessToken, AccessTokenModel };

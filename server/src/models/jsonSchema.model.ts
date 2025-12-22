@@ -42,9 +42,6 @@ const jsonSchemaSchema = new Schema<DBJsonSchema>(
   }
 );
 
-// Index for faster lookups by name
-jsonSchemaSchema.index({ name: 1 });
-
 export const JsonSchemaModel = mongoose.model<DBJsonSchema>(
   "JsonSchema",
   jsonSchemaSchema
