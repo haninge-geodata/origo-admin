@@ -41,9 +41,8 @@ const JSONEditorInternalComponent: React.FC<JSONEditorPropsOptional> = (props) =
         <div
             ref={refContainer}
             style={{
-                height: 'clamp(200px, 30vh, 400px)',
-                minHeight: '200px',
-                maxHeight: '400px',
+                height: '100%',
+                minHeight: '300px',
                 overflow: 'auto',
                 resize: 'vertical'
             }}

@@ -66,6 +66,33 @@ const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
   { discriminatorKey: "type" }
 );
 
+// Post hooks to populate source and style when querying through the base model
+// This ensures /layers/all endpoint populates references for all layer types
+layerBaseSchema.post("find", async function (docs) {
+  if (!Array.isArray(docs)) return;
+
+  for (const doc of docs) {
+    // Only populate if value is actually an ObjectId (not already populated or a string URL)
+    if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "source", model: "LinkResource" });
+    }
+    if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "style", model: "StyleSchema" });
+    }
+  }
+});
+
+layerBaseSchema.post("findOne", async function (doc) {
+  if (!doc) return;
+
+  if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "source", model: "LinkResource" });
+  }
+  if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "style", model: "StyleSchema" });
+  }
+});
+
 const layerModel = mongoose.model<DBLayerBase>("Layers", layerBaseSchema);
 
 interface DBWFSLayer extends DBLayerBase {

@@ -40,18 +40,27 @@ const JsonPreview = ({ id, updateKey }: JsonPreviewProps) => {
     }
 
     return (
-        <Box component='div' sx={{ p: '20px', overflow: 'scroll' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Box component='div' sx={{
+            p: '20px',
+            overflow: 'hidden',
+            height: 'calc(100vh - 280px)',
+            maxHeight: 'calc(100vh - 280px)',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, flexShrink: 0 }}>
                 <IconButton onClick={handleRefresh} color="primary" aria-label="refresh">
                     <RefreshIcon />
                 </IconButton>
             </Box>
             {data && (
-                <JSONEditor
-                    key={`${updateKey}-${refreshKey}`}
-                    value={data}
-                    onChange={() => onChange()}
-                />
+                <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+                    <JSONEditor
+                        key={`${updateKey}-${refreshKey}`}
+                        value={data}
+                        onChange={() => onChange()}
+                    />
+                </Box>
             )}
         </Box>
     );
