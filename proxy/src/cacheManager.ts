@@ -142,6 +142,8 @@ class PermissionCache {
         });
       });
     });
+
+    console.debug("Permissions cache built: ", this.actorPermissions);
   }
 
   hasPermission(actorName: string, permissionId: string): boolean {
