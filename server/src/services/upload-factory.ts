@@ -1,14 +1,23 @@
 import multer from "multer";
-import { LocalUploadService } from "@/services/local-upload.service";
-import { AzureUploadService } from "@/services/azure-upload.service";
+import { IUploadService } from "@/interfaces/uploadservice.interface";
 
-const localUploadService = new LocalUploadService();
-const azureUploadService = new AzureUploadService();
+let _service: IUploadService | undefined;
+
+function getService(): IUploadService {
+  if (!_service) {
+    if (process.env.USE_AZURE_STORAGE === "true") {
+      const { AzureUploadService } = require("@/services/azure-upload.service");
+      _service = new AzureUploadService() as IUploadService;
+    } else {
+      const { LocalUploadService } = require("@/services/local-upload.service");
+      _service = new LocalUploadService() as IUploadService;
+    }
+  }
+  return _service!;
+}
 
 export function getUpload() {
-  if (process.env.USE_AZURE_STORAGE === "true") {
-    return multer(azureUploadService.getMulterConfig());
-  } else {
-    return multer(localUploadService.getMulterConfig());
-  }
+  return multer(getService().getMulterConfig());
 }
+
+export { getService };
