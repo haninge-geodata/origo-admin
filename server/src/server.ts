@@ -24,6 +24,7 @@ import express from "express";
 import * as bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
+import morgan from "morgan";
 import swaggerDocs from "./swagger";
 
 import {
@@ -44,6 +45,7 @@ import {
 } from "./routes";
 
 import initializeDatabase from "./database";
+import { ErrorRequestHandler } from "express-serve-static-core";
 
 console.info(`[${new Date().toISOString()}] Starting server...`);
 
@@ -55,6 +57,7 @@ const PORT = parseInt(process.env.PORT as string, 10) || 8080;
 
 console.info(`[${new Date().toISOString()}] Listening on port: ${PORT}`);
 const app = express();
+app.use(morgan("tiny"));
 
 console.info(`[${new Date().toISOString()}] Initializing authentication...`);
 
@@ -112,6 +115,16 @@ app.use(`${BASE_PATH}`, RouteRoutes);
 app.use(`${BASE_PATH}`, DashboardRoutes);
 app.use(`${BASE_PATH}/uploads`, express.static(path.resolve(UPLOAD_FOLDER)));
 
+app.use(((err, _req, res, _next) => {
+    if (err instanceof Error) {
+      console.error(`[${new Date().toISOString()}] ${err}`);
+      console.info(err.stack);
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Ett oväntat fel inträffade" });
+    }
+}) satisfies ErrorRequestHandler)
+
 interface NodeError extends Error {
   code?: string;
 }
@@ -126,6 +139,6 @@ app
     if (err.code === "EADDRINUSE") {
       console.error(`[${new Date().toISOString()}] Port ${PORT} is already in use.`);
     } else {
-      console.error(`[${new Date().toISOString()}] ${err}`);
+      console.error(`[${new Date().toISOString()}] Could not start server: ${err}`);
     }
   });
