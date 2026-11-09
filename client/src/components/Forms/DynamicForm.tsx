@@ -136,7 +136,8 @@ export const DynamicForm = ({ row, handleEditChange, handleSave, handleCancel, i
     const renderTextField = (key: any, value: any, index: any, inputType: any) => {
         let valueToUse;
         switch (inputType) {
-            case 'textfield' || 'textarea':
+            case 'textfield':
+            case 'textarea':
                 valueToUse = value;
                 break;
             case 'checkbox':

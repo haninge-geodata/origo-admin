@@ -63,7 +63,9 @@ class Repository<T> implements IRepository<T> {
 
   async update(id: string, model: T): Promise<T> {
     const updateData: UpdateQuery<T> = model as UpdateQuery<T>;
-    const updatedModel = await this.model.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    const updatedModel = await this.model
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
     return updatedModel!;
   }
 

@@ -1,0 +1,447 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://origo-admin.haninge.se/schemas/gpx-layer",
+  "title": "Create GPX Layer",
+  "description": "Configuration schema for GPX layers in Origo mapping applications",
+  "type": "object",
+  "required": ["name", "title", "type", "source"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "description": "Unique internal identifier for the layer. Avoid spaces and special characters. Use double underscore plus suffix for reusable layers (e.g., 'tracks__hiking')",
+      "pattern": "^[a-zA-Z0-9_-]+(__[a-zA-Z0-9_-]+)?$",
+      "minLength": 1,
+      "maxLength": 100,
+      "x-ui": {
+        "component": "text",
+        "section": "main",
+        "placeholder": "my_gpx_layer",
+        "help": "Example: hiking_trails__summer or bike_routes__2024"
+      }
+    },
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "description": "User-visible title for the layer",
+      "minLength": 1,
+      "maxLength": 200,
+      "x-ui": {
+        "component": "text",
+        "section": "main",
+        "placeholder": "GPS Tracks Layer"
+      }
+    },
+    "abstract": {
+      "type": "string",
+      "title": "Abstract",
+      "description": "Short description shown in layer info (optional)",
+      "maxLength": 1000,
+      "x-ui": {
+        "component": "textarea",
+        "section": "main",
+        "rows": 3,
+        "placeholder": "Brief description of the GPX layer's content and purpose"
+      }
+    },
+    "type": {
+      "type": "string",
+      "title": "Type",
+      "description": "Layer source type",
+      "enum": ["GPX"],
+      "default": "GPX",
+      "x-ui": {
+        "component": "select",
+        "section": "main",
+        "readOnly": true
+      }
+    },
+    "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "URL to the GPX data source",
+      "format": "uri",
+      "pattern": "^https?://.*\\.(gpx|GPX)(\\?.*)?$",
+      "x-ui": {
+        "component": "text",
+        "section": "main",
+        "placeholder": "https://example.com/tracks.gpx"
+      }
+    },
+    "style": {
+      "type": "string",
+      "title": "Style",
+      "description": "Name of the referenced style for the layer",
+      "minLength": 1,
+      "x-ui": {
+        "component": "select",
+        "section": "main"
+      },
+      "x-datasource": {
+        "type": "api",
+        "url": "/api/styles",
+        "valueField": "name",
+        "labelField": "name",
+        "cache": true
+      }
+    },
+    "group": {
+      "type": "string",
+      "title": "Group",
+      "description": "Group the layer belongs to. Required for legend inclusion",
+      "x-ui": {
+        "component": "text",
+        "section": "main"
+      }
+    },
+    "queryable": {
+      "type": "boolean",
+      "title": "Queryable",
+      "description": "Enable feature info queries for this layer",
+      "default": true,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "main"
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "title": "Opacity",
+      "description": "Layer opacity (0 = transparent, 1 = opaque)",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "x-ui": {
+        "component": "slider",
+        "section": "main",
+        "step": 0.1,
+        "marks": [{
+            "value": 0,
+            "label": "0%"
+          },
+          {
+            "value": 0.5,
+            "label": "50%"
+          },
+          {
+            "value": 1,
+            "label": "100%"
+          }
+        ]
+      }
+    },
+    "legend": {
+      "type": "boolean",
+      "title": "Show in Legend",
+      "description": "Include layer in map legend",
+      "default": true,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "main"
+      }
+    },
+    "attribution": {
+      "type": "string",
+      "title": "Attribution",
+      "description": "Copyright or source attribution text shown in footer",
+      "maxLength": 500,
+      "x-ui": {
+        "component": "textarea",
+        "section": "main",
+        "rows": 2,
+        "placeholder": "© GPS Data Provider 2024"
+      }
+    },
+    "visible": {
+      "type": "boolean",
+      "title": "Visible",
+      "description": "Layer visibility on map load",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "main"
+      }
+    },
+    "extent": {
+      "type": "array",
+      "title": "Layer Extent",
+      "description": "Bounding box extent [minX, minY, maxX, maxY]. Uses map extent if not specified",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "x-ui": {
+        "section": "advanced",
+        "placeholder": "Enter 4 coordinates: minX, minY, maxX, maxY"
+      }
+    },
+    "minScale": {
+      "type": "number",
+      "title": "Minimum Scale",
+      "description": "Minimum scale denominator for layer visibility",
+      "minimum": 1,
+      "x-ui": {
+        "component": "number",
+        "section": "advanced",
+        "placeholder": "1000"
+      }
+    },
+    "maxScale": {
+      "type": "number",
+      "title": "Maximum Scale",
+      "description": "Maximum scale denominator for layer visibility",
+      "minimum": 1,
+      "x-ui": {
+        "component": "number",
+        "section": "advanced",
+        "placeholder": "100000"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "title": "Attribute Configuration",
+      "description": "Definition of how attributes are presented in feature info",
+      "additionalProperties": true,
+      "x-ui": {
+        "component": "json-editor",
+        "section": "advanced",
+        "placeholder": "{\n  \"name\": {\n    \"title\": \"Track Name\",\n    \"type\": \"string\"\n  },\n  \"desc\": {\n    \"title\": \"Description\",\n    \"type\": \"string\"\n  }\n}"
+      }
+    },
+    "layerType": {
+      "type": "string",
+      "title": "Layer Type",
+      "description": "Vector layer rendering method",
+      "enum": ["cluster", "image", "vector"],
+      "default": "vector",
+      "x-ui": {
+        "component": "select",
+        "section": "advanced",
+        "options": [{
+            "value": "vector",
+            "label": "Vector"
+          },
+          {
+            "value": "cluster",
+            "label": "Cluster"
+          },
+          {
+            "value": "image",
+            "label": "Image"
+          }
+        ]
+      }
+    },
+    "clusterStyle": {
+      "type": "string",
+      "title": "Cluster Style",
+      "description": "Style for clustered features (required when layerType is 'cluster')",
+      "x-ui": {
+        "component": "select",
+        "section": "advanced"
+      },
+      "x-datasource": {
+        "type": "api",
+        "url": "/api/styles",
+        "valueField": "name",
+        "labelField": "name",
+        "cache": true
+      }
+    },
+    "clusterOptions": {
+      "type": "object",
+      "title": "Cluster Options",
+      "description": "Clustering configuration options",
+      "properties": {
+        "distance": {
+          "type": "number",
+          "title": "Cluster Distance",
+          "description": "Pixel distance for clustering",
+          "minimum": 1,
+          "default": 20
+        },
+        "minDistance": {
+          "type": "number",
+          "title": "Minimum Distance",
+          "description": "Minimum pixel distance between clusters",
+          "minimum": 0,
+          "default": 0
+        }
+      },
+      "x-ui": {
+        "component": "object",
+        "section": "advanced"
+      }
+    },
+    "searchable": {
+      "title": "Searchable",
+      "description": "Layer inclusion in search control",
+      "type": "boolean",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "main"
+      }
+    },
+    "featureinfoTitle": {
+      "type": "string",
+      "title": "Feature Info Title Attribute",
+      "description": "Attribute to use as popup/sidebar title instead of the title property",
+      "x-ui": {
+        "component": "text",
+        "section": "main",
+        "placeholder": "name"
+      }
+    },
+    "removable": {
+      "type": "boolean",
+      "title": "Removable",
+      "description": "Add 'Remove layer' option to layer info menu",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "advanced"
+      }
+    },
+    "zoomToExtent": {
+      "type": "boolean",
+      "title": "Zoom to Extent",
+      "description": "Add 'Zoom To' option to layer info menu",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "advanced"
+      }
+    },
+    "exportable": {
+      "type": "boolean",
+      "title": "Exportable",
+      "description": "Add 'Export layer' option to layer info menu",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "advanced"
+      }
+    },
+    "exportFormat": {
+      "oneOf": [{
+          "type": "string",
+          "enum": ["geojson", "gpx", "kml"]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["geojson", "gpx", "kml"]
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        }
+      ],
+      "title": "Export Formats",
+      "description": "Available export formats when exportable is true",
+      "default": "geojson",
+      "x-ui": {
+        "component": "multi-select",
+        "section": "advanced",
+        "options": [{
+            "value": "geojson",
+            "label": "GeoJSON"
+          },
+          {
+            "value": "gpx",
+            "label": "GPX"
+          },
+          {
+            "value": "kml",
+            "label": "KML"
+          }
+        ]
+      }
+    },
+    "opacityControl": {
+      "type": "boolean",
+      "title": "Opacity Control",
+      "description": "Show opacity slider in legend extended layer info",
+      "default": true,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "main"
+      }
+    },
+    "css": {
+      "type": "object",
+      "title": "CSS Properties",
+      "description": "CSS properties applied to layer canvas element",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-ui": {
+        "component": "key-value",
+        "section": "advanced",
+        "placeholder": "{\n  \"filter\": \"blur(2px)\",\n  \"mix-blend-mode\": \"multiply\"\n}"
+      }
+    },
+    "headers": {
+      "type": "object",
+      "title": "HTTP Headers",
+      "description": "Headers included in GPX requests (e.g., API keys, content type)",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-ui": {
+        "component": "key-value",
+        "section": "advanced",
+        "placeholder": "{\n  \"Authorization\": \"Bearer token\",\n  \"Accept\": \"application/gpx+xml\"\n}"
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "title": "Attachments Configuration",
+      "description": "Configuration for editing and displaying attachments",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable Attachments",
+          "default": false
+        },
+        "maxSize": {
+          "type": "number",
+          "title": "Maximum File Size (MB)",
+          "minimum": 1,
+          "default": 10
+        },
+        "allowedTypes": {
+          "type": "array",
+          "title": "Allowed File Types",
+          "items": {
+            "type": "string"
+          },
+          "default": ["image/jpeg", "image/png", "application/pdf"]
+        }
+      },
+      "x-ui": {
+        "component": "object",
+        "section": "advanced"
+      }
+    }
+  },
+  "x-ui": {
+    "sections": {
+      "main": {
+        "title": "Layer Configuration",
+        "description": "Essential settings for your GPX layer",
+        "order": 1,
+        "collapsible": false
+      },
+      "advanced": {
+        "title": "Advanced Settings",
+        "description": "Technical configuration with pre-populated defaults",
+        "order": 2,
+        "collapsible": true,
+        "defaultCollapsed": true
+      }
+    }
+  }
+}

@@ -35,6 +35,11 @@ function hasFeatureInfoLayer(layer: LayerDto): layer is WMSLayerDto | WMTSLayerD
     }
     return false;
 }
+
+function isStyleString(style: any): style is string {
+    return typeof style === 'string';
+}
+
 export default function EditLayerModal({
     open,
     handleClose,
@@ -44,6 +49,9 @@ export default function EditLayerModal({
     featureInfoClickLayers,
 }: EditLayerModalProps) {
     const [localLayerToEdit, setLocalLayerToEdit] = React.useState<string | null>(hasFeatureInfoLayer(layerToEdit) ? layerToEdit.featureinfoLayer || null : null);
+    const [styleUrl, setStyleUrl] = React.useState<string>(
+        isStyleString(layerToEdit.style) ? layerToEdit.style : ''
+    );
 
     const updateLayerStyle = (selectedStyle: StyleSchemaDto) => {
         if (layerToEdit.style?.id !== selectedStyle.id) {
@@ -51,6 +59,13 @@ export default function EditLayerModal({
             const updatedLayers = updateEditedLayers(updatedLayer);
             setEditedLayers(updatedLayers);
         }
+    };
+
+    const updateLayerStyleUrl = (url: string) => {
+        setStyleUrl(url);
+        const updatedLayer = { ...layerToEdit, style: url };
+        const updatedLayers = updateEditedLayers(updatedLayer);
+        setEditedLayers(updatedLayers);
     };
 
     const handleFeatureInfoLayerChange = (event: any, selectedLayer: string | null) => {
@@ -94,9 +109,19 @@ export default function EditLayerModal({
                             </Typography>
                             <br />
                             <Typography variant="subtitle2" component="div" sx={{ flexGrow: 1 }}>
-                                Välj Stilschema
+                                {isStyleString(layerToEdit.style) ? 'Stil URL' : 'Välj Stilschema'}
                             </Typography>
-                            <StylePicker value={layerToEdit.style} onChange={updateLayerStyle} helperText="" />
+                            {isStyleString(layerToEdit.style) ? (
+                                <TextField
+                                    fullWidth
+                                    value={styleUrl}
+                                    onChange={(e) => updateLayerStyleUrl(e.target.value)}
+                                    helperText="Ange URL till stilresurs (t.ex. ikon)"
+                                    sx={{ mt: 2, mb: 1 }}
+                                />
+                            ) : (
+                                <StylePicker value={layerToEdit.style} onChange={updateLayerStyle} helperText="" />
+                            )}
                             {featureInfoClickLayers && hasFeatureInfoLayer(layerToEdit) && (
                                 <>
                                     <Typography variant="subtitle2" component="div" sx={{ flexGrow: 1 }}>

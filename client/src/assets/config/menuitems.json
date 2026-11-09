@@ -114,7 +114,7 @@
   {
     "id": 40,
     "name": "Behörigheter",
-    "requiresAuth": true,
+    "requiresAuth": false,
     "type": "group",
     "children": [{
         "id": 41,
@@ -130,6 +130,14 @@
         "urlSegment": "/accessTokens",
         "type": "item",
         "icon": "Key",
+        "disabled": false
+      },
+      {
+        "id": 43,
+        "name": "Scheman",
+        "urlSegment": "/schemas",
+        "type": "item",
+        "icon": "DataObject",
         "disabled": false
       }
     ]

@@ -66,14 +66,31 @@ const layerBaseSchema = new mongoose.Schema<DBLayerBase>(
   { discriminatorKey: "type" }
 );
 
-layerBaseSchema.pre("findOne", function () {
-  this.populate("source");
-  this.populate("style");
+// Post hooks to populate source and style when querying through the base model
+// This ensures /layers/all endpoint populates references for all layer types
+layerBaseSchema.post("find", async function (docs) {
+  if (!Array.isArray(docs)) return;
+
+  for (const doc of docs) {
+    // Only populate if value is actually an ObjectId (not already populated or a string URL)
+    if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "source", model: "LinkResource" });
+    }
+    if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "style", model: "StyleSchema" });
+    }
+  }
 });
 
-layerBaseSchema.pre("find", function () {
-  this.populate("source");
-  this.populate("style");
+layerBaseSchema.post("findOne", async function (doc) {
+  if (!doc) return;
+
+  if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "source", model: "LinkResource" });
+  }
+  if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "style", model: "StyleSchema" });
+  }
 });
 
 const layerModel = mongoose.model<DBLayerBase>("Layers", layerBaseSchema);
@@ -96,10 +113,14 @@ const wfsLayerSchema = new Schema({
 
 wfsLayerSchema.pre("findOne", function () {
   this.populate("clusterStyle");
+  this.populate("source");
+  this.populate("style");
 });
 
 wfsLayerSchema.pre("find", function () {
   this.populate("clusterStyle");
+  this.populate("source");
+  this.populate("style");
 });
 
 const WFSLayerModel = layerModel.discriminator<DBWFSLayer>(
@@ -123,6 +144,16 @@ const wmsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
+wmsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
+wmsLayerSchema.pre("find", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
 const WMSLayerModel = layerModel.discriminator<DBWMSLayer>(
   "WMS",
   wmsLayerSchema
@@ -140,10 +171,61 @@ const wmtsLayerSchema = new Schema({
   featureinfoLayer: { type: String, required: false },
 });
 
+wmtsLayerSchema.pre("findOne", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
+wmtsLayerSchema.pre("find", function () {
+  this.populate("source");
+  this.populate("style");
+});
+
 const WMTSLayerModel = layerModel.discriminator<DBWMTSLayer>(
   "WMTS",
   wmtsLayerSchema
 );
+
+interface DBDynamicLayer extends DBLayerBase {
+  dynamicProperties?: any;
+}
+
+const dynamicLayerSchema = new Schema({
+  dynamicProperties: {
+    type: Schema.Types.Mixed,
+    required: false,
+    default: null,
+  },
+  queryable: { type: Boolean, required: false },
+  visible: { type: Boolean, required: false },
+  source: { type: Schema.Types.Mixed, required: false },
+  style: { type: Schema.Types.Mixed, required: false },
+});
+
+dynamicLayerSchema.post("find", async function (docs) {
+  if (!Array.isArray(docs)) return;
+
+  for (const doc of docs) {
+    // Only populate if value is actually an ObjectId instance (not just a string)
+    if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "source", model: "LinkResource" });
+    }
+    if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+      await doc.populate({ path: "style", model: "StyleSchema" });
+    }
+  }
+});
+
+dynamicLayerSchema.post("findOne", async function (doc) {
+  if (!doc) return;
+
+  if (doc.source && doc.source instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "source", model: "LinkResource" });
+  }
+  if (doc.style && doc.style instanceof mongoose.Types.ObjectId) {
+    await doc.populate({ path: "style", model: "StyleSchema" });
+  }
+});
 
 export {
   DBLayerBase,
@@ -154,4 +236,6 @@ export {
   WMSLayerModel,
   DBWMTSLayer,
   WMTSLayerModel,
+  DBDynamicLayer,
+  dynamicLayerSchema,
 };

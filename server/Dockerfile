@@ -26,6 +26,7 @@ COPY ./server/tsconfig.json ./
 RUN npm install
 COPY ./server/ ./
 COPY ./shared/ ../shared/
+RUN cd ../shared && npm install
 RUN npm run build:unix
 
 # Slutlig körningsbar container
@@ -39,4 +40,4 @@ COPY --from=server-build /server/tsconfig.json ./tsconfig.json
 EXPOSE 3010
 
 # Startkommando
-CMD ["node", "dist/server/src/server.js"]
+CMD ["node", "--enable-source-maps", "dist/server/src/server.js"]

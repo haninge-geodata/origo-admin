@@ -1,0 +1,400 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://origo.map/schemas/topojson-layer-schema.json",
+  "title": "TopoJSON Layer Configuration",
+  "description": "Schema for configuring TopoJSON layers in Origo mapping application",
+  "type": "object",
+  "required": ["name", "title", "type", "source"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Layer Name",
+      "description": "Unique internal name for the layer. Avoid spaces and special characters. Use double underscore plus suffix for reusable layers (e.g., layer__suffix)",
+      "pattern": "^[a-zA-Z0-9_]+$",
+      "minLength": 1,
+      "x-ui": {
+        "section": "basic",
+        "placeholder": "my_topojson_layer"
+      }
+    },
+    "title": {
+      "type": "string",
+      "title": "Display Title",
+      "description": "User-visible title for the layer",
+      "minLength": 1,
+      "x-ui": {
+        "section": "basic",
+        "placeholder": "My TopoJSON Layer"
+      }
+    },
+    "abstract": {
+      "type": "string",
+      "title": "Abstract",
+      "description": "Short description shown in layer info",
+      "x-ui": {
+        "component": "textarea",
+        "section": "basic",
+        "placeholder": "Brief description of the layer content and purpose"
+      }
+    },
+    "type": {
+      "type": "string",
+      "title": "Layer Type",
+      "description": "Source type for the layer",
+      "const": "TOPOJSON",
+      "default": "TOPOJSON",
+      "x-ui": {
+        "section": "basic",
+        "disabled": true
+      }
+    },
+    "source": {
+      "type": "string",
+      "title": "Source URL",
+      "description": "URL to the TopoJSON data source",
+      "format": "uri",
+      "x-ui": {
+        "section": "basic",
+        "placeholder": "https://example.com/data.topojson"
+      }
+    },
+    "style": {
+      "type": "string",
+      "title": "Style",
+      "description": "Reference to the style configuration for this layer",
+      "x-datasource": {
+        "type": "api",
+        "url": "/api/styles",
+        "valueField": "name",
+        "labelField": "title",
+        "cache": true
+      },
+      "x-ui": {
+        "component": "select",
+        "section": "styling"
+      }
+    },
+    "group": {
+      "type": "string",
+      "title": "Layer Group",
+      "description": "Group the layer belongs to. Required for legend inclusion",
+      "x-ui": {
+        "component": "text",
+        "section": "basic"
+      }
+    },
+    "queryable": {
+      "type": "boolean",
+      "title": "Queryable",
+      "description": "Enable feature info for this layer",
+      "default": true,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "interaction"
+      }
+    },
+    "opacity": {
+      "type": "number",
+      "title": "Opacity",
+      "description": "Layer opacity (0 = transparent, 1 = opaque)",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1,
+      "x-ui": {
+        "component": "slider",
+        "section": "styling",
+        "step": 0.1
+      }
+    },
+    "legend": {
+      "type": "boolean",
+      "title": "Show in Legend",
+      "description": "Include this layer in the map legend",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "basic"
+      }
+    },
+    "attribution": {
+      "type": "string",
+      "title": "Attribution",
+      "description": "Copyright or attribution text shown in footer",
+      "x-ui": {
+        "section": "metadata",
+        "placeholder": "© Data Provider Name"
+      }
+    },
+    "visible": {
+      "type": "boolean",
+      "title": "Initially Visible",
+      "description": "Whether the layer should be visible when map loads",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "basic"
+      }
+    },
+    "extent": {
+      "type": "array",
+      "title": "Layer Extent",
+      "description": "Bounding box extent [minX, minY, maxX, maxY] in map projection",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 4,
+      "maxItems": 4,
+      "x-ui": {
+        "section": "geometry",
+        "placeholder": "Enter 4 coordinates: minX, minY, maxX, maxY"
+      }
+    },
+    "minScale": {
+      "type": "number",
+      "title": "Minimum Scale",
+      "description": "Minimum scale at which layer is visible",
+      "minimum": 0,
+      "x-ui": {
+        "section": "visibility",
+        "placeholder": "500000"
+      }
+    },
+    "maxScale": {
+      "type": "number",
+      "title": "Maximum Scale",
+      "description": "Maximum scale at which layer is visible",
+      "minimum": 0,
+      "x-ui": {
+        "section": "visibility",
+        "placeholder": "10000"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "title": "Attribute Configuration",
+      "description": "Define how attributes are presented in feature info",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Display title for the attribute"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["text", "number", "date", "url", "image"],
+            "description": "Data type for rendering"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Whether to show this attribute"
+          }
+        }
+      },
+      "x-ui": {
+        "component": "object-editor",
+        "section": "attributes"
+      }
+    },
+    "layerType": {
+      "type": "string",
+      "title": "Render Type",
+      "description": "How the vector layer should be rendered",
+      "enum": ["vector", "cluster", "image"],
+      "default": "vector",
+      "x-ui": {
+        "component": "select",
+        "section": "rendering"
+      }
+    },
+    "clusterStyle": {
+      "type": "string",
+      "title": "Cluster Style",
+      "description": "Style for clustered features (required when layerType is cluster)",
+      "x-datasource": {
+        "type": "api",
+        "url": "/api/styles",
+        "valueField": "name",
+        "labelField": "title",
+        "cache": true
+      },
+      "x-ui": {
+        "component": "select",
+        "section": "rendering"
+      }
+    },
+    "clusterOptions": {
+      "type": "object",
+      "title": "Cluster Options",
+      "description": "Configuration options for clustering behavior",
+      "properties": {
+        "distance": {
+          "type": "number",
+          "title": "Cluster Distance",
+          "description": "Pixel distance for clustering",
+          "minimum": 0,
+          "default": 50
+        },
+        "threshold": {
+          "type": "number",
+          "title": "Cluster Threshold",
+          "description": "Minimum features to form a cluster",
+          "minimum": 2,
+          "default": 2
+        }
+      },
+      "x-ui": {
+        "section": "rendering"
+      }
+    },
+    "searchable": {
+      "type": ["boolean", "string"],
+      "title": "Searchable",
+      "description": "Include in search functionality",
+      "enum": [true, false, "always"],
+      "default": false,
+      "x-ui": {
+        "component": "select",
+        "section": "interaction"
+      }
+    },
+    "featureinfoTitle": {
+      "type": "string",
+      "title": "Feature Info Title Attribute",
+      "description": "Attribute to use as title in popups instead of the title property",
+      "x-ui": {
+        "section": "interaction",
+        "placeholder": "name"
+      }
+    },
+    "removable": {
+      "type": "boolean",
+      "title": "User Removable",
+      "description": "Allow users to remove this layer",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "interaction"
+      }
+    },
+    "zoomToExtent": {
+      "type": "boolean",
+      "title": "Zoom to Extent Option",
+      "description": "Add zoom to extent option in layer menu",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "interaction"
+      }
+    },
+    "opacityControl": {
+      "type": "boolean",
+      "title": "Opacity Control",
+      "description": "Show opacity slider in legend",
+      "default": true,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "interaction"
+      }
+    },
+    "css": {
+      "type": "object",
+      "title": "CSS Properties",
+      "description": "CSS properties applied to layer canvas element",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-ui": {
+        "component": "key-value-editor",
+        "section": "advanced"
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "title": "Attachments Configuration",
+      "description": "Configuration for editing and displaying attachments",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Enable Attachments",
+          "default": false
+        },
+        "allowedTypes": {
+          "type": "array",
+          "title": "Allowed File Types",
+          "items": {
+            "type": "string"
+          },
+          "default": ["image/jpeg", "image/png", "application/pdf"]
+        },
+        "maxSize": {
+          "type": "number",
+          "title": "Maximum File Size (MB)",
+          "minimum": 0,
+          "default": 10
+        }
+      },
+      "x-ui": {
+        "section": "advanced"
+      }
+    },
+    "thematicStyling": {
+      "type": "boolean",
+      "title": "Thematic Styling Controls",
+      "description": "Add controls to toggle thematic styles on/off",
+      "default": false,
+      "x-ui": {
+        "component": "checkbox",
+        "section": "styling"
+      }
+    }
+  },
+  "x-ui": {
+    "sections": [{
+        "name": "basic",
+        "title": "Basic Configuration",
+        "description": "Essential layer settings"
+      },
+      {
+        "name": "styling",
+        "title": "Styling & Appearance",
+        "description": "Visual styling options"
+      },
+      {
+        "name": "geometry",
+        "title": "Geometry & Extent",
+        "description": "Spatial configuration"
+      },
+      {
+        "name": "visibility",
+        "title": "Visibility Settings",
+        "description": "Scale-dependent visibility"
+      },
+      {
+        "name": "interaction",
+        "title": "User Interaction",
+        "description": "Query, search, and user controls"
+      },
+      {
+        "name": "attributes",
+        "title": "Attribute Configuration",
+        "description": "Feature attribute display settings"
+      },
+      {
+        "name": "rendering",
+        "title": "Rendering Options",
+        "description": "Vector rendering and clustering"
+      },
+      {
+        "name": "metadata",
+        "title": "Metadata",
+        "description": "Attribution and documentation"
+      },
+      {
+        "name": "advanced",
+        "title": "Advanced Settings",
+        "description": "CSS, attachments, and other advanced options"
+      }
+    ]
+  }
+}

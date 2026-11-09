@@ -4,7 +4,9 @@ import path from "path";
 console.info(`[${new Date().toISOString()}] Initializing environment...`);
 const environment = process.env.NODE_ENV || "local";
 
-console.info(`[${new Date().toISOString()}] Environment set to: ${environment}`);
+console.info(
+  `[${new Date().toISOString()}] Environment set to: ${environment}`
+);
 
 let envPath = "";
 if (
@@ -22,8 +24,10 @@ const UPLOAD_FOLDER = process.env.UPLOAD_FOLDER!;
 
 import express from "express";
 import * as bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import morgan from "morgan";
 import swaggerDocs from "./swagger";
 
 import {
@@ -37,13 +41,18 @@ import {
   RelationRoutes,
   LayerRoutes,
   PermissionRoutes,
-  ProxyRoutes,
   AccessTokenRoutes,
   RouteRoutes,
   DashboardRoutes,
+  JsonSchemaRoutes,
+  GisAuthRoutes,
+  GisProxyRoutes,
 } from "./routes";
 
 import initializeDatabase from "./database";
+import { ErrorRequestHandler } from "express-serve-static-core";
+import { permissionCacheService } from "./services/permissionCache.service";
+import { getProxyBasePath } from "@/utils/gisProxyPath";
 
 console.info(`[${new Date().toISOString()}] Starting server...`);
 
@@ -55,6 +64,7 @@ const PORT = parseInt(process.env.PORT as string, 10) || 8080;
 
 console.info(`[${new Date().toISOString()}] Listening on port: ${PORT}`);
 const app = express();
+app.use(morgan("tiny"));
 
 console.info(`[${new Date().toISOString()}] Initializing authentication...`);
 
@@ -62,9 +72,16 @@ const BASE_PATH = process.env.BASE_PATH || "";
 if (BASE_PATH) {
   console.info(`[${new Date().toISOString()}] Using BASE_PATH=${BASE_PATH}`);
 }
-app.use(bodyParser.json({ limit: "500mb" }));
-app.use(express.json());
-app.use(bodyParser.urlencoded({ limit: "500mb", extended: true }));
+
+app.use(cookieParser());
+// Exclude the gis passthrough path when using the body-parser middleware, so
+// that the request body is not consumed before it is piped to the external
+// GIS target (WMS/WFS/WMTS). IMPORTANT: if this regex is changed it must be
+// re-checked for ReDoS safety.
+const PROXY_BASE_PATH = getProxyBasePath();
+app.use(new RegExp(`^(?!${PROXY_BASE_PATH}/gis)`, "g"), bodyParser.json({ limit: "500mb" }));
+app.use(new RegExp(`^(?!${PROXY_BASE_PATH}/gis)`, "g"), express.json());
+app.use(new RegExp(`^(?!${PROXY_BASE_PATH}/gis)`, "g"), bodyParser.urlencoded({ limit: "500mb", extended: true }));
 
 app.use(cors());
 app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -88,6 +105,32 @@ if (!process.env.DATABASE) {
 initializeDatabase(process.env.DATABASE as string);
 console.info(`[${new Date().toISOString()}] Database initialized...`);
 
+console.info(`[${new Date().toISOString()}] Initializing GIS proxy permission cache...`);
+// Log-and-continue on failure rather than exiting the process (as the
+// standalone proxy used to): this process also serves the admin CRUD API,
+// so a transient cache-init failure shouldn't take the whole server down.
+// healthCheck()/refresh-cache retry initialization on subsequent calls.
+permissionCacheService.initializeCache().catch((error) => {
+  console.error(`[${new Date().toISOString()}] Failed to initialize GIS proxy permission cache:`, error);
+});
+
+// Health check endpoints
+app.get(`${BASE_PATH}/healthz`, (_req, res) => {
+  // Liveness: the process is running and not stuck
+  res.status(200).json({ status: "ok" });
+});
+
+app.get(`${BASE_PATH}/readyz`, async (_req, res) => {
+  // Readiness: the service can accept traffic
+  try {
+    const mongoose = await import("mongoose");
+    await mongoose.default.connection.db!.admin().ping();
+    res.status(200).json({ status: "ready" });
+  } catch (err) {
+    res.status(503).json({ status: "not ready", reason: "database ping failed" });
+  }
+});
+
 app.use(`${BASE_PATH}`, FavouritesRoutes);
 app.use(`${BASE_PATH}`, LayerRoutes);
 app.use(`${BASE_PATH}`, MapInstanceRoutes);
@@ -106,11 +149,27 @@ app.use(`${BASE_PATH}`, MediaRoutes);
 app.use(`${BASE_PATH}`, StyleSchemaRoutes);
 app.use(`${BASE_PATH}`, RelationRoutes);
 app.use(`${BASE_PATH}`, PermissionRoutes);
-app.use(`${BASE_PATH}`, ProxyRoutes);
 app.use(`${BASE_PATH}`, AccessTokenRoutes);
 app.use(`${BASE_PATH}`, RouteRoutes);
 app.use(`${BASE_PATH}`, DashboardRoutes);
+app.use(`${BASE_PATH}`, JsonSchemaRoutes);
 app.use(`${BASE_PATH}/uploads`, express.static(path.resolve(UPLOAD_FOLDER)));
+
+// GIS gateway (formerly the standalone proxy/): intentionally mounted at the
+// app root, not under BASE_PATH, so existing Origo map configs and clients
+// pointing at `${PROXY_BASE_PATH}/...` (default "/proxy") keep working.
+app.use(GisAuthRoutes);
+app.use(GisProxyRoutes);
+
+app.use(((err, _req, res, _next) => {
+    if (err instanceof Error) {
+      console.error(`[${new Date().toISOString()}] ${err}`);
+      console.info(err.stack);
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json({ error: "Ett oväntat fel inträffade" });
+    }
+}) satisfies ErrorRequestHandler)
 
 interface NodeError extends Error {
   code?: string;
@@ -119,13 +178,17 @@ interface NodeError extends Error {
 console.info(`[${new Date().toISOString()}] Server started...`);
 app
   .listen(PORT, () => {
-    console.info(`[${new Date().toISOString()}] Server is listening on port ${PORT}`);
+    console.info(
+      `[${new Date().toISOString()}] Server is listening on port ${PORT}`
+    );
     swaggerDocs(app);
   })
   .on("error", (err: NodeError) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`[${new Date().toISOString()}] Port ${PORT} is already in use.`);
+      console.error(
+        `[${new Date().toISOString()}] Port ${PORT} is already in use.`
+      );
     } else {
-      console.error(`[${new Date().toISOString()}] ${err}`);
+      console.error(`[${new Date().toISOString()}] Could not start server: ${err}`);
     }
   });

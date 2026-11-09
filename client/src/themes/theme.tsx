@@ -18,6 +18,12 @@ export default function ThemeProvider({ children }: Props) {
                 default: mode === 'light' ? '#f9f9f9' : '#303030',
                 papper: mode === 'light' ? '#f9f9f9' : '#303030',
             },
+            error: {
+                lighter: '#ffebee',
+                light: '#ef5350',
+                main: '#d32f2f',
+                dark: '#c62828',
+            },
 
         },
         components: {

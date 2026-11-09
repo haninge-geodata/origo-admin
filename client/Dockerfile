@@ -7,25 +7,10 @@ WORKDIR /app
 # Install dependencies based on the preferred package manager
 COPY ./client/package.json ./client/package-lock.json* ./
 
-# Definiera bygg-args
-ARG BASE_URL
-ARG VERSION
-ARG UPDATED
-
-# Sätt miljövariabler baserade på bygg-args
-ENV NEXT_PUBLIC_BASE_URL=${BASE_URL}
-ENV NEXT_PUBLIC_VERSION=${VERSION}
-ENV NEXT_PUBLIC_UPDATED=${UPDATED}
-
-RUN echo "BASE_URL set to ${NEXT_PUBLIC_BASE_URL}"
-RUN echo "Version set to ${NEXT_PUBLIC_VERSION}"
-RUN echo "UPDATED at ${NEXT_PUBLIC_UPDATED}"
-
-RUN touch .env.production
-RUN echo "NEXT_PUBLIC_BASE_URL=${NEXT_PUBLIC_BASE_URL}" >> .env.production
-RUN echo "NEXT_PUBLIC_VERSION=${NEXT_PUBLIC_VERSION}" >> .env.production
-RUN echo "NEXT_PUBLIC_UPDATED=${NEXT_PUBLIC_UPDATED}" >> .env.production
-RUN cat .env.production
+# Definiera bygg-args & sätt miljövariabler baserade på bygg-args
+ARG BASE_PATH
+ENV NEXT_PUBLIC_BASE_PATH=${BASE_PATH}
+ENV NEXT_PUBLIC_PROXY_URL=${BASE_PATH}/api/proxy
 
 RUN npm ci
 RUN npm i --no-save sharp
@@ -36,11 +21,17 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY ./client/ .
 COPY ./shared/ ../shared/
+RUN cd ../shared && npm install
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
+
+# Definiera bygg-args & sätt miljövariabler baserade på bygg-args
+ARG BASE_PATH
+ENV NEXT_PUBLIC_BASE_PATH=${BASE_PATH}
+ENV NEXT_PUBLIC_PROXY_URL=${BASE_PATH}/api/proxy
 
 RUN npm run build
 
@@ -70,4 +61,4 @@ ENV HOSTNAME "0.0.0.0"
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD ["node", "server.js"]
+CMD ["node", "--enable-source-maps", "server.js"]

@@ -1,4 +1,5 @@
 import { UserInfo, UserInfoCache } from "./userInfoCache";
+import { isJwt, verifyAndDecodeIdpToken, extractGroupsFromClaims, extractUsernameFromClaims } from "./auth";
 
 interface WellKnownConfig {
   userinfo_endpoint: string;
@@ -22,16 +23,25 @@ export class UserInfoService {
 
   private async fetchWellKnownConfig(): Promise<WellKnownConfig> {
     const wellKnownUrl = process.env.PROTECTED_IDP_WELL_KNOWN;
-    if (!wellKnownUrl) {
-      throw new Error("Well-known URL is not configured");
+
+    if (wellKnownUrl) {
+      const response = await fetch(wellKnownUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch well-known config: ${response.statusText}`);
+      }
+      return await response.json();
     }
 
-    const response = await fetch(wellKnownUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch well-known config: ${response.statusText}`);
+    // Fall back to the explicitly configured endpoints when no well-known
+    // discovery URL is provided.
+    const userinfo_endpoint = process.env.PROTECTED_IDP_USERINFO_URL;
+    const token_endpoint = process.env.PROTECTED_IDP_TOKEN_URL;
+
+    if (!userinfo_endpoint || !token_endpoint) {
+      throw new Error("Well-known URL is not configured, and PROTECTED_IDP_USERINFO_URL/PROTECTED_IDP_TOKEN_URL fallback is missing");
     }
 
-    return await response.json();
+    return { userinfo_endpoint, token_endpoint };
   }
 
   public async getUserInfo(usernameOrToken: string, expires_in: number): Promise<UserInfo> {
@@ -46,6 +56,22 @@ export class UserInfoService {
   }
 
   private async fetchUserInfo(accessToken: string, expires_in: number): Promise<UserInfo> {
+    // JWT-shaped access tokens are verified and read locally (via JWKS), since IdPs such as Entra ID can
+    // embed group memberships directly in the token but don't return them from a UserInfo call. Opaque
+    // (non-JWT) tokens fall back to the userinfo endpoint, as before.
+    if (isJwt(accessToken)) {
+      const claims = await verifyAndDecodeIdpToken(accessToken);
+      if (claims) {
+        return {
+          access_token: accessToken,
+          expires_at: Date.now() + expires_in * 1000,
+          groups: extractGroupsFromClaims(claims),
+          username: extractUsernameFromClaims(claims),
+        };
+      }
+      console.warn(`[${new Date().toISOString()}] JWT verification failed; falling back to userinfo endpoint`);
+    }
+
     const wellKnownConfig = await this.getWellKnownConfig();
 
     const response = await fetch(wellKnownConfig.userinfo_endpoint, {
@@ -62,8 +88,8 @@ export class UserInfoService {
     return {
       access_token: accessToken,
       expires_at: Date.now() + expires_in * 1000,
-      claims: data.groups,
-      username: data.sub || data.sub || data.email,
+      groups: extractGroupsFromClaims(data),
+      username: extractUsernameFromClaims(data) ?? data.sub ?? data.email,
     };
   }
 }

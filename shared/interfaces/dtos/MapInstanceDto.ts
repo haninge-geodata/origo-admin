@@ -8,6 +8,7 @@ export interface MapInstanceDto {
   title: string;
   name: string;
   abstract?: string;
+  isPublic?: boolean;
   instance: MapConfigDto;
 }
 
@@ -23,6 +24,7 @@ export interface MapInstanceListItemDto {
   title: string;
   name: string;
   abstract?: string;
+  isPublic?: boolean;
   layers: number;
   settings: string;
   controls: number;
@@ -55,6 +57,10 @@ export interface PublishedMapListItemDto {
 }
 
 export interface PublishedMapConfigDto {
+  metadata: {
+    title: string;
+    abstract?: string;
+  };
   controls: any;
   groups: any;
   source: any;

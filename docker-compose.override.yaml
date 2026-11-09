@@ -8,6 +8,7 @@ services:
       SIGN_OUT_URL: 'http://localhost:3050/application/o/origo-admin/end-session/' # The URL to sign out from the OIDC provider
       NEXTAUTH_URL: 'http://localhost:3000'
       PROTECTED_ADMIN_ROLE: "Administratör"
+      NEXT_PUBLIC_BASE_PATH: "" # intentionally empty string
 
       # OIDC Settings
       PROTECTED_IDP_NAME: "Authentik"
@@ -22,8 +23,12 @@ services:
       PROTECTED_IDP_SCOPE: "${IDP_SCOPE:-openid email profile}"
       PROTECTED_IDP_REDIRECT_URI: "${IDP_REDIRECT_URI:-http://localhost:3000/api/auth/callback/oidc}"
       PROTECTED_IDP_SESSION_MAXAGE: 600 # Used to trigger a refresh of the client's session. Set to the IDP's token lifetime.
-  proxy:
+    depends_on:
+      server:
+        condition: service_started
+  server:
     environment:
+      AUTH_ENABLED: "true"
       WELL_KNOWN: "${IDP_WELLKNOWN_URL:-http://idp:9000/application/o/origo-admin/.well-known/openid-configuration}" # This is the OIDC well known endpoint for the OIDC provider
       TOKEN_URL: "${IDP_TOKEN_URL:-http://idp:9000/application/o/token/}" # This is the OIDC token endpoint for the OIDC provider
       CLIENT_ID: "${IDP_CLIENT_ID}" # This is the OIDC client id for the OIDC provider
@@ -32,9 +37,9 @@ services:
       AUTH_CLIENT_DOMAIN: "localhost" # The domain to set the cookie on
       DISPLAY_NAME: "" # The claim to use as display name
       REDIRECT_URI: ""  # Also the client redirect uri used for CORS.
-  server:
-    environment:
-      AUTH_ENABLED: "true"
+    depends_on:
+      mongodb:
+        condition: service_healthy
 
   idp-db:
     image: docker.io/library/postgres:16-alpine

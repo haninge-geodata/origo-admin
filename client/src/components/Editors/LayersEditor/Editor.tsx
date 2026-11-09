@@ -8,35 +8,54 @@ import wmsSpec from "@/assets/specifications/tables/wmsTableSpecification.json";
 import wfsSpec from "@/assets/specifications/tables/wfsTableSpecification.json";
 import wmtsSpec from "@/assets/specifications/tables/wmtsTableSpecification.json";
 import { useEffect, useState } from "react";
-import { WMSLayerService, WFSLayerService, WMTSLayerService } from '@/api';
+import { WMSLayerService, WFSLayerService, WMTSLayerService, LayerService } from '@/api';
 import { mapDataToTableFormat } from "@/utils/mappers/toDataTable";
 import EditLayerModal from "@/components/Modals/EditLayerModal";
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import KeyValuePairEditor from "@/components/Editors/KeyValuePairEditor";
 
 const layerServices = {
     WMS: WMSLayerService,
     WFS: WFSLayerService,
     WMTS: WMTSLayerService,
+    ALL: LayerService,
 };
+
+const allLayersSpec = {
+    specification: {
+        columns: [
+            { headerName: "Type", field: "type", inputType: "textfield", readOnly: true },
+            { headerName: "Title", field: "title", inputType: "textfield", readOnly: true },
+            { headerName: "Name", field: "name", inputType: "textfield", readOnly: true }
+        ]
+    }
+};
+
 interface SelectedRows {
     WMS: DataRow[];
     WFS: DataRow[];
     WMTS: DataRow[];
+    ALL: DataRow[];
+    [key: string]: DataRow[];
 }
-type LayerType = 'WMS' | 'WFS' | 'WMTS';
+type LayerType = string;
 interface LayerTableData {
     WMS: TableData;
     WFS: TableData;
     WMTS: TableData;
+    ALL: TableData;
+    [key: string]: TableData;
 }
 
 interface RawLayerDataState {
     WMS: WMSLayerDto[];
     WFS: WFSLayerDto[];
     WMTS: WMTSLayerDto[];
+    ALL: LayerDto[];
+    [key: string]: any[];
 }
 
 interface EditorProps {
@@ -46,16 +65,16 @@ interface EditorProps {
     layers: LayerDto[];
     onSaveClick: () => void;
     onCancelClick: () => void;
-    onEditorChange: (field: keyof GroupDto | null, value: string, layersChanged: boolean) => void;
+    onEditorChange: (field: keyof GroupDto | null, value: any, layersChanged: boolean) => void;
 }
 export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClick, onEditorChange, setLayers, layers }: EditorProps) => {
-    const [selectedRows, setSelectedRows] = useState<SelectedRows>({ WMS: [], WFS: [], WMTS: [] });
+    const [selectedRows, setSelectedRows] = useState<SelectedRows>({ WMS: [], WFS: [], WMTS: [], ALL: [] });
     const [modalOpen, setModalOpen] = useState<LayerType | null>(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const initialTableData: TableData = { columns: [], rows: [] };
-    const [rawLayerData, setRawLayerData] = useState<RawLayerDataState>({ WMS: [], WFS: [], WMTS: [] });
-    const specs = { WMS: wmsSpec, WFS: wfsSpec, WMTS: wmtsSpec };
-    const [layerTableData, setLayerTableData] = useState<LayerTableData>({ WMS: initialTableData, WFS: initialTableData, WMTS: initialTableData });
+    const [rawLayerData, setRawLayerData] = useState<RawLayerDataState>({ WMS: [], WFS: [], WMTS: [], ALL: [] });
+    const specs = { WMS: wmsSpec, WFS: wfsSpec, WMTS: wmtsSpec, ALL: allLayersSpec };
+    const [layerTableData, setLayerTableData] = useState<LayerTableData>({ WMS: initialTableData, WFS: initialTableData, WMTS: initialTableData, ALL: initialTableData });
     const [saveTriggered, setSaveTriggered] = useState(false);
     const [unEditedGroupName, setUnEditedGroupName] = useState(selectedGroup.name);
     const [selectedLayer, setSelectedLayer] = useState<LayerDto | undefined>(undefined);
@@ -133,10 +152,11 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
     };
 
     const fetchLayerData = async (type: LayerType) => {
-        const service = layerServices[type];
+        const service = (layerServices as any)[type];
         const response = await service.fetchAll();
         setRawLayerData((prevData) => ({ ...prevData, [type]: response }));
-        const mappedData = mapDataToTableFormat(response, specs[type].specification);
+        const spec = (specs as any)[type];
+        const mappedData = mapDataToTableFormat(response, spec.specification);
         setLayerTableData((prevData) => ({ ...prevData, [type]: mappedData }));
     };
 
@@ -160,43 +180,71 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
     const handleLayerChange = (type: LayerType, selectedRowIds: string[]) => {
         onEditorChange(null, '', true);
 
-        setLocalLayersState(prevState => {
-            const otherTypeLayers = prevState.filter(layer => layer.type !== type);
+        if (type === 'ALL') {
+            setLocalLayersState(prevState => {
+                const existingLayerIds = new Set(prevState.filter(l => l.id).map(layer => layer.id!.toString()));
 
-            const existingLayersOfType = prevState.filter(layer => layer.type === type);
-            const existingLayerIds = new Set(existingLayersOfType.map(layer => layer.id.toString()));
+                const newLayers = selectedRowIds
+                    .filter(id => !existingLayerIds.has(id))
+                    .map(id => {
+                        const layerToAdd = rawLayerData.ALL?.find(rawLayer => rawLayer.id?.toString() === id);
+                        if (layerToAdd) {
+                            return {
+                                ...layerToAdd,
+                                group: groupName
+                            };
+                        }
+                        return null;
+                    })
+                    .filter((layer): layer is NonNullable<typeof layer> => layer !== null);
 
-            const layersToAdd = selectedRowIds.filter(id => !existingLayerIds.has(id));
-            const layersToKeep = existingLayersOfType.filter(layer => selectedRowIds.includes(layer.id.toString()));
+                const layersToKeep = prevState.filter(layer =>
+                    (layer.id && selectedRowIds.includes(layer.id.toString())) ||
+                    !rawLayerData.ALL?.some(allLayer => allLayer.id && layer.id && allLayer.id.toString() === layer.id.toString())
+                );
 
-            const newLayers = layersToAdd.map(id => {
-                const layerToAdd = rawLayerData[type]?.find(rawLayer => rawLayer.id.toString() === id);
-                if (layerToAdd) {
-                    return {
-                        ...layerToAdd,
-                        group: groupName,
-                        type
-                    };
-                }
-                return null;
-            }).filter((layer): layer is NonNullable<typeof layer> => layer !== null);
+                return [...layersToKeep, ...newLayers];
+            });
+        } else {
+            setLocalLayersState(prevState => {
+                const otherTypeLayers = prevState.filter(layer => layer.type !== type);
 
-            return [...otherTypeLayers, ...layersToKeep, ...newLayers];
-        });
+                const existingLayersOfType = prevState.filter(layer => layer.type === type);
+                const existingLayerIds = new Set(existingLayersOfType.filter(l => l.id).map(layer => layer.id!.toString()));
+
+                const layersToAdd = selectedRowIds.filter(id => !existingLayerIds.has(id));
+                const layersToKeep = existingLayersOfType.filter(layer => layer.id && selectedRowIds.includes(layer.id.toString()));
+
+                const newLayers = layersToAdd.map(id => {
+                    const layerToAdd = rawLayerData[type]?.find(rawLayer => rawLayer.id?.toString() === id);
+                    if (layerToAdd) {
+                        return {
+                            ...layerToAdd,
+                            group: groupName,
+                            type
+                        };
+                    }
+                    return null;
+                }).filter((layer): layer is NonNullable<typeof layer> => layer !== null);
+
+                return [...otherTypeLayers, ...layersToKeep, ...newLayers];
+            });
+        }
     }
     const updateSelectedRows = (type: LayerType, selectedRowIds: string[]) => {
         setSelectedRows(prevRows => {
-            const currentSelectedSet = new Set(prevRows[type].map(row => row.id.toString()));
+            const currentRows = prevRows[type] || [];
+            const currentSelectedSet = new Set(currentRows.filter(r => r.id).map(row => row.id!.toString()));
 
             const rowsToAdd = selectedRowIds.filter(id => !currentSelectedSet.has(id));
-            const rowsToRemove = prevRows[type].filter(row => !selectedRowIds.includes(row.id.toString()));
+            const rowsToRemove = currentRows.filter(row => row.id && !selectedRowIds.includes(row.id.toString()));
 
             const newRowsToAdd = rowsToAdd
-                .map(id => layerTableData[type]?.rows.find(row => row.id.toString() === id))
+                .map(id => layerTableData[type]?.rows.find(row => row.id?.toString() === id))
                 .filter((row): row is NonNullable<typeof row> => row !== null);
 
             const updatedRows = [
-                ...prevRows[type].filter(row => !rowsToRemove.includes(row)),
+                ...currentRows.filter(row => !rowsToRemove.includes(row)),
                 ...newRowsToAdd
             ];
 
@@ -209,18 +257,18 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
 
     const handleDeleteLayerOnChip = (type: LayerType, layerId: string) => {
         const updatedSelectedRows = { ...selectedRows };
-        if (updatedSelectedRows[type].some(row => row.id.toString() === layerId)) {
-            updatedSelectedRows[type] = updatedSelectedRows[type].filter(row => row.id.toString() !== layerId); setSelectedRows(updatedSelectedRows);
+        if (updatedSelectedRows[type] && updatedSelectedRows[type].some(row => row.id?.toString() === layerId)) {
+            updatedSelectedRows[type] = updatedSelectedRows[type].filter(row => row.id?.toString() !== layerId); setSelectedRows(updatedSelectedRows);
         }
-        const layerToDelete = localLayersState.find(layer => layer.id.toString() === layerId);
+        const layerToDelete = localLayersState.find(layer => layer.id?.toString() === layerId);
         if (layerToDelete) {
-            const updatedLayers = localLayersState.filter(layer => layer.id.toString() !== layerId);
+            const updatedLayers = localLayersState.filter(layer => layer.id?.toString() !== layerId);
             setLocalLayersState(updatedLayers);
         }
     }
 
     const handleClickOnChip = (type: LayerType, selectedRowId: string) => {
-        const selectedLayer = localLayersState.find(layer => layer.id.toString() === selectedRowId);
+        const selectedLayer = localLayersState.find(layer => layer.id?.toString() === selectedRowId);
         setSelectedLayer(selectedLayer);
         setEditModalOpen(true);
     }
@@ -247,19 +295,30 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
     }
 
     const syncSelectedRowsWithLayersOnLoad = () => {
-        const newSelectedRows: SelectedRows = {
+        const newSelectedRows: any = {
             WMS: [],
             WFS: [],
             WMTS: [],
+            ALL: [],
         };
         localLayersState.forEach(layer => {
-            if (layer.group === groupName) {
+            if (layer.group === groupName && layer.id) {
                 const type = layer.type as LayerType;
+
+                // Lägg till i ALL oavsett typ
                 const rowData: DataRow = {
                     id: layer.id,
                     title: layer.title,
                 };
-                newSelectedRows[type].push(rowData);
+                newSelectedRows.ALL.push(rowData);
+
+                // Lägg också till i specifik typ (om det inte är ALL)
+                if (type !== 'ALL') {
+                    if (!newSelectedRows[type]) {
+                        newSelectedRows[type] = [];
+                    }
+                    newSelectedRows[type].push(rowData);
+                }
             }
         });
         setSelectedRows(newSelectedRows);
@@ -299,6 +358,7 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                     minRows={6}
                     value={selectedGroup.abstract}
                     onChange={(e) => handleTextFieldChange('abstract', e.target.value)} />
+
                 <Box component='div' sx={{
                     marginTop: '20px',
                     '& > *': {
@@ -311,9 +371,10 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                             Hantera Lager
                         </Typography>
                         <Box component='div'>
-                            <Chip icon={<IsoIcon />} label="WMS" color="primary" variant="outlined" onClick={() => handleOpenModal("WMS")} sx={{ marginLeft: 1 }} />
-                            <Chip icon={<IsoIcon />} label="WFS" color="primary" variant="outlined" onClick={() => handleOpenModal("WFS")} sx={{ marginLeft: 1 }} />
-                            <Chip icon={<IsoIcon />} label="WMTS" color="primary" variant="outlined" onClick={() => handleOpenModal("WMTS")} sx={{ marginLeft: 1 }} />
+                            <Chip icon={<IsoIcon />} label="Lägg till" color="primary" onClick={() => handleOpenModal("ALL")} sx={{ marginLeft: 1, marginRight: 2 }} />
+                            <Chip icon={<IsoIcon />} label="WMS" variant="outlined" onClick={() => handleOpenModal("WMS")} sx={{ marginLeft: 1 }} />
+                            <Chip icon={<IsoIcon />} label="WFS" variant="outlined" onClick={() => handleOpenModal("WFS")} sx={{ marginLeft: 1 }} />
+                            <Chip icon={<IsoIcon />} label="WMTS" variant="outlined" onClick={() => handleOpenModal("WMTS")} sx={{ marginLeft: 1 }} />
                         </Box>
                     </Box>
                 </Box>
@@ -325,7 +386,7 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                                 <Stack direction="column" spacing={1} alignItems="flex-start" ref={provided.innerRef} {...(provided.droppableProps)}>
                                     {localLayersState.filter(layer => layer.group === groupName || layer.group === undefined).map((layer, index) => (
                                         (
-                                            <Draggable key={layer.id} draggableId={layer.id} index={index}>
+                                            <Draggable key={layer.id || `layer-${index}`} draggableId={layer.id || `layer-${index}`} index={index}>
                                                 {(provided) => (
                                                     <Chip
                                                         ref={provided.innerRef}
@@ -342,7 +403,7 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                                                                         style={{ color: 'white', fontSize: '18px' }}
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
-                                                                            handleClickOnChip(layer.type as LayerType, layer.id);
+                                                                            handleClickOnChip(layer.type as LayerType, layer.id || '');
                                                                         }} />
                                                                 </Avatar>
                                                                 {!layer.visible ?
@@ -365,7 +426,7 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                                                                 }
                                                             </>
                                                         }
-                                                        onDelete={() => handleDeleteLayerOnChip(layer.type as LayerType, layer.id)}
+                                                        onDelete={() => handleDeleteLayerOnChip(layer.type as LayerType, layer.id || '')}
                                                         disabled={!layers.some(layer => layer.id === layer.id && layer.group === unEditedGroupName)} />
                                                 )}
                                             </Draggable>
@@ -376,6 +437,12 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                             )}
                         </Droppable>
                     </DragDropContext>
+
+                    <KeyValuePairEditor
+                        value={selectedGroup.extendedAttributes ?? []}
+                        onChange={(v) => onEditorChange("extendedAttributes", v, false)}
+                    />
+
                     <Stack direction="row" justifyContent="flex-end" spacing={2}>
                         <Button
                             variant="outlined"
@@ -412,13 +479,11 @@ export const Editor = ({ selectedGroup, isEditorValid, onSaveClick, onCancelClic
                             editedLayers={localLayersState}
                             setEditedLayers={setLocalLayersState}
                             layerToEdit={selectedLayer as LayerDto}
-                            featureInfoClickLayers={Array.from(new Set(layers.filter(layer => layer.type === 'WFS').map(layer => layer.name)))}
+                            featureInfoClickLayers={Array.from(new Set(layers.filter(layer => ["WFS", "AGS_FEATURE", "OGCAPI"].includes(layer.type)).map(layer => layer.name)))}
                         />
                     )
                 }
             </Box >
         </MainCard >
     );
-
 }
-

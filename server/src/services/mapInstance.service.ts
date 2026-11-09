@@ -1,4 +1,4 @@
-import { DBLinkResource, DBMapInstance, LinkResourceModel, MapInstanceModel } from "@/models";
+import { DBLinkResource, DBMapInstance, DBStyleSchema, LinkResourceModel, MapInstanceModel, StyleSchemaModel } from "@/models";
 import "@/mappers/";
 import { Repository } from "@/repositories/Repository";
 import {
@@ -6,7 +6,8 @@ import {
   MapInstanceDto,
   MapInstanceListItemDto,
   PublishedMapConfigDto,
-  PublishedMapListItemDto
+  PublishedMapListItemDto,
+  StyleSchemaDto
 } from "@/shared/interfaces/dtos";
 import { DBPublishedMap, PublishedMapModel } from "@/models/publishedMap.model";
 import mongoose from "mongoose";
@@ -20,17 +21,21 @@ import {
 } from "@/mappers/publishedMapMapper";
 import { instanceListItemMapper, instanceMapper } from "@/mappers/InstanceMapper";
 import { linkResourceMapper } from "@/mappers/";
+import StyleSchemaMapper from "@/mappers/styleSchemaMapper";
+import { updateProxyCache } from "@/utils/proxyUtils";
 
 class MapInstanceService {
   private repository: Repository<DBMapInstance>;
   private publishedRepository: Repository<DBPublishedMap>;
   private linkResourceRepository: Repository<DBLinkResource>;
+  private styleSchemaRepository: Repository<DBStyleSchema>;
 
   private listItemMapper: IMapper<DBMapInstance, MapInstanceListItemDto>;
   private instanceMapper: IMapper<DBMapInstance, MapInstanceDto>;
   private instanceToPublishedMapMapper: IMapper<DBPublishedMap, DBMapInstance>;
   private previewMapMapper: IMapper<DBMapInstance, PublishedMapConfigDto>;
   private _linkResourceMapper: IMapper<DBLinkResource, LinkResourceDto>;
+  private _styleSchemaMapper: IMapper<DBStyleSchema, StyleSchemaDto>;
 
   private publishedMapMapper: IMapper<DBPublishedMap, PublishedMapConfigDto>;
   private publishedMapListItemMapper: IMapper<DBPublishedMap, PublishedMapListItemDto>;
@@ -39,9 +44,11 @@ class MapInstanceService {
     this.repository = new Repository<DBMapInstance>(MapInstanceModel);
     this.publishedRepository = new Repository<DBPublishedMap>(PublishedMapModel);
     this.linkResourceRepository = new Repository<DBLinkResource>(LinkResourceModel);
+    this.styleSchemaRepository = new Repository<DBStyleSchema>(StyleSchemaModel);
     this.listItemMapper = new instanceListItemMapper();
     this.instanceMapper = new instanceMapper();
     this._linkResourceMapper = new linkResourceMapper();
+    this._styleSchemaMapper = new StyleSchemaMapper();
     this.previewMapMapper = new PreviewMapMapper();
     this.instanceToPublishedMapMapper = new InstanceToPublishedMapMapper();
     this.publishedMapMapper = new publishedMapMapper();
@@ -73,8 +80,10 @@ class MapInstanceService {
     }
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
+    let dbStyles = await this.styleSchemaRepository.findAll();
+    let styles = dbStyles.map((item) => this._styleSchemaMapper.toDto(item));
 
-    return this.previewMapMapper.toDto(response, sources);
+    return this.previewMapMapper.toDto(response, sources, styles);
   }
 
   async publish(id: string, comment: string): Promise<PublishedMapListItemDto> {
@@ -83,9 +92,12 @@ class MapInstanceService {
 
     let dbSources = await this.linkResourceRepository.findAll();
     let sources = dbSources.map((item) => this._linkResourceMapper.toDto(item));
-    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources);
+    let dbStyles = await this.styleSchemaRepository.findAll();
+    let styles = dbStyles.map((item) => this._styleSchemaMapper.toDto(item));
+    let publishedMap = this.instanceToPublishedMapMapper.toDBModel(mapInstance, comment, sources, styles);
 
     let response = await this.publishedRepository.create(publishedMap);
+    await this.refreshProxyCache();
     return this.publishedMapListItemMapper.toDto(response);
   }
 
@@ -100,7 +112,16 @@ class MapInstanceService {
     republishedMap._id = new mongoose.Types.ObjectId();
 
     let response = await this.publishedRepository.create(republishedMap);
+    await this.refreshProxyCache();
     return this.publishedMapListItemMapper.toDto(response);
+  }
+
+  private async refreshProxyCache(): Promise<void> {
+    try {
+      await updateProxyCache();
+    } catch (error) {
+      console.error(`[${new Date().toISOString()}] Failed to update proxy cache: ${error}`);
+    }
   }
 
   async getPublishedList(id: string): Promise<PublishedMapListItemDto[]> {
@@ -108,10 +129,19 @@ class MapInstanceService {
     return response.map((item) => this.publishedMapListItemMapper.toDto(item));
   }
 
-  async getLatestPublished(name: string): Promise<PublishedMapConfigDto> {
+  async getLatestPublished(name: string): Promise<PublishedMapConfigDto | null> {
     let response = await this.publishedRepository.query({ name: name }, { publishedDate: "desc" }, 1);
+    if (response.length === 0) {
+      return null;
+    }
     return this.publishedMapMapper.toDto(response[0]);
   }
+
+  async isPublic(name: string): Promise<boolean> {
+    const mapInstances = await this.repository.findByCriteria({ name: name });
+    return mapInstances.length > 0 && mapInstances[0].isPublic === true;
+  }
+
   async getPublished(id: string): Promise<PublishedMapConfigDto> {
     let response = await this.publishedRepository.find(id.replace(/\.json$/ig, ""));
     return this.publishedMapMapper.toDto(response);
