@@ -53,18 +53,21 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile, trigger }) {
       // Initial sign in
       if (account && user) {
-        const expiresIn = account.expires_in ? (account.expires_in as number) * 1000 : 600 * 1000;
-
         return {
           access_token: account.access_token,
-          accessTokenExpires: Date.now() + expiresIn,
+          ...accessTokenTimes(account.expires_at ? account.expires_at - Math.floor(Date.now() / 1000) : (account.expires_in as number | undefined)),
           refreshToken: account.refresh_token,
           access_token_url: account.access_token_url,
           user: user,
         };
       }
 
-      if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number)) {
+      if (token.error === "RefreshAccessTokenError") {
+        return token;
+      }
+
+      const refreshAt = (token.accessTokenRefreshAt ?? token.accessTokenExpires) as number | undefined;
+      if (refreshAt && Date.now() < refreshAt) {
         return token;
       }
 
@@ -76,19 +79,32 @@ export const authOptions: NextAuthOptions = {
         process.env.PROTECTED_IDP_CLIENT_SECRET!
       );
       if (refreshedToken.error) {
-        return { ...token, error: "RefreshAccessTokenError" };
+        // Only sign out if the refresh token was rejected, otherwise retry on next request
+        return refreshedToken.fatal ? { ...token, error: "RefreshAccessTokenError" } : token;
       }
 
       return {
         ...token,
         access_token: refreshedToken.access_token,
-        accessTokenExpires: Date.now() + (refreshedToken.expires_in as number) * 1000,
+        ...accessTokenTimes(refreshedToken.expires_in),
         refreshToken: refreshedToken.refresh_token ?? token.refreshToken,
+        error: undefined,
       };
     },
   },
   session: {
     strategy: 'jwt',
-    maxAge: parseInt(process.env.PROTECTED_IDP_SESSION_MAXAGE || "") || 600 // 10 minutes
+    maxAge: parseInt(process.env.PROTECTED_SESSION_MAXAGE || "") || 8 * 60 * 60, // 8 hours
   },
 };
+
+// Refresh 60 seconds before the access token expires (or halfway for short-lived tokens)
+function accessTokenTimes(expiresIn: number | undefined) {
+  const lifetimeMs = (expiresIn || parseInt(process.env.PROTECTED_IDP_SESSION_MAXAGE || "") || 300) * 1000;
+  const marginMs = Math.min(60 * 1000, lifetimeMs / 2);
+  const now = Date.now();
+  return {
+    accessTokenExpires: now + lifetimeMs,
+    accessTokenRefreshAt: now + lifetimeMs - marginMs,
+  };
+}
