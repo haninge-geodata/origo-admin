@@ -1,0 +1,35 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies (rebuilt in container)
+**/node_modules
+
+# Build output (rebuilt in container)
+**/dist
+**/.next
+**/out
+
+# Environment files (passed via docker-compose environment)
+**/.env
+**/.env.*
+!**/.env.template
+
+# IDE and OS
+.vscode
+.cursor
+.claude
+**/.DS_Store
+**/__MACOSX
+
+# Documentation and CI (not needed in images)
+documentation
+.github
+*.md
+!shared/**
+
+# Misc
+**/coverage
+**/*.log
+**/.npm
+**/uploads

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AzureUploadService, LocalUploadService } from "@/services/";
+import { getService } from "@/services/upload-factory";
 import { MediaDto } from "@/shared/interfaces/dtos";
 import { IUploadService } from "@/interfaces/uploadservice.interface";
 
@@ -12,10 +12,7 @@ class MediaController {
   private service: IUploadService;
 
   constructor() {
-    this.service =
-      process.env.USE_AZURE_STORAGE === "true"
-        ? new AzureUploadService()
-        : new LocalUploadService();
+    this.service = getService();
   }
 
   /**

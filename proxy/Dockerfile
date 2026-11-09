@@ -1,30 +1,20 @@
-# Byggsteg för proxyapplikation
-FROM node:18-alpine AS proxy-build
-WORKDIR /proxy
-
-# Argument för miljövariabler
-ARG NODE_ENV
-ARG PORT=3020
-
-# Använd ARG för att sätta ENV
-ENV NODE_ENV=${NODE_ENV} \
-    PORT=${PORT}
+FROM node:22-alpine AS build
+WORKDIR /build
 
 COPY ./proxy/package*.json ./
 COPY ./proxy/tsconfig.json ./
 RUN npm ci
-COPY ./proxy/ ./
-RUN npm run build
+COPY ./proxy/src/ ./src/
+RUN npx tsc
 
-# Slutlig körningsbar container
-FROM node:18-alpine
+FROM node:22-alpine
 WORKDIR /app
-COPY --from=proxy-build /proxy/dist ./dist
-COPY --from=proxy-build /proxy/node_modules ./node_modules
-COPY --from=proxy-build /proxy/tsconfig.json /app/tsconfig.json
 
-# Exponera porten din proxy lyssnar på
+COPY --from=build /build/package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=build /build/dist ./dist
+
 EXPOSE 3020
 
-# Startkommando
 CMD ["node", "dist/server.js"]

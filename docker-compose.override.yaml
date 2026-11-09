@@ -4,9 +4,9 @@ services:
       - "27017:27017"
   client:
     environment:
-      AUTH_ENABLED: "true" # Toggles AUTH on and off
-      SIGN_OUT_URL: 'http://localhost:3050/application/o/origo-admin/end-session/' # The URL to sign out from the OIDC provider
-      NEXTAUTH_URL: 'http://localhost:3000'
+      AUTH_ENABLED: "false" # Toggles AUTH on and off
+      SIGN_OUT_URL: "http://localhost:3050/application/o/origo-admin/end-session/" # The URL to sign out from the OIDC provider
+      NEXTAUTH_URL: "http://localhost:3000"
       PROTECTED_ADMIN_ROLE: "Administratör"
 
       # OIDC Settings
@@ -31,10 +31,10 @@ services:
       SCOPE: "${IDP_SCOPE:-openid email profile}" # This is the OIDC scope for the OIDC provider e.g. openid groups
       AUTH_CLIENT_DOMAIN: "localhost" # The domain to set the cookie on
       DISPLAY_NAME: "" # The claim to use as display name
-      REDIRECT_URI: ""  # Also the client redirect uri used for CORS.
+      REDIRECT_URI: "" # Also the client redirect uri used for CORS.
   server:
     environment:
-      AUTH_ENABLED: "true"
+      AUTH_ENABLED: "false"
 
   idp-db:
     image: docker.io/library/postgres:16-alpine

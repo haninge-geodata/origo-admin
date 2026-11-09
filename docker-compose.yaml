@@ -1,6 +1,7 @@
 services:
   mongodb:
     image: mongo:latest
+    restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -9,32 +10,34 @@ services:
       - mongodb_data:/data/db
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+
   client:
-    image: ghcr.io/sweco-sedalh/origo-admin-client:latest
+    restart: unless-stopped
     build:
+      context: .
       dockerfile: ./client/Dockerfile
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_BASE_PATH: "/" # If the client is not hosted at the root of its domain, set its path here.
-      BASE_URL: 'http://server:3010/api/' # Used for the API to fetch data from the server
-      ORIGO_URL: 'http://origo.se/#map=http://proxy.se/proxy/mapinstances' # Used for preview:ing the map in admin, should include everything before the mapinstance id
-      NEXT_PUBLIC_PROXY_URL: http://server:3010/api/proxy # Used for the API to fetch data from the server
-      VERSION: '0.9.0'
-      UPDATED: '2024-09-01'
-      LOGO: '/img/admin_logo.png' # Logo shown in the upper left corner
+      NEXT_PUBLIC_BASE_PATH: "" # If the client is not hosted at the root of its domain, set its path here (e.g. "/admin").
+      BASE_URL: "http://server:3010/api/" # Used for the API to fetch data from the server
+      ORIGO_URL: "http://origo.se/#map=http://proxy.se/proxy/mapinstances" # Used for preview:ing the map in admin, should include everything before the mapinstance id
+      NEXT_PUBLIC_PROXY_URL: api/proxy # Path used for the client-side proxy route
+      VERSION: "0.9.0"
+      UPDATED: "2024-09-01"
+      LOGO: "/img/admin_logo.png" # Logo shown in the upper left corner
       LOGO_WIDTH: 35 # Width of the logo in pixels
       LOGO_HEIGHT: 35 # Height of the logo in pixels
-      GITHUB_URL: 'https://github.com/haninge-geodata' # Link to the GitHub repository, icon in upper right corner
+      GITHUB_URL: "https://github.com/haninge-geodata" # Link to the GitHub repository, icon in upper right corner
 
       PORT: 3000 # The port the client will run on
-      AUTH_ENABLED: "false" # Toggles AUTH on and off
-      SIGN_OUT_URL: 'https://logout.issuer.com/' # The URL to sign out from the OIDC provider
+      AUTH_ENABLED: false # Toggles AUTH on and off
+      SIGN_OUT_URL: "https://logout.issuer.com/" # The URL to sign out from the OIDC provider
       NEXTAUTH_SECRET: "${TOKEN_SECRET}"
-      NEXTAUTH_URL: 'http://localhost:3000'
+      NEXTAUTH_URL: "http://localhost:3000"
 
-      PROTECTED_API_ACCESS_TOKEN: "${API_ACCESS_TOKEN}"  # The access token for the API. Create this token by running the script 'npm run generate-initial-token' in the server folder. This requires the database.
-      PROTECTED_ADMIN_ROLE: ""    # The role that is allowed to access the admin page
+      PROTECTED_API_ACCESS_TOKEN: "${API_ACCESS_TOKEN}" # The access token for the API. Create this token by running the script 'npm run generate-initial-token' in the server folder. This requires the database.
+      PROTECTED_ADMIN_ROLE: "" # The role that is allowed to access the admin page
       # OIDC Settings
       PROTECTED_IDP_NAME: "OIDC Portal"
       PROTECTED_IDP_ISSUER: "https://oidc.issuer.com"
@@ -49,41 +52,39 @@ services:
       proxy:
         condition: service_started
   proxy:
-    image: ghcr.io/sweco-sedalh/origo-admin-proxy:latest
+    restart: unless-stopped
     build:
+      context: .
       dockerfile: ./proxy/Dockerfile
-      args:
-        NODE_ENV: production
     ports:
-        - "3020:3020"
+      - "3020:3020"
     environment:
       HOST: http://localhost # The public hostname, required if run behind reverse proxy
       PORT: 3020 # The port the proxy will run on
-      PROXY_BASE_PATH: proxy # This is the base path for the proxy
-      RESOURCES_ENDPOINT_URL: http://server:3010/api/proxy/resources # This is the URL to the OrigoAdmin API that the proxy will use to fetch resources
-      ROLES_ENDPOINT_URL: http://server:3010/api/proxy/roles # This is the URL to the OrigoAdmin API that the proxy will use to fetch roles
-      MAPINSTANCES_ENDPOINT_URL: http://server:3010/api # This is the URL to the OrigoAdmin API that the proxy will use to fetch mapinstances
-      RESTRICT_MAPCONTROLS: "false" # If true, the map controls will be restricted to the ones defined in the mapinstance
-      API_ACCESS_TOKEN: "${API_ACCESS_TOKEN}" # This is the access token that the proxy will use to authenticate with the OrigoAdmin API
-      WELL_KNOWN: "${IDP_WELLKNOWN_URL}" # This is the OIDC well known endpoint for the OIDC provider
-      TOKEN_URL: "${IDP_TOKEN_URL}" # This is the OIDC token endpoint for the OIDC provider
-      CLIENT_ID: "${IDP_CLIENT_ID}" # This is the OIDC client id for the OIDC provider
-      CLIENT_SECRET: "${IDP_CLIENT_SECRET}" # This is the OIDC client secret for the OIDC provider
-      SCOPE: "${IDP_SCOPE}" # This is the OIDC scope for the OIDC provider e.g. openid groups
-      HTTP_TIMEOUT: 10000 # This is the timeout for the HTTP requests
+      PROXY_BASE_PATH: proxy # The base path for the proxy
+      RESOURCES_ENDPOINT_URL: http://server:3010/api/proxy/resources # URL to the OrigoAdmin API for fetching resources
+      ROLES_ENDPOINT_URL: http://server:3010/api/proxy/roles # URL to the OrigoAdmin API for fetching roles
+      MAPINSTANCES_ENDPOINT_URL: http://server:3010/api # URL to the OrigoAdmin API for fetching mapinstances
+      RESTRICT_MAPCONTROLS: "false" # If true, map controls will be restricted to the ones defined in the mapinstance
+      API_ACCESS_TOKEN: "${API_ACCESS_TOKEN}" # Access token the proxy uses to authenticate with the OrigoAdmin API
+      WELL_KNOWN: "${IDP_WELLKNOWN_URL}" # OIDC well known endpoint for the OIDC provider
+      TOKEN_URL: "${IDP_TOKEN_URL}" # OIDC token endpoint for the OIDC provider
+      CLIENT_ID: "${IDP_CLIENT_ID}" # OIDC client id for the OIDC provider
+      CLIENT_SECRET: "${IDP_CLIENT_SECRET}" # OIDC client secret for the OIDC provider
+      SCOPE: "${IDP_SCOPE}" # OIDC scope for the OIDC provider e.g. openid groups
+      HTTP_TIMEOUT: 10000 # Timeout for HTTP requests in milliseconds
       SET_ACCESS_TOKEN_COOKIE: "true" # If true, the proxy will set the access token in a cookie
       AUTH_CLIENT_DOMAIN: "" # The domain to set the cookie on
       DISPLAY_NAME: "" # The claim to use as display name
-      REDIRECT_URI: ""  # Also the client redirect uri used for CORS.
+      REDIRECT_URI: "" # Also the client redirect uri used for CORS
     depends_on:
       server:
         condition: service_healthy
   server:
-    image: ghcr.io/sweco-sedalh/origo-admin-server:latest
+    restart: unless-stopped
     build:
+      context: .
       dockerfile: ./server/Dockerfile
-      args:
-        NODE_ENV: production
     ports:
       - "3010:3010"
     environment:
@@ -92,14 +93,16 @@ services:
       BASE_PATH: /api
       SWAGGER_URL_SUFFIX: "swagger"
       DATABASE: "mongodb://root:password@mongodb/origoadmin?authSource=admin" # Database connection string
-      UPLOAD_FOLDER: '/data/uploads' # Folder for uploaded files, so for example will be src/uploads
-      UPLOAD_URL: "http://{url}/uploads" # URL for uploaded files, used when retrieving list of files from the api
-      MAPINSTANCE_ROUTE_PATH: 'http://{url}/api/mapinstances' # URL for the mapinstances api, used as part of url when retrieving list of mapinstances from the api
-      USE_AZURE_STORAGE: "false" # Use Azure storage for uploaded files
-      TOKEN_SECRET: '${TOKEN_SECRET}' # Secret for the JWT token, Generate this with npm run generate-secret-key in the server folder
-      AUTH_ENABLED: "false"
-      PROXY_UPDATE_URL: "http://proxy/proxy/refresh-cache" # URL for the proxy update api, used when updating the cache. If not set, id will be replaced with layer_id in layers otherwise this will be handled by the proxy
-      SECURE_FAVOURITES: "false" # Set to true to require authentication for access to the favourites API endpoint.
+      UPLOAD_FOLDER: "/data/uploads" # Folder for uploaded files
+      UPLOAD_URL: "http://localhost:3010/api/uploads" # Public URL for uploaded files, used when retrieving list of files from the API
+      MAPINSTANCE_ROUTE_PATH: "http://localhost:3010/api/mapinstances" # Public URL for the mapinstances API
+      USE_AZURE_STORAGE: false # Use Azure storage for uploaded files. Set to true and configure the Azure variables below to use Azure Blob Storage.
+      # AZURE_STORAGE_CONNECTION_STRING: "" # Azure Blob Storage connection string (required when USE_AZURE_STORAGE=true)
+      # AZURE_CONTAINER_NAME: "" # Azure Blob Storage container name (required when USE_AZURE_STORAGE=true)
+      TOKEN_SECRET: "${TOKEN_SECRET}" # Secret for the JWT token. Generate with npm run generate-secret-key in the server folder
+      AUTH_ENABLED: false # Toggles AUTH on and off
+      PROXY_UPDATE_URL: "http://proxy:3020/proxy/refresh-cache" # URL for the proxy cache refresh. If not set, id will be replaced with layer_id in layers
+      SECURE_FAVOURITES: false # Set to true to require authentication for the favourites API endpoint
     volumes:
       - uploads_data:/data/uploads
     depends_on:
@@ -107,10 +110,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:3010/api/swagger || exit 1
-      interval: 1m
-      timeout: 3s
+      interval: 30s
+      timeout: 5s
       retries: 3
-      start_period: 2s
+      start_period: 10s
 
 volumes:
   mongodb_data:
