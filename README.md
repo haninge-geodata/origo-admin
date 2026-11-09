@@ -1,4 +1,7 @@
-# Origo Admin
+# Origo Admin [![Status](https://img.shields.io/badge/status-unstable-orange?style=for-the-badge)](https://shields.io/)
+## ⚠️ Warning: Main branch is unstable ⚠️
+
+The current main branch is under active development and will contain bugs and/or braking changes. For a stable version, wait for an upcoming [release](../../releases).
 
 ## Getting started
 
