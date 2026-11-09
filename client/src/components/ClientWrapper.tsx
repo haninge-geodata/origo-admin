@@ -7,10 +7,11 @@ import Navigation from "@/components/Navigation/Navigation";
 
 interface props {
   children: React.ReactNode;
-  session: Session | null;
+  session?: Session | null;
+  sessionRefetchInterval?: number;
 }
 
-const ClientWrapper: React.FC<props> = ({ children, session }: props) => {
+const ClientWrapper: React.FC<props> = ({ children, session, sessionRefetchInterval }: props) => {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
   const isDrawerOpen = true;
   const divStyles = {
@@ -20,7 +21,7 @@ const ClientWrapper: React.FC<props> = ({ children, session }: props) => {
   };
   return (
     <>
-      <SessionProvider session={session} basePath={`${basePath}/api/auth`}>
+      <SessionProvider session={session} basePath={`${basePath}/api/auth`} refetchInterval={sessionRefetchInterval}>
         <CssBaseline />
         <Navigation />
         <div style={divStyles}>
